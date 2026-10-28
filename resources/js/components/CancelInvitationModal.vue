@@ -11,12 +11,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { destroy as destroyInvitation } from '@/routes/teams/invitations';
-import type { Team, TeamInvitation } from '@/types';
+import { destroy as destroyInvitation } from '@/routes/organizations/invitations';
+import type { Organization, OrganizationInvitation } from '@/types';
 
 type Props = {
-    team: Team;
-    invitation: TeamInvitation | null;
+    organization: Organization;
+    invitation: OrganizationInvitation | null;
     open: boolean;
 };
 
@@ -32,7 +32,7 @@ const cancelInvitation = () => {
         return;
     }
 
-    router.visit(destroyInvitation([props.team.slug, props.invitation.code]), {
+    router.visit(destroyInvitation([props.organization.slug, props.invitation.code]), {
         onStart: () => (processing.value = true),
         onFinish: () => (processing.value = false),
         onSuccess: () => emit('update:open', false),

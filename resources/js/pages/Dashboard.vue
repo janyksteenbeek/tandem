@@ -3,19 +3,19 @@ import { Head } from '@inertiajs/vue3';
 import PendingInvitationsModal from '@/components/PendingInvitationsModal.vue';
 import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
 import { dashboard } from '@/routes';
-import type { DashboardInvitation, Team } from '@/types';
+import type { DashboardInvitation, Organization } from '@/types';
 
 defineProps<{
     pendingInvitations?: DashboardInvitation[];
 }>();
 
 defineOptions({
-    layout: (props: { currentTeam?: Team | null }) => ({
+    layout: (props: { currentOrganization?: Organization | null }) => ({
         breadcrumbs: [
             {
                 title: 'Dashboard',
-                href: props.currentTeam
-                    ? dashboard(props.currentTeam.slug)
+                href: props.currentOrganization
+                    ? dashboard(props.currentOrganization.slug)
                     : '/',
             },
         ],

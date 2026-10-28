@@ -1,6 +1,6 @@
 import type { Directive } from 'vue';
 import type { Auth } from '@/types/auth';
-import type { Team } from '@/types/teams';
+import type { Organization } from '@/types/organizations';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -21,8 +21,8 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
-            currentTeam: Team | null;
-            teams: Team[];
+            currentOrganization: Organization | null;
+            organizations: Organization[];
             [key: string]: unknown;
         };
     }

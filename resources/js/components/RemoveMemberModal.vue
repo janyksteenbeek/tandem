@@ -11,12 +11,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { destroy as destroyMember } from '@/routes/teams/members';
-import type { Team, TeamMember } from '@/types';
+import { destroy as destroyMember } from '@/routes/organizations/members';
+import type { Organization, OrganizationMember } from '@/types';
 
 type Props = {
-    team: Team;
-    member: TeamMember | null;
+    organization: Organization;
+    member: OrganizationMember | null;
     open: boolean;
 };
 
@@ -32,7 +32,7 @@ const removeMember = () => {
         return;
     }
 
-    router.visit(destroyMember([props.team.slug, props.member.id]), {
+    router.visit(destroyMember([props.organization.slug, props.member.id]), {
         onStart: () => (processing.value = true),
         onFinish: () => (processing.value = false),
         onSuccess: () => emit('update:open', false),
@@ -44,10 +44,10 @@ const removeMember = () => {
     <Dialog :open="props.open" @update:open="emit('update:open', $event)">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Remove team member</DialogTitle>
+                <DialogTitle>Remove organization member</DialogTitle>
                 <DialogDescription>
                     Are you sure you want to remove
-                    <strong>{{ props.member?.name }}</strong> from this team?
+                    <strong>{{ props.member?.name }}</strong> from this organization?
                 </DialogDescription>
             </DialogHeader>
 

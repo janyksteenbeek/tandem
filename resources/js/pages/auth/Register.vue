@@ -2,7 +2,7 @@
 import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import TeamInvitationAlert from '@/components/TeamInvitationAlert.vue';
+import OrganizationInvitationAlert from '@/components/OrganizationInvitationAlert.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,11 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import type { TeamInvitationContext } from '@/types';
+import type { OrganizationInvitationContext } from '@/types';
 
 defineProps<{
     passwordRules: string;
-    teamInvitation?: TeamInvitationContext | null;
+    organizationInvitation?: OrganizationInvitationContext | null;
 }>();
 
 defineOptions({
@@ -28,9 +28,9 @@ defineOptions({
 <template>
     <Head title="Register" />
 
-    <TeamInvitationAlert
-        v-if="teamInvitation"
-        :invitation="teamInvitation"
+    <OrganizationInvitationAlert
+        v-if="organizationInvitation"
+        :invitation="organizationInvitation"
         action="Register"
     />
 
@@ -114,17 +114,17 @@ defineOptions({
             Already have an account?
             <TextLink
                 :href="
-                    teamInvitation
+                    organizationInvitation
                         ? login.url({
                               query: {
-                                  invitation: teamInvitation.code,
+                                  invitation: organizationInvitation.code,
                               },
                           })
                         : login()
                 "
                 class="underline underline-offset-4"
                 :tabindex="6"
-                data-test="team-invitation-login-link"
+                data-test="organization-invitation-login-link"
             >
                 Log in
             </TextLink>
