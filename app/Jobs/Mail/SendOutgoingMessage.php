@@ -163,8 +163,30 @@ class SendOutgoingMessage implements ShouldBeUnique, ShouldQueue
                 contentId: $attachment->content_id,
                 isInline: $attachment->is_inline,
             ))->all(),
-            headers: ['X-Tandem-Message' => $message->uuid],
+            headers: $this->headers($message),
             providerThreadId: $message->conversation->provider_thread_id,
         );
+    }
+
+    /**
+     * Tracking header plus any automation markers stored on the message (autoresponders set
+     * `auto-submitted` / `x-tandem-autoresponse` so loops stay detectable on the receiving side).
+     *
+     * @return array<string, string>
+     */
+    protected function headers(Message $message): array
+    {
+        $headers = ['X-Tandem-Message' => $message->uuid];
+        $stored = collect($message->headers ?? [])->mapWithKeys(fn ($value, $key) => [strtolower((string) $key) => $value]);
+
+        foreach (['auto-submitted' => 'Auto-Submitted', 'x-tandem-autoresponse' => 'X-Tandem-Autoresponse'] as $key => $name) {
+            $value = $stored->get($key);
+
+            if (is_scalar($value) && trim((string) $value) !== '') {
+                $headers[$name] = trim((string) $value);
+            }
+        }
+
+        return $headers;
     }
 }

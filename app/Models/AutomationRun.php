@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $trigger
  * @property string $status
  * @property array<string, mixed>|null $details
+ * @property CarbonInterface $created_at
+ * @property-read AutomationRule $rule
+ * @property-read Conversation|null $conversation
  */
 #[Fillable(['automation_rule_id', 'conversation_id', 'trigger', 'status', 'details', 'created_at'])]
 class AutomationRun extends Model

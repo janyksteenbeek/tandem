@@ -1,5 +1,6 @@
 import type { Directive } from 'vue';
 import type { Auth } from '@/types/auth';
+import type { MailNav } from '@/types/mail';
 import type { Organization } from '@/types/organizations';
 
 // Extend ImportMeta interface for Vite...
@@ -23,6 +24,9 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             currentOrganization: Organization | null;
             organizations: Organization[];
+            mailNav: MailNav | null;
+            unreadNotifications: number;
+            canManageOrganization: boolean;
             [key: string]: unknown;
         };
     }

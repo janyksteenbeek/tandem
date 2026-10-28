@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Mail\MailNavigation;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,8 +42,16 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $user,
+                'user' => $user ? [
+                    ...$user->toArray(),
+                    'initials' => $user->initials(),
+                    'avatar' => $user->avatarUrl(),
+                    'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
+                ] : null,
             ],
+            'mailNav' => fn () => $user ? app(MailNavigation::class)->for($user, $user->currentOrganization) : null,
+            'unreadNotifications' => fn () => $user ? $user->unreadNotifications()->count() : 0,
+            'canManageOrganization' => fn () => $user && $user->currentOrganization ? $user->can('manage', $user->currentOrganization) : false,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'currentOrganization' => fn () => $user?->currentOrganization ? $user->toUserOrganization($user->currentOrganization) : null,
             'organizations' => fn () => $user?->toUserOrganizations(includeCurrent: true) ?? [],

@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    /*
+    | Global Google OAuth client used for Gmail connections when the organization
+    | has not configured its own client. `redirect` is the named route Google
+    | sends the user back to; `pubsub_topic` is the default push topic.
+    */
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => 'mail.gmail.callback',
+        'pubsub_topic' => env('GOOGLE_PUBSUB_TOPIC'),
+    ],
+
 ];

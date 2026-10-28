@@ -1,0 +1,20 @@
+# Cloudflare Email Worker that receives every message for the Tandem forwarding domain
+# (catch-all Email Routing rule -> "Send to a Worker") and posts the raw MIME to Tandem.
+#
+# Secrets (never commit these):
+#   wrangler secret put TANDEM_WEBHOOK_SECRET   # must equal TANDEM_FORWARDING_WEBHOOK_SECRET in Tandem's .env
+
+name = "tandem-email-worker"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+# Public URL of the Tandem webhook endpoint (route: webhooks.cloudflare.inbound).
+TANDEM_INGEST_URL = "https://app.tandem.example/webhooks/cloudflare/inbound"
+# Reject messages larger than this many bytes before uploading them (default 25 MiB).
+MAX_BYTES = "26214400"
+# Optional: also forward every message to a verified destination address (debugging / backup).
+# FALLBACK_FORWARD_TO = "ops@example.com"
+
+[observability]
+enabled = true

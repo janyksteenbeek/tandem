@@ -39,6 +39,7 @@ return [
         'watch_renew_before_hours' => 24,
         'initial_sync_days' => (int) env('TANDEM_GMAIL_INITIAL_SYNC_DAYS', 90),
         'reconcile_minutes' => (int) env('TANDEM_GMAIL_RECONCILE_MINUTES', 15),
+        'sync_batch_size' => (int) env('TANDEM_GMAIL_SYNC_BATCH_SIZE', 100),
     ],
 
     /*

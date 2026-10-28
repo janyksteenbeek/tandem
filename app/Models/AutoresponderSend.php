@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $automation_rule_id
  * @property int|null $conversation_id
  * @property string $recipient_email
+ * @property CarbonInterface $sent_at
  */
 #[Fillable(['automation_rule_id', 'conversation_id', 'recipient_email', 'sent_at'])]
 class AutoresponderSend extends Model

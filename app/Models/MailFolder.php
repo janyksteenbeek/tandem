@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FolderType;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,13 +15,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $provider_id
  * @property string $name
  * @property FolderType $type
- * @property array<string, mixed>|null $attributes_json
  * @property int|null $uid_validity
  * @property int|null $uid_next
  * @property int|null $last_synced_uid
  * @property int $message_count
  * @property bool $is_selectable
  * @property bool $sync_enabled
+ * @property CarbonInterface|null $last_synced_at
  * @property-read MailAccount $mailAccount
  * @property-read Tag|null $tag
  */

@@ -26,6 +26,9 @@ class Tag extends Model
     /** @use HasFactory<TagFactory> */
     use HasFactory;
 
+    /** @var array<int, string> */
+    public const COLORS = ['violet', 'teal', 'amber', 'rose', 'sky', 'emerald', 'slate', 'orange', 'pink', 'lime'];
+
     protected static function booted(): void
     {
         static::creating(function (Tag $tag) {

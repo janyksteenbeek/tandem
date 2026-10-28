@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\MailProvider;
 use App\Services\Mail\MailProviderManager;
+use App\Services\Mail\Providers\Gmail\GmailClientFactory;
 use Illuminate\Support\ServiceProvider;
 use ZBateson\MailMimeParser\MailMimeParser;
 
@@ -12,6 +13,7 @@ class MailServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(MailMimeParser::class, fn () => new MailMimeParser);
+        $this->app->singleton(GmailClientFactory::class);
 
         $this->app->singleton(MailProviderManager::class, function ($app) {
             $manager = new MailProviderManager($app);

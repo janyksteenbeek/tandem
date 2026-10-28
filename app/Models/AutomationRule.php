@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AutomationTrigger;
+use Carbon\CarbonInterface;
 use Database\Factories\AutomationRuleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -29,6 +30,9 @@ use Illuminate\Support\Str;
  * @property int $position
  * @property int|null $cooldown_minutes
  * @property int $run_count
+ * @property CarbonInterface|null $last_run_at
+ * @property CarbonInterface|null $created_at
+ * @property CarbonInterface|null $updated_at
  * @property-read Organization $organization
  * @property-read Inbox|null $inbox
  * @property-read Collection<int, AutomationRun> $runs

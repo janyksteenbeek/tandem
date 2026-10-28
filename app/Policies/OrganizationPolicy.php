@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\OrganizationPermission;
+use App\Enums\OrganizationRole;
 use App\Models\Organization;
 use App\Models\User;
 
@@ -88,6 +89,14 @@ class OrganizationPolicy
     public function cancelInvitation(User $user, Organization $organization): bool
     {
         return $user->hasOrganizationPermission($organization, OrganizationPermission::CancelInvitation);
+    }
+
+    /**
+     * Manage organization-level settings: inboxes, teams, integrations, automations.
+     */
+    public function manage(User $user, Organization $organization): bool
+    {
+        return $user->organizationRole($organization)?->isAtLeast(OrganizationRole::Admin) ?? false;
     }
 
     /**
