@@ -1,0 +1,14 @@
+From: support@acme.test
+To: "Ada Lovelace" <ada@example.org>
+Subject: Re: Analytical engine order #42
+Date: Tue, 28 Oct 2026 10:00:00 +0000
+Message-ID: <reply-1@acme.test>
+In-Reply-To: <order-42@example.org>
+References: <order-42@example.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Hi Ada, yes we have one in stock.
+
+On Tue, 28 Oct 2026 Ada wrote:
+> I would like to order one Analytical Engine.

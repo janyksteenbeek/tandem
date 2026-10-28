@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DraftKind;
+use Carbon\CarbonInterface;
 use Database\Factories\DraftFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -31,9 +31,9 @@ use Illuminate\Support\Str;
  * @property string|null $html_body
  * @property bool $is_shared
  * @property int|null $locked_by_id
- * @property Carbon|null $locked_at
+ * @property CarbonInterface|null $locked_at
  * @property string|null $provider_draft_id
- * @property Carbon|null $last_saved_at
+ * @property CarbonInterface|null $last_saved_at
  * @property-read Conversation|null $conversation
  * @property-read Inbox $inbox
  * @property-read MailAccount|null $mailAccount

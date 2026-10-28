@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Database\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
  * @property int $user_id
  * @property string $body
  * @property array<int, int>|null $mentions
- * @property Carbon|null $edited_at
+ * @property CarbonInterface|null $edited_at
  * @property-read Conversation $conversation
  * @property-read User $user
  */

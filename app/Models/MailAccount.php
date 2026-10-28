@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\MailAccountStatus;
 use App\Enums\MailProvider;
 use App\Enums\ProviderCapability;
+use Carbon\CarbonInterface;
 use Database\Factories\MailAccountFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,7 +14,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -29,10 +29,10 @@ use Illuminate\Support\Str;
  * @property array<string, mixed>|null $settings
  * @property array<string, mixed>|null $sync_state
  * @property MailAccountStatus $status
- * @property Carbon|null $last_synced_at
- * @property Carbon|null $last_sync_started_at
- * @property Carbon|null $initial_sync_completed_at
- * @property Carbon|null $watch_expires_at
+ * @property CarbonInterface|null $last_synced_at
+ * @property CarbonInterface|null $last_sync_started_at
+ * @property CarbonInterface|null $initial_sync_completed_at
+ * @property CarbonInterface|null $watch_expires_at
  * @property string|null $last_error
  * @property int $error_count
  * @property string|null $inbound_token

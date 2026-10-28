@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\DeliveryStatus;
 use App\Enums\MessageDirection;
+use Carbon\CarbonInterface;
 use Database\Factories\MessageFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -41,8 +41,9 @@ use Illuminate\Support\Str;
  * @property string|null $html_body
  * @property array<string, mixed>|null $headers
  * @property array<int, string>|null $provider_labels
- * @property Carbon|null $sent_at
- * @property Carbon|null $received_at
+ * @property array<string, bool>|null $mailbox_state
+ * @property CarbonInterface|null $sent_at
+ * @property CarbonInterface|null $received_at
  * @property bool $is_read
  * @property bool $is_draft
  * @property bool $is_starred
@@ -61,7 +62,7 @@ use Illuminate\Support\Str;
 #[Fillable([
     'conversation_id', 'mail_account_id', 'author_id', 'folder_id', 'direction', 'message_id_header', 'message_id_hash',
     'in_reply_to', 'references', 'provider_message_id', 'provider_thread_id', 'imap_uid', 'from', 'to', 'cc', 'bcc',
-    'reply_to', 'subject', 'snippet', 'text_body', 'html_body', 'headers', 'provider_labels', 'sent_at', 'received_at',
+    'reply_to', 'subject', 'snippet', 'text_body', 'html_body', 'headers', 'provider_labels', 'mailbox_state', 'sent_at', 'received_at',
     'is_read', 'is_draft', 'is_starred', 'has_attachments', 'size_bytes', 'delivery_status', 'delivery_error',
     'send_attempts', 'idempotency_key', 'raw_path',
 ])]
@@ -165,6 +166,7 @@ class Message extends Model
             'reply_to' => 'array',
             'headers' => 'array',
             'provider_labels' => 'array',
+            'mailbox_state' => 'array',
             'sent_at' => 'datetime',
             'received_at' => 'datetime',
             'is_read' => 'boolean',

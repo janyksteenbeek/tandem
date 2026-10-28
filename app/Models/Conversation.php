@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ConversationPriority;
 use App\Enums\ConversationStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\ConversationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -30,7 +30,7 @@ use Illuminate\Support\Str;
  * @property ConversationStatus $status
  * @property int|null $assignee_id
  * @property int|null $assigned_by_id
- * @property Carbon|null $assigned_at
+ * @property CarbonInterface|null $assigned_at
  * @property ConversationPriority $priority
  * @property bool $is_starred
  * @property bool $is_read
@@ -43,15 +43,15 @@ use Illuminate\Support\Str;
  * @property bool $is_archived
  * @property bool $is_trashed
  * @property bool $is_spam
- * @property Carbon|null $snoozed_until
+ * @property CarbonInterface|null $snoozed_until
  * @property int|null $snoozed_by_id
- * @property Carbon|null $closed_at
+ * @property CarbonInterface|null $closed_at
  * @property int|null $closed_by_id
- * @property Carbon|null $first_message_at
- * @property Carbon|null $last_message_at
- * @property Carbon|null $last_inbound_at
- * @property Carbon|null $last_outbound_at
- * @property Carbon|null $last_activity_at
+ * @property CarbonInterface|null $first_message_at
+ * @property CarbonInterface|null $last_message_at
+ * @property CarbonInterface|null $last_inbound_at
+ * @property CarbonInterface|null $last_outbound_at
+ * @property CarbonInterface|null $last_activity_at
  * @property array<int, array{name: string|null, email: string}>|null $participants
  * @property string|null $provider_thread_id
  * @property-read Inbox $inbox

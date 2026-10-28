@@ -35,6 +35,7 @@ return new class extends Migration
             $table->longText('html_body')->nullable();
             $table->json('headers')->nullable();
             $table->json('provider_labels')->nullable();
+            $table->json('mailbox_state')->nullable();
             $table->timestamp('sent_at')->nullable();
             $table->timestamp('received_at')->nullable();
             $table->boolean('is_read')->default(false);

@@ -4,18 +4,18 @@ namespace App\Models;
 
 use App\Enums\SyncRunStatus;
 use App\Enums\SyncRunType;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $mail_account_id
  * @property SyncRunType $type
  * @property SyncRunStatus $status
- * @property Carbon $started_at
- * @property Carbon|null $finished_at
+ * @property CarbonInterface $started_at
+ * @property CarbonInterface|null $finished_at
  * @property array<string, mixed>|null $stats
  * @property string|null $error
  * @property-read MailAccount $mailAccount

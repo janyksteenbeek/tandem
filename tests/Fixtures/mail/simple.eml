@@ -1,0 +1,41 @@
+From: "Ada Lovelace" <ada@example.org>
+To: support@acme.test
+Cc: "Charles Babbage" <charles@example.org>
+Subject: Analytical engine order #42
+Date: Tue, 28 Oct 2026 09:15:00 +0000
+Message-ID: <order-42@example.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: multipart/alternative; boundary="inner"
+
+--inner
+Content-Type: text/plain; charset="utf-8"
+
+Hello team,
+
+I would like to order one Analytical Engine. Please confirm availability.
+
+Kind regards,
+Ada
+--inner
+Content-Type: text/html; charset="utf-8"
+
+<html><head><style>body{color:red}</style><script>alert(1)</script></head>
+<body><p>Hello team,</p><p>I would like to order <b>one</b> Analytical Engine. <a href="https://example.org/engine" onclick="steal()">Please confirm availability</a>.</p><img src="cid:logo@example.org"><p>Kind regards,<br>Ada</p></body></html>
+--inner--
+--outer
+Content-Type: image/png; name="logo.png"
+Content-Disposition: inline; filename="logo.png"
+Content-ID: <logo@example.org>
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
+--outer
+Content-Type: application/pdf; name="quote.pdf"
+Content-Disposition: attachment; filename="quote.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKJcfsj6IKMSAwIG9iago8PC9UeXBlL0NhdGFsb2c+PgplbmRvYmoK
+--outer--

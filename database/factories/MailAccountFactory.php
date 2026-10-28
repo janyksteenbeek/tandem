@@ -18,9 +18,9 @@ class MailAccountFactory extends Factory
     public function definition(): array
     {
         return [
+            'inbox_id' => Inbox::factory(),
             'organization_id' => fn (array $attributes) => Inbox::query()->whereKey($attributes['inbox_id'])->first()?->organization_id,
             'user_id' => fn (array $attributes) => Inbox::query()->whereKey($attributes['inbox_id'])->first()?->user_id,
-            'inbox_id' => Inbox::factory(),
             'provider' => MailProvider::Imap,
             'email_address' => fake()->unique()->safeEmail(),
             'display_name' => fake()->name(),

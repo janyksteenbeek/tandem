@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TeamRole;
+use Carbon\CarbonInterface;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -21,8 +21,8 @@ use Illuminate\Support\Str;
  * @property string $slug
  * @property string $color
  * @property string|null $description
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonInterface|null $created_at
+ * @property CarbonInterface|null $updated_at
  * @property-read Organization $organization
  * @property-read Collection<int, User> $members
  * @property-read Collection<int, Inbox> $inboxes

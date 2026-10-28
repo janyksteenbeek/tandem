@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\InboxRole;
 use App\Enums\InboxType;
 use App\Enums\OrganizationRole;
+use Carbon\CarbonInterface;
 use Database\Factories\InboxFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -32,8 +32,8 @@ use Illuminate\Support\Str;
  * @property string|null $email_address
  * @property array<string, mixed>|null $settings
  * @property int $position
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonInterface|null $created_at
+ * @property CarbonInterface|null $updated_at
  * @property-read Organization|null $organization
  * @property-read User|null $owner
  * @property-read Collection<int, MailAccount> $mailAccounts

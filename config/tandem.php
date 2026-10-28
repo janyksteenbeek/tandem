@@ -1,5 +1,9 @@
 <?php
 
+use App\Services\Mail\Providers\Forwarding\ForwardingProvider;
+use App\Services\Mail\Providers\Gmail\GmailProvider;
+use App\Services\Mail\Providers\Imap\ImapProvider;
+
 return [
 
     /*
@@ -74,6 +78,18 @@ return [
         'disk' => env('TANDEM_ATTACHMENTS_DISK', 'local'),
         'max_upload_bytes' => (int) env('TANDEM_MAX_UPLOAD_BYTES', 25 * 1024 * 1024),
         'blocked_extensions' => ['exe', 'bat', 'cmd', 'com', 'msi', 'scr', 'pif', 'js', 'jar', 'vbs', 'ps1', 'sh'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Provider adapters
+    |--------------------------------------------------------------------------
+    */
+
+    'providers' => [
+        'gmail' => GmailProvider::class,
+        'imap' => ImapProvider::class,
+        'forwarding' => ForwardingProvider::class,
     ],
 
     'snooze' => [
