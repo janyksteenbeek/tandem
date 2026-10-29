@@ -17,6 +17,7 @@ import { useConversationActions } from '@/composables/useConversationActions';
 import { useKeyboard } from '@/composables/useKeyboard';
 import MailLayout from '@/layouts/MailLayout.vue';
 import { api, reportError } from '@/lib/http';
+import { viewLabel as viewLabelFor } from '@/lib/mail';
 import { cn } from '@/lib/utils';
 import type { Conversation, ConversationFilters, ConversationListItem as ListItem, CursorPage, Inbox, SavedView, ShareTarget, Tag, UserSummary, ViewOption } from '@/types';
 
@@ -72,7 +73,7 @@ watch(
 );
 
 const activeUuid = computed(() => props.conversation?.uuid ?? null);
-const viewLabel = computed(() => props.views.find((v) => v.value === props.view)?.label ?? props.view);
+const viewLabel = computed(() => viewLabelFor(props.view, props.views.find((v) => v.value === props.view)?.label));
 const title = computed(() => (props.inbox.uuid === 'all' ? 'All personal mail' : props.inbox.name));
 const subtitle = computed(() => {
     if (props.filters.q) {

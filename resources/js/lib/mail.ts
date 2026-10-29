@@ -67,6 +67,18 @@ export const PRIORITY_META: Record<
     urgent: { label: 'Urgent', short: 'Urgent', className: 'text-destructive' },
 };
 
+export const VIEW_LABELS: Record<string, string> = {
+    snoozed: 'Later',
+    closed: 'Done',
+    pending: 'Waiting',
+    assigned: 'Assigned to me',
+    all: 'Everything',
+};
+
+export function viewLabel(view: string, fallback?: string): string {
+    return VIEW_LABELS[view] ?? fallback ?? view.charAt(0).toUpperCase() + view.slice(1);
+}
+
 export const STATUS_META: Record<string, { label: string; dot: string }> = {
     open: { label: 'Open', dot: 'bg-success' },
     pending: { label: 'Pending', dot: 'bg-warning' },

@@ -24,6 +24,7 @@ import { computed } from 'vue';
 import InboxDot from '@/components/mail/InboxDot.vue';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { VIEW_LABELS as viewLabels } from '@/lib/mail';
 import { cn } from '@/lib/utils';
 import type { MailNav, NavInbox, SavedView, ViewOption } from '@/types';
 
@@ -59,11 +60,6 @@ const viewIcons: Record<string, unknown> = {
     closed: CheckCircle2,
 };
 
-const viewLabels: Record<string, string> = {
-    snoozed: 'Later',
-    closed: 'Done',
-    pending: 'Waiting',
-};
 
 const inboxUrl = (inbox: NavInbox | 'all', view?: string) => {
     const uuid = inbox === 'all' ? 'all' : inbox.uuid;
