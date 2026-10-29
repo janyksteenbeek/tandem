@@ -26,5 +26,5 @@ test('forwarded mail shows up in the list in real time', async ({ page }) => {
     execSync(`php artisan mail:forwarding:simulate ${address} ${file}`, { cwd: process.cwd(), stdio: 'pipe' });
 
     await expect(page.locator('article', { hasText: subject })).toBeVisible({ timeout: 20_000 });
-    await expect(page.locator('article', { hasText: 'Hedy Lamarr' })).toBeVisible();
+    await expect(page.locator('article', { hasText: subject })).toContainText('Hedy Lamarr');
 });
