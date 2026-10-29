@@ -1,10 +1,17 @@
-# Forwarding addresses via Cloudflare Email Routing
+# Google Group and Forward channels via Cloudflare Email Routing
 
-Tandem can receive mail for a shared inbox without any mailbox credentials. Each inbox can
-generate one or more **forwarding addresses** on a domain Tandem controls (for example
-`x7k2m9qp4a@forward.tandem.com`). Customers point their Google Group, Microsoft 365 distribution
-list or an existing mailbox's forwarding rule at that address, and every message shows up in the
-inbox within seconds.
+Tandem can receive mail for a shared inbox without any mailbox credentials. Two channels work this
+way and share one mechanism:
+
+| Channel | `mail_accounts.provider` | Meant for |
+| --- | --- | --- |
+| **Google Group** | `google_group` | Teams that already answer from a Google Workspace group: the generated address is added to the group as a member. |
+| **Forward** | `forwarding` | Any other address, alias or distribution list: a forwarding rule sends a copy to the generated address. |
+
+Both channels generate a unique inbound address on a domain Tandem controls (for example
+`x7k2m9qp4a@forward.tandem.com`), are backed by the same `ForwardingProvider` adapter, and are
+ingested by the same webhook and job. They differ only in the label, icon and set-up steps shown to
+the user. Every message that reaches the address shows up in the inbox within seconds.
 
 Replies from such inboxes are sent through the organization's SMTP settings or the application
 mailer (`FallbackMailer`), never through Cloudflare.
@@ -27,7 +34,7 @@ mailer (`FallbackMailer`), never through Cloudflare.
  POST /webhooks/cloudflare/inbound      VerifyCloudflareWorkerSignature -> CloudflareInboundController
         |   1. validate + size check
         |   2. WebhookReceipt::claim('cloudflare', id)   (exactly-once)
-        |   3. resolve MailAccount (provider=forwarding, email=normalized recipient)
+        |   3. resolve MailAccount (provider in [forwarding, google_group], email=normalized recipient)
         |   4. write storage/app/inbound/{uuid}.eml
         |   5. dispatch IngestForwardedEmail  (queue: mail-inbound)
         v
@@ -46,7 +53,7 @@ Components:
 | Webhook | `app/Http/Middleware/VerifyCloudflareWorkerSignature.php`, `app/Http/Controllers/Webhooks/CloudflareInboundController.php` |
 | Ingestion | `app/Jobs/Mail/IngestForwardedEmail.php` |
 | Address generation | `app/Services/Mail/Providers/Forwarding/ForwardingAddressGenerator.php` |
-| Provider adapter | `app/Services/Mail/Providers/Forwarding/ForwardingProvider.php` (push-only) |
+| Provider adapter | `app/Services/Mail/Providers/Forwarding/ForwardingProvider.php` (push-only, registered for both `forwarding` and `google_group` in `config/tandem.php`) |
 | Management | `app/Http/Controllers/Mail/ForwardingAddressController.php`, routes `mail.forwarding.*` |
 | Dev tooling | `php artisan mail:forwarding:simulate` |
 
@@ -105,28 +112,31 @@ Variables and secrets:
 
 Use `npx wrangler tail` to follow live logs while testing.
 
-## Mapping addresses to inboxes in the UI
+## Adding a channel in the UI
 
-1. Open a shared inbox -> **Settings** -> **Forwarding addresses** (requires the inbox *Admin*
+1. Open **Settings** -> **Mail accounts** and find the shared inbox (requires the inbox *Admin*
    role; organization owners and admins always have it).
-2. Click **Generate address**, optionally give it a label ("Google Group", "Zendesk import").
-   Tandem creates a `MailAccount` with `provider = forwarding`, a unique 10-character address and
-   status *Connected*.
-3. Copy the address and configure the forwarding source (below).
-4. Click **Send test email**: Tandem emails a short "Tandem forwarding test" message to the address
+2. Click **Add channel** and pick **Google Group** or **Forward** (the same dialog also offers
+   Gmail and IMAP). Optionally give the channel a label.
+3. Click **Generate address**. Tandem creates a `MailAccount` with `provider = google_group` or
+   `forwarding`, a unique 10-character address and status *Connected*, and shows the address with
+   channel-specific set-up steps.
+4. Copy the address and configure the source (below).
+5. Click **Send test email**: Tandem emails a short "Tandem forwarding test" message to the address
    through the normal outbound mailer. When it appears in the inbox the whole chain works.
    `sync_state.last_test_sent_at` records when the test was sent.
-5. **Remove** soft-deletes the account. Mail sent to the address afterwards is answered with
+6. **Remove** soft-deletes the account. Mail sent to the address afterwards is answered with
    `unknown_recipient` and dropped.
 
-Routes: `POST mail/inboxes/{inbox}/forwarding-addresses` (`mail.forwarding.store`),
+Routes: `POST mail/inboxes/{inbox}/forwarding-addresses` (`mail.forwarding.store`, body
+`channel=google_group|forwarding`, default `forwarding`),
 `DELETE mail/forwarding-addresses/{account}` (`mail.forwarding.destroy`),
 `POST mail/forwarding-addresses/{account}/test` (`mail.forwarding.test`).
 
 Addresses accept `+tag` sub-addressing: `x7k2m9qp4a+billing@forward.tandem.com` is delivered to the
 same inbox as `x7k2m9qp4a@forward.tandem.com`. Matching is case-insensitive.
 
-### Google Groups (Google Workspace)
+### Google Group channel (Google Workspace)
 
 1. Google Admin console -> **Directory** -> **Groups** -> open the group (e.g. `support@customer.com`).
 2. **Members** -> **Add members** -> enter the Tandem forwarding address -> add it as a *Member*.
@@ -141,7 +151,7 @@ Google rewrites the envelope sender and adds `List-Id`/`Precedence: list` header
 those messages: they are only skipped when they are auto-submitted **and** addressed solely to the
 forwarding address (see loop prevention).
 
-### Microsoft 365 distribution list
+### Forward channel: Microsoft 365 distribution list
 
 1. Exchange admin center -> **Recipients** -> **Contacts** -> **Add a mail contact** with the Tandem
    forwarding address.
@@ -151,7 +161,7 @@ forwarding address (see loop prevention).
 4. Alternatively, for a single mailbox: **Recipients -> Mailboxes -> mailbox -> Manage mail flow
    settings -> Email forwarding** -> forward to the mail contact and keep a copy if desired.
 
-### Other mailboxes
+### Forward channel: other mailboxes
 
 Any forwarding rule (Gmail *Forward a copy of incoming mail to*, Zoho, Fastmail, a cPanel
 forwarder, etc.) works. Gmail requires confirming the forwarding address: the confirmation email

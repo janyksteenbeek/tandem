@@ -191,7 +191,8 @@ class DemoSeeder extends Seeder
 
         $inbox->users()->attach($creator->id, ['role' => InboxRole::Admin->value]);
 
-        $this->forwarding->generate($inbox, $creator, "{$name} forwarding");
+        $channel = $name === 'Support' ? MailProvider::GoogleGroup : MailProvider::Forwarding;
+        $this->forwarding->generate($inbox, $creator, "{$name} {$channel->label()}", $channel);
 
         return $inbox;
     }

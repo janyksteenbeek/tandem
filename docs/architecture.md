@@ -7,7 +7,7 @@ Organization ─┬─ Membership (owner | admin | member) ─ User
               ├─ Team ─ TeamMember (lead | member)
               ├─ Inbox (type = shared) ─┬─ inbox_teams (admin | agent | viewer)
               │                         ├─ inbox_users (admin | agent | viewer)
-              │                         └─ MailAccount (gmail | imap | forwarding) ─ SenderIdentity, MailFolder, SyncRun
+              │                         └─ MailAccount (gmail | imap | forwarding | google_group) ─ SenderIdentity, MailFolder, SyncRun
               ├─ Tag, SavedView, MessageTemplate, AutomationRule ─ AutomationRun
               └─ settings: Google OAuth client, Pub/Sub topic, business hours, outbound SMTP
 

@@ -13,9 +13,9 @@ use App\Services\Mail\Data\SyncResult;
 use App\Services\Mail\Providers\AbstractMailProvider;
 
 /**
- * Push-only adapter: mail arrives through the Cloudflare Email Worker webhook
- * (CloudflareInboundController -> IngestForwardedEmail). There is nothing to poll and
- * nothing to send; outbound replies for forwarding inboxes use the FallbackMailer.
+ * Push-only adapter shared by the Forward and Google Group channels: mail arrives through
+ * the Cloudflare Email Worker webhook (CloudflareInboundController -> IngestForwardedEmail).
+ * There is nothing to poll and nothing to send; outbound replies use the FallbackMailer.
  */
 class ForwardingProvider extends AbstractMailProvider
 {
@@ -30,8 +30,8 @@ class ForwardingProvider extends AbstractMailProvider
 
         return ConnectionTestResult::success(
             $lastReceivedAt !== null
-                ? sprintf('Forwarding address %s is active; last message received %s.', $account->email_address, $lastReceivedAt->diffForHumans())
-                : sprintf('Forwarding address %s is ready but has not received any mail yet.', $account->email_address),
+                ? sprintf('%s address %s is active; last message received %s.', $account->provider->label(), $account->email_address, $lastReceivedAt->diffForHumans())
+                : sprintf('%s address %s is ready but has not received any mail yet.', $account->provider->label(), $account->email_address),
             [
                 'address' => $account->email_address,
                 'has_received_mail' => $lastReceivedAt !== null,

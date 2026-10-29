@@ -14,6 +14,8 @@ return [
     | Generated inbound addresses look like {local}@{domain}. The Cloudflare
     | Email Worker posts parsed messages to /webhooks/cloudflare/inbound and
     | authenticates with the shared secret below (HMAC-SHA256 signature).
+    | Both the "Forward" and the "Google Group" channel use these addresses;
+    | they only differ in the set-up instructions shown to the user.
     |
     */
 
@@ -91,6 +93,7 @@ return [
         'gmail' => GmailProvider::class,
         'imap' => ImapProvider::class,
         'forwarding' => ForwardingProvider::class,
+        'google_group' => ForwardingProvider::class,
     ],
 
     'snooze' => [

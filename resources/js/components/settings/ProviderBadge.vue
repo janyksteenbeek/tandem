@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Forward, Mail, Server } from '@lucide/vue';
 import { computed } from 'vue';
+import { PROVIDER_META } from '@/lib/channels';
 import { cn } from '@/lib/utils';
 import type { MailProvider } from '@/types';
 
@@ -18,16 +18,9 @@ const props = withDefaults(
     },
 );
 
-const META: Record<
-    MailProvider,
-    { label: string; icon: unknown; tone: string }
-> = {
-    gmail: { label: 'Gmail', icon: Mail, tone: 'chip-rose' },
-    imap: { label: 'IMAP / SMTP', icon: Server, tone: 'chip-sky' },
-    forwarding: { label: 'Forwarding', icon: Forward, tone: 'chip-teal' },
-};
-
-const meta = computed(() => META[props.provider] ?? META.imap);
+const meta = computed(
+    () => PROVIDER_META[props.provider] ?? PROVIDER_META.imap,
+);
 
 const iconBox = {
     sm: 'size-7 rounded-lg [&>svg]:size-3.5',

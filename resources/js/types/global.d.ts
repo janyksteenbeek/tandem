@@ -2,6 +2,8 @@ import type { Directive } from 'vue';
 import type { Auth } from '@/types/auth';
 import type { MailNav } from '@/types/mail';
 import type { Organization } from '@/types/organizations';
+import type { CreatedChannel } from '@/types/settings';
+import type { FlashToast } from '@/types/ui';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -28,6 +30,10 @@ declare module '@inertiajs/core' {
             unreadNotifications: number;
             canManageOrganization: boolean;
             [key: string]: unknown;
+        };
+        flashDataType: {
+            toast?: FlashToast;
+            channel?: CreatedChannel;
         };
     }
 }

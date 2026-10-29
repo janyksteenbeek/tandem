@@ -3,7 +3,6 @@
 namespace App\Jobs\Mail;
 
 use App\Enums\MailAccountStatus;
-use App\Enums\MailProvider;
 use App\Http\Controllers\Webhooks\CloudflareInboundController;
 use App\Models\MailAccount;
 use App\Models\WebhookReceipt;
@@ -62,7 +61,7 @@ class IngestForwardedEmail implements ShouldQueue
 
         $account = MailAccount::query()->find($this->mailAccountId);
 
-        if ($account === null || $account->provider !== MailProvider::Forwarding) {
+        if ($account === null || ! $account->usesForwardingAddress()) {
             $this->skip($receipt, 'account_missing');
 
             return;
@@ -176,7 +175,7 @@ class IngestForwardedEmail implements ShouldQueue
      */
     protected function organizationForwardingAddresses(MailAccount $account, ForwardingAddressGenerator $addresses): array
     {
-        $query = MailAccount::withTrashed()->where('provider', MailProvider::Forwarding);
+        $query = MailAccount::withTrashed()->forwardingChannels();
 
         if ($account->organization_id !== null) {
             $query->where('organization_id', $account->organization_id);

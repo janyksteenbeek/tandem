@@ -57,6 +57,30 @@ describe('store', function () {
             ->and($account->email_address)->toEndWith('@forward.tandem.test');
     });
 
+    it('creates a Google Group channel on the same forwarding domain when asked', function () {
+        $this->actingAs($this->admin)
+            ->from('/mail/settings')
+            ->post(route('mail.forwarding.store', $this->inbox), ['channel' => 'google_group'])
+            ->assertRedirect('/mail/settings')
+            ->assertSessionHasNoErrors();
+
+        $account = MailAccount::firstOrFail();
+
+        expect($account->provider)->toBe(MailProvider::GoogleGroup)
+            ->and($account->usesForwardingAddress())->toBeTrue()
+            ->and($account->email_address)->toEndWith('@forward.tandem.test');
+    });
+
+    it('rejects channels that are not forwarding based', function () {
+        $this->actingAs($this->admin)
+            ->from('/mail/settings')
+            ->post(route('mail.forwarding.store', $this->inbox), ['channel' => 'gmail'])
+            ->assertRedirect('/mail/settings')
+            ->assertSessionHasErrors('channel');
+
+        expect(MailAccount::count())->toBe(0);
+    });
+
     it('rejects labels that are too long', function () {
         $this->actingAs($this->admin)
             ->from('/mail/settings')
@@ -79,6 +103,17 @@ describe('destroy', function () {
 
     it('soft-deletes the address for an inbox admin', function () {
         $account = MailAccount::factory()->forwarding()->create(['inbox_id' => $this->inbox->id]);
+
+        $this->actingAs($this->admin)
+            ->from('/mail/settings')
+            ->delete(route('mail.forwarding.destroy', $account))
+            ->assertRedirect('/mail/settings');
+
+        expect(MailAccount::withTrashed()->find($account->id)->trashed())->toBeTrue();
+    });
+
+    it('soft-deletes a Google Group channel the same way', function () {
+        $account = MailAccount::factory()->googleGroup()->create(['inbox_id' => $this->inbox->id]);
 
         $this->actingAs($this->admin)
             ->from('/mail/settings')

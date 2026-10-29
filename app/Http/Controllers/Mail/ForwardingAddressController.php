@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Mail;
 
 use App\Enums\InboxRole;
-use App\Enums\MailProvider;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mail\StoreForwardingAddressRequest;
 use App\Models\Inbox;
@@ -20,7 +19,8 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 /**
- * Lets inbox admins create, remove and test the forwarding addresses of a shared inbox.
+ * Lets inbox admins create, remove and test the forwarding-based channels (Forward and
+ * Google Group) of a shared inbox. Both channels share one generated inbound address.
  */
 class ForwardingAddressController extends Controller
 {
@@ -31,9 +31,18 @@ class ForwardingAddressController extends Controller
 
         $this->authorizeInboxAdmin($inbox, $user);
 
-        $account = $generator->generate($inbox, $user, $request->validated('label'));
+        $channel = $request->channel();
+        $account = $generator->generate($inbox, $user, $request->validated('label'), $channel);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Forwarding address :address created.', ['address' => $account->email_address])]);
+        Inertia::flash([
+            'toast' => ['type' => 'success', 'message' => __(':channel channel created: :address', ['channel' => $channel->label(), 'address' => $account->email_address])],
+            'channel' => [
+                'uuid' => $account->uuid,
+                'provider' => $channel->value,
+                'email' => $account->email_address,
+                'inbox' => $inbox->uuid,
+            ],
+        ]);
 
         return back();
     }
@@ -47,7 +56,7 @@ class ForwardingAddressController extends Controller
 
         $account->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Forwarding address removed. Mail sent to it will no longer arrive in this inbox.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __(':channel channel removed. Mail sent to its address will no longer arrive in this inbox.', ['channel' => $account->provider->label()])]);
 
         return back();
     }
@@ -90,12 +99,12 @@ class ForwardingAddressController extends Controller
 
     protected function authorizeInboxAdmin(Inbox $inbox, User $user): void
     {
-        abort_unless($inbox->roleFor($user) === InboxRole::Admin, 403, __('Only inbox admins can manage forwarding addresses.'));
+        abort_unless($inbox->roleFor($user) === InboxRole::Admin, 403, __('Only inbox admins can manage channels.'));
     }
 
     protected function authorizeForwardingAccount(MailAccount $account, User $user): void
     {
-        abort_unless($account->provider === MailProvider::Forwarding, 404);
+        abort_unless($account->provider->usesForwardingAddress(), 404);
 
         $this->authorizeInboxAdmin($account->inbox, $user);
     }

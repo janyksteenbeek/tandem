@@ -19,6 +19,13 @@ it('is resolved by the provider manager for forwarding accounts', function () {
     expect(app(MailProviderManager::class)->for($this->account))->toBeInstanceOf(ForwardingProvider::class);
 });
 
+it('is resolved by the provider manager for Google Group channels as well', function () {
+    $group = MailAccount::factory()->googleGroup()->create();
+
+    expect(app(MailProviderManager::class)->for($group))->toBeInstanceOf(ForwardingProvider::class)
+        ->and($this->provider->testConnection($group)->message)->toStartWith('Google Group address');
+});
+
 it('reports a successful connection and whether mail was ever received', function () {
     $before = $this->provider->testConnection($this->account);
 

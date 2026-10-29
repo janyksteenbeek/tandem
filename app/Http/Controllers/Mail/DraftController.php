@@ -174,7 +174,7 @@ class DraftController extends Controller
             return $conversation->mailAccount;
         }
 
-        return $inbox->mailAccounts()->orderByRaw("FIELD(provider, 'gmail', 'imap', 'forwarding')")->first();
+        return $inbox->mailAccounts()->orderBySendingPreference()->first();
     }
 
     /**

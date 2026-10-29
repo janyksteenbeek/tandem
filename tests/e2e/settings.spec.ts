@@ -37,12 +37,49 @@ test('mail accounts page lists personal accounts and managed inboxes', async ({
     });
     await page.keyboard.press('Escape');
 
+    await page.getByRole('button', { name: 'Add channel' }).first().click();
+    const channelDialog = page.getByRole('dialog');
+    await expect(channelDialog).toContainText('Google Group');
+    await expect(channelDialog).toContainText('Forward');
+    await channelDialog.getByTestId('channel-google_group').click();
+    await expect(channelDialog).toContainText('Generate address');
+    await page.waitForTimeout(400);
+    await page.screenshot({
+        path: 'tests/e2e/screenshots/settings-add-google-group.png',
+    });
+    await page.keyboard.press('Escape');
+
     await page.getByRole('button', { name: 'Health' }).first().click();
     await expect(page.getByText('Recent sync runs')).toBeVisible();
     await page.waitForTimeout(700);
     await page.screenshot({
         path: 'tests/e2e/screenshots/settings-health-sheet.png',
     });
+});
+
+test('generating a Forward channel shows the address and set-up steps', async ({
+    page,
+}) => {
+    await page.goto('/settings/mail-accounts');
+
+    const inbox = page.locator('article', { hasText: 'Billing' }).first();
+    await inbox.getByRole('button', { name: 'Forward', exact: true }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Add a forward');
+    await dialog.getByLabel('Label').fill('Old helpdesk alias');
+    await dialog.getByRole('button', { name: 'Generate address' }).click();
+
+    await expect(dialog).toContainText('Your address is ready');
+    await expect(dialog).toContainText('@forward.tandem.test');
+    await expect(dialog).toContainText('Copy the address above.');
+    await page.waitForTimeout(400);
+    await page.screenshot({
+        path: 'tests/e2e/screenshots/settings-forward-ready.png',
+    });
+    await dialog.getByRole('button', { name: 'Done' }).click();
+
+    await expect(inbox).toContainText('Old helpdesk alias');
 });
 
 test('inboxes page shows cards and the access dialog', async ({ page }) => {

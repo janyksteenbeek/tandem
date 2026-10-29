@@ -36,6 +36,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { usesForwardingAddress } from '@/lib/channels';
 import { api, reportError } from '@/lib/http';
 import { fullTime, relative } from '@/lib/time';
 import {
@@ -291,7 +292,7 @@ function runConfirm(): void {
                 <a :href="reconnectUrl"><KeyRound /> Reconnect Google</a>
             </Button>
             <Button
-                v-if="account.provider !== 'forwarding'"
+                v-if="!usesForwardingAddress(account.provider)"
                 variant="outline"
                 size="sm"
                 :disabled="syncing || !canSync"

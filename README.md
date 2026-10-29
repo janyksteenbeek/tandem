@@ -5,7 +5,7 @@ Tandem is a calm, fast email client for people and the teams they work in. Conne
 - **Personal email, first class** — Inbox, Starred, Later (snooze), Drafts, Sent, Archive, Spam, Trash; threading, rich-text compose with inline images and attachments, multiple accounts and sender identities, search across every account, keyboard-driven navigation, bulk actions.
 - **Shared team inboxes** — assign, reassign, Open / Waiting / Later / Done, tags, priorities, followers, internal comments with @mentions, shared drafts, activity timeline, presence and collision detection, views for Unassigned / Assigned to me / All.
 - **Personal → team collaboration** — explicitly *share* a personal conversation with a team inbox (it stays in your mailbox) or *transfer* it (the team inbox owns it). Neither touches your provider; the distinction is shown in the UI.
-- **Providers** — Gmail API (OAuth per organization, history sync, Pub/Sub push with watch renewal and reconciliation), IMAP/SMTP (UID/UIDVALIDITY tracking, IDLE and polling, SMTP sending), Cloudflare Email Routing (generated forwarding addresses handled by a real Email Worker).
+- **Providers** — Gmail API (OAuth per organization, history sync, Pub/Sub push with watch renewal and reconciliation), IMAP/SMTP (UID/UIDVALIDITY tracking, IDLE and polling, SMTP sending), Cloudflare Email Routing (Google Group and Forward channels on generated addresses, handled by a real Email Worker).
 - **Automations** — a rule engine with triggers, conditions and actions, business hours, reusable templates with variables, auto-responders with cooldowns and loop prevention, and a full audit history.
 
 ## Stack
@@ -44,7 +44,7 @@ npx playwright test                   # e2e against a running, seeded instance
 
 - [Architecture](docs/architecture.md) — domain model, ingestion pipeline, sharing semantics, realtime, security.
 - [Deployment](docs/deployment.md) — processes, queues, scheduler, environment variables, hardening.
-- Providers: [Gmail](docs/providers/gmail.md) · [IMAP / SMTP](docs/providers/imap.md) · [Cloudflare forwarding](docs/providers/cloudflare.md)
+- Providers: [Gmail](docs/providers/gmail.md) · [IMAP / SMTP](docs/providers/imap.md) · [Google Group & Forward via Cloudflare](docs/providers/cloudflare.md)
 - [Automations](docs/automations.md) — rule JSON, variables, business hours, loop prevention.
 - [Cloudflare Email Worker](cloudflare/email-worker/README.md)
 

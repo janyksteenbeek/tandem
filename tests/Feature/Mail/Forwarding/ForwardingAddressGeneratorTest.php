@@ -32,6 +32,23 @@ it('creates a connected forwarding account owned by the inbox organization', fun
         ->and($account->email_address)->toMatch('/^[abcdefghijkmnpqrstuvwxyz23456789]{10}@/');
 });
 
+it('creates a Google Group channel that shares the forwarding domain and capabilities', function () {
+    $inbox = Inbox::factory()->create(['name' => 'Support']);
+
+    $account = $this->generator->generate($inbox, User::factory()->create(), null, MailProvider::GoogleGroup);
+
+    expect($account->provider)->toBe(MailProvider::GoogleGroup)
+        ->and($account->usesForwardingAddress())->toBeTrue()
+        ->and($account->provider->capabilities())->toBe(MailProvider::Forwarding->capabilities())
+        ->and($account->email_address)->toEndWith('@forward.tandem.test');
+});
+
+it('refuses to generate an address for a mailbox-backed provider', function () {
+    $inbox = Inbox::factory()->create();
+
+    $this->generator->generate($inbox, User::factory()->create(), null, MailProvider::Gmail);
+})->throws(InvalidArgumentException::class);
+
 it('falls back to the inbox name when no label is given', function () {
     $inbox = Inbox::factory()->create(['name' => 'Billing']);
 

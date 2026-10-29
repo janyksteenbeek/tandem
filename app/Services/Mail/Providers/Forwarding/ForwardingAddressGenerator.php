@@ -8,6 +8,7 @@ use App\Models\Inbox;
 use App\Models\MailAccount;
 use App\Models\User;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 /**
  * Creates and recognises the unique inbound addresses on the forwarding domain
@@ -24,15 +25,23 @@ class ForwardingAddressGenerator
 
     public const TOKEN_LENGTH = 48;
 
-    public function generate(Inbox $inbox, User $creator, ?string $label = null): MailAccount
+    /**
+     * Create a new inbound address for the inbox. The channel decides how the address is
+     * presented (a plain forwarding rule or a Google Group member); delivery is identical.
+     */
+    public function generate(Inbox $inbox, User $creator, ?string $label = null, MailProvider $channel = MailProvider::Forwarding): MailAccount
     {
+        if (! $channel->usesForwardingAddress()) {
+            throw new InvalidArgumentException(sprintf('[%s] is not a forwarding-based channel.', $channel->value));
+        }
+
         $label = $label !== null && trim($label) !== '' ? trim($label) : null;
 
         return MailAccount::create([
             'organization_id' => $inbox->organization_id,
             'user_id' => null,
             'inbox_id' => $inbox->id,
-            'provider' => MailProvider::Forwarding,
+            'provider' => $channel,
             'email_address' => $this->uniqueAddress(),
             'display_name' => $label ?? $inbox->name,
             'credentials' => null,

@@ -4,14 +4,15 @@ import { Inbox, Mail, Plus, Server } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import InboxDot from '@/components/mail/InboxDot.vue';
 import ConnectAccountDialog from '@/components/settings/ConnectAccountDialog.vue';
-import ForwardingAddresses from '@/components/settings/ForwardingAddresses.vue';
+import ForwardingChannels from '@/components/settings/ForwardingChannels.vue';
 import MailAccountCard from '@/components/settings/MailAccountCard.vue';
 import SettingsEmpty from '@/components/settings/SettingsEmpty.vue';
 import SettingsSection from '@/components/settings/SettingsSection.vue';
 import { Button } from '@/components/ui/button';
+import { usesForwardingAddress } from '@/lib/channels';
 import { index as mailAccountsIndex } from '@/routes/mail/accounts';
 import { index as inboxesIndex } from '@/routes/settings/inboxes';
-import type { MailAccount, SharedInboxChannels } from '@/types';
+import type { MailAccount, MailProvider, SharedInboxChannels } from '@/types';
 
 const props = defineProps<{
     personalAccounts: MailAccount[];
@@ -31,11 +32,11 @@ const organization = computed(() => page.props.currentOrganization);
 
 const connectOpen = ref(false);
 const connectTarget = ref<{ uuid: string; name: string } | null>(null);
-const connectProvider = ref<'gmail' | 'imap' | null>(null);
+const connectProvider = ref<MailProvider | null>(null);
 
 function connect(
     inbox: { uuid: string; name: string } | null = null,
-    provider: 'gmail' | 'imap' | null = null,
+    provider: MailProvider | null = null,
 ): void {
     connectTarget.value = inbox;
     connectProvider.value = provider;
@@ -49,10 +50,14 @@ const unhealthy = computed(
         ).length,
 );
 
-const channelsOf = (inbox: SharedInboxChannels): MailAccount[] =>
-    inbox.accounts.filter((account) => account.provider !== 'forwarding');
+/** Mailboxes Tandem connects to directly (Gmail, IMAP). */
+const mailboxesOf = (inbox: SharedInboxChannels): MailAccount[] =>
+    inbox.accounts.filter(
+        (account) => !usesForwardingAddress(account.provider),
+    );
+/** Google Group and Forward channels, which receive on a generated address. */
 const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
-    inbox.accounts.filter((account) => account.provider === 'forwarding');
+    inbox.accounts.filter((account) => usesForwardingAddress(account.provider));
 </script>
 
 <template>
@@ -107,7 +112,7 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
         <SettingsSection
             title="Shared inboxes you manage"
             :count="sharedInboxes.length"
-            description="Channels feed mail into a team inbox. Connect a mailbox directly, or forward an existing address to a generated one."
+            description="Channels feed mail into a team inbox. Connect Gmail or IMAP directly, add a Google Group, or forward an existing address."
         >
             <SettingsEmpty
                 v-if="sharedInboxes.length === 0"
@@ -115,7 +120,7 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
                 title="No shared inboxes to manage."
                 :body="
                     organization
-                        ? 'Inboxes where you are an admin show up here with their channels and forwarding addresses.'
+                        ? 'Inboxes where you are an admin show up here with their channels.'
                         : 'Join or create an organization to set up shared inboxes for your team.'
                 "
             >
@@ -149,25 +154,20 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
                                 }}
                             </p>
                         </div>
-                        <div class="flex flex-wrap gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                @click="connect(inbox, 'gmail')"
-                                ><Mail /> Connect Gmail</Button
-                            >
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                @click="connect(inbox, 'imap')"
-                                ><Server /> Connect IMAP</Button
-                            >
-                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            @click="connect(inbox)"
+                            ><Plus /> Add channel</Button
+                        >
                     </header>
 
-                    <div v-if="channelsOf(inbox).length > 0" class="grid gap-3">
+                    <div
+                        v-if="mailboxesOf(inbox).length > 0"
+                        class="grid gap-3"
+                    >
                         <MailAccountCard
-                            v-for="account in channelsOf(inbox)"
+                            v-for="account in mailboxesOf(inbox)"
                             :key="account.uuid"
                             :account="account"
                             context="shared"
@@ -177,15 +177,16 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
                         v-else
                         class="rounded-xl border border-dashed bg-card px-4 py-3 text-sm text-muted-foreground"
                     >
-                        No mailbox connected directly. Connect one above, or use
-                        a forwarding address below if you would rather not share
-                        the password.
+                        No mailbox connected directly. Add Gmail or IMAP above,
+                        or use a Google Group or Forward channel below if you
+                        would rather not share a password.
                     </p>
 
-                    <ForwardingAddresses
+                    <ForwardingChannels
                         :inbox="inbox"
                         :accounts="forwardingOf(inbox)"
                         :forwarding-domain="forwardingDomain"
+                        @add="(channel) => connect(inbox, channel)"
                     />
                 </article>
             </div>
@@ -196,6 +197,7 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
         v-model:open="connectOpen"
         :inbox="connectTarget"
         :google-configured="googleConfigured"
+        :forwarding-domain="forwardingDomain"
         :initial-provider="connectProvider"
     />
 </template>

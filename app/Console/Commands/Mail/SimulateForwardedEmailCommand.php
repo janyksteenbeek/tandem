@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands\Mail;
 
-use App\Enums\MailProvider;
 use App\Http\Controllers\Webhooks\CloudflareInboundController;
 use App\Jobs\Mail\IngestForwardedEmail;
 use App\Models\MailAccount;
@@ -74,7 +73,7 @@ class SimulateForwardedEmailCommand extends Command
     protected function ingestDirectly(array $payload, string $raw, string $recipient): int
     {
         $account = MailAccount::query()
-            ->where('provider', MailProvider::Forwarding)
+            ->forwardingChannels()
             ->where('email_address', $recipient)
             ->first();
 

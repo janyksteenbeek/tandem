@@ -4,7 +4,6 @@ namespace App\Jobs\Mail;
 
 use App\Enums\ConversationEventType;
 use App\Enums\DeliveryStatus;
-use App\Enums\MailProvider;
 use App\Enums\ProviderCapability;
 use App\Events\Mail\MessageSent;
 use App\Models\Message;
@@ -71,7 +70,7 @@ class SendOutgoingMessage implements ShouldBeUnique, ShouldQueue
             $outgoing = $this->buildOutgoing($message);
             $account = $message->mailAccount;
 
-            $result = $account && $account->supports(ProviderCapability::Send) && $account->provider !== MailProvider::Forwarding
+            $result = $account && $account->supports(ProviderCapability::Send) && ! $account->usesForwardingAddress()
                 ? $providers->for($account)->send($account, $outgoing)
                 : $fallback->send($account, $outgoing);
 

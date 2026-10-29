@@ -62,6 +62,11 @@ class MailAccountFactory extends Factory
         ]);
     }
 
+    public function googleGroup(): static
+    {
+        return $this->forwarding()->state(fn () => ['provider' => MailProvider::GoogleGroup]);
+    }
+
     public function personal(?User $user = null): static
     {
         return $this->state(fn () => [

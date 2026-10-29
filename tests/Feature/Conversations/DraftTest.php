@@ -18,6 +18,7 @@ use App\Services\Mail\MailProviderManager;
 use App\Services\Mail\Outbound\FallbackMailer;
 use App\Services\Mail\Providers\Imap\ImapProvider;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
@@ -120,6 +121,36 @@ test('drafts are private unless shared inside a team inbox', function () {
     $teamDraft = Draft::factory()->create(['inbox_id' => $shared->id, 'user_id' => $this->user->id, 'is_shared' => true]);
 
     $this->actingAs($other)->patchJson(route('drafts.update', $teamDraft), ['subject' => 'collab'])->assertOk()->assertJsonPath('draft.subject', 'collab');
+});
+
+test('replies from a Google Group inbox go out through the fallback mailer from the inbox address', function () {
+    config()->set('tandem.outbound.mailer', 'array');
+
+    $shared = Inbox::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Support', 'email_address' => 'support@northwind.test']);
+    $shared->users()->attach($this->user->id, ['role' => InboxRole::Agent->value]);
+    $group = MailAccount::factory()->googleGroup()->create(['inbox_id' => $shared->id, 'organization_id' => $this->organization->id]);
+    $conversation = Conversation::factory()->create(['inbox_id' => $shared->id, 'organization_id' => $this->organization->id, 'mail_account_id' => $group->id, 'subject' => 'Help']);
+
+    $draft = Draft::factory()->create([
+        'inbox_id' => $shared->id,
+        'conversation_id' => $conversation->id,
+        'mail_account_id' => $group->id,
+        'user_id' => $this->user->id,
+        'kind' => 'reply',
+        'to' => [['name' => 'Ada', 'email' => 'ada@example.org']],
+        'html_body' => '<p>Hi</p>',
+    ]);
+
+    $this->actingAs($this->user)->postJson(route('drafts.send', $draft))->assertOk();
+    $message = $conversation->messages()->where('direction', 'outbound')->firstOrFail();
+
+    (new SendOutgoingMessage($message))->handle(app(MailProviderManager::class), app(FallbackMailer::class));
+
+    $sent = Mail::mailer('array')->getSymfonyTransport()->messages();
+
+    expect($message->fresh()->delivery_status)->toBe(DeliveryStatus::Sent)
+        ->and($sent)->toHaveCount(1)
+        ->and($sent->first()->getOriginalMessage()->getFrom()[0]->getAddress())->toBe('support@northwind.test');
 });
 
 test('the send job marks delivery as sent and records failures', function () {

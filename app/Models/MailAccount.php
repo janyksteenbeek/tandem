@@ -8,6 +8,7 @@ use App\Enums\ProviderCapability;
 use Carbon\CarbonInterface;
 use Database\Factories\MailAccountFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -194,9 +195,42 @@ class MailAccount extends Model
         return (bool) $this->setting('sync_paused', false);
     }
 
+    /**
+     * Whether mail reaches this account through a generated address on the forwarding domain
+     * (the Forward and Google Group channels) rather than a connected mailbox.
+     */
+    public function usesForwardingAddress(): bool
+    {
+        return $this->provider->usesForwardingAddress();
+    }
+
     public function forwardingAddress(): ?string
     {
-        return $this->provider === MailProvider::Forwarding ? $this->email_address : null;
+        return $this->usesForwardingAddress() ? $this->email_address : null;
+    }
+
+    /**
+     * Only accounts that receive mail on a generated forwarding address.
+     *
+     * @param  Builder<MailAccount>  $query
+     * @return Builder<MailAccount>
+     */
+    public function scopeForwardingChannels(Builder $query): Builder
+    {
+        return $query->whereIn('provider', MailProvider::forwardingChannelValues());
+    }
+
+    /**
+     * Real mailboxes first, forwarding-based channels last; used to pick the account that sends replies.
+     *
+     * @param  Builder<MailAccount>  $query
+     * @return Builder<MailAccount>
+     */
+    public function scopeOrderBySendingPreference(Builder $query): Builder
+    {
+        $placeholders = implode(', ', array_fill(0, count(MailProvider::sendingPreference()), '?'));
+
+        return $query->orderByRaw("FIELD(provider, {$placeholders})", MailProvider::sendingPreference());
     }
 
     protected function casts(): array

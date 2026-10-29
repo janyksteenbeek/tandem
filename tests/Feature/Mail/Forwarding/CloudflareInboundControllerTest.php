@@ -147,6 +147,16 @@ it('resolves plus-addressed and mixed-case recipients to the same account', func
     Queue::assertPushed(IngestForwardedEmail::class, fn (IngestForwardedEmail $job) => $job->mailAccountId === $this->account->id);
 });
 
+it('resolves Google Group channels through the same webhook', function () {
+    Storage::fake('local');
+    Queue::fake([IngestForwardedEmail::class]);
+    $group = MailAccount::factory()->googleGroup()->create(['email_address' => 'grp7h3k2m9@forward.tandem.test']);
+
+    postInbound(inboundPayload($group->email_address))->assertStatus(202)->assertJsonPath('status', 'queued');
+
+    Queue::assertPushed(IngestForwardedEmail::class, fn (IngestForwardedEmail $job) => $job->mailAccountId === $group->id);
+});
+
 it('answers duplicate deliveries with 200 and queues the job only once', function () {
     Storage::fake('local');
     Queue::fake([IngestForwardedEmail::class]);

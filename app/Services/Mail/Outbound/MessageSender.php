@@ -6,7 +6,6 @@ use App\Enums\ConversationEventType;
 use App\Enums\ConversationStatus;
 use App\Enums\DeliveryStatus;
 use App\Enums\DraftKind;
-use App\Enums\MailProvider;
 use App\Enums\MessageDirection;
 use App\Jobs\Mail\SendOutgoingMessage;
 use App\Models\Conversation;
@@ -158,9 +157,7 @@ class MessageSender
 
     protected function defaultAccountFor(Inbox $inbox): ?MailAccount
     {
-        return $inbox->mailAccounts()
-            ->orderByRaw("FIELD(provider, 'gmail', 'imap', 'forwarding')")
-            ->first();
+        return $inbox->mailAccounts()->orderBySendingPreference()->first();
     }
 
     protected function fromAddress(Draft $draft, ?MailAccount $account, User $user): Address
@@ -176,7 +173,7 @@ class MessageSender
                 return new Address($default->email, $default->name);
             }
 
-            if ($account->provider === MailProvider::Forwarding && $draft->inbox->email_address) {
+            if ($account->usesForwardingAddress() && $draft->inbox->email_address) {
                 return new Address($draft->inbox->email_address, $draft->inbox->name);
             }
 

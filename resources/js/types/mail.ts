@@ -11,8 +11,18 @@ export type UserSummary = {
 export type Tag = { id: number; name: string; slug: string; color: string };
 
 export type ConversationStatus = 'open' | 'pending' | 'snoozed' | 'closed';
-export type ConversationPriority = 'none' | 'low' | 'normal' | 'high' | 'urgent';
-export type MailProvider = 'gmail' | 'imap' | 'forwarding';
+export type ConversationPriority =
+    | 'none'
+    | 'low'
+    | 'normal'
+    | 'high'
+    | 'urgent';
+export type MailProvider = 'gmail' | 'imap' | 'forwarding' | 'google_group';
+/** Channels that deliver to a generated address on the forwarding domain. */
+export type ForwardingChannel = Extract<
+    MailProvider,
+    'forwarding' | 'google_group'
+>;
 export type InboxType = 'personal' | 'shared';
 export type InboxRole = 'admin' | 'agent' | 'viewer';
 
@@ -59,7 +69,13 @@ export type Attachment = {
     download_url: string;
 };
 
-export type DeliveryStatus = 'none' | 'queued' | 'sending' | 'sent' | 'failed' | 'bounced';
+export type DeliveryStatus =
+    | 'none'
+    | 'queued'
+    | 'sending'
+    | 'sent'
+    | 'failed'
+    | 'bounced';
 
 export type Message = {
     uuid: string;
@@ -145,7 +161,11 @@ export type ConversationShare = {
 
 export type Conversation = ConversationListItem & {
     organization_id: number | null;
-    mail_account: { uuid: string; email: string; provider: MailProvider } | null;
+    mail_account: {
+        uuid: string;
+        email: string;
+        provider: MailProvider;
+    } | null;
     origin_inbox: { uuid: string; name: string } | null;
     shares: ConversationShare[];
     followers: UserSummary[];
@@ -225,7 +245,12 @@ export type SavedView = {
     inbox_id: number | null;
 };
 
-export type ShareTarget = { uuid: string; name: string; color: string; email: string | null };
+export type ShareTarget = {
+    uuid: string;
+    name: string;
+    color: string;
+    email: string | null;
+};
 
 export type ConversationFilters = {
     q?: string;
@@ -243,14 +268,30 @@ export type ConversationFilters = {
 
 export type CursorPage<T> = {
     data: T[];
-    links: { first: string | null; last: string | null; prev: string | null; next: string | null };
-    meta: { path: string; per_page: number; next_cursor: string | null; prev_cursor: string | null };
+    links: {
+        first: string | null;
+        last: string | null;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        path: string;
+        per_page: number;
+        next_cursor: string | null;
+        prev_cursor: string | null;
+    };
 };
 
 export type AppNotification = {
     id: string;
     data: {
-        kind: 'assigned' | 'mention' | 'comment' | 'reply' | 'automation' | string;
+        kind:
+            | 'assigned'
+            | 'mention'
+            | 'comment'
+            | 'reply'
+            | 'automation'
+            | string;
         title: string;
         body: string | null;
         conversation_uuid?: string;

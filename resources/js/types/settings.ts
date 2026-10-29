@@ -1,4 +1,5 @@
 import type {
+    ForwardingChannel,
     InboxRole,
     InboxType,
     MailProvider,
@@ -53,6 +54,14 @@ export type MailAccount = MailAccountSummary & {
     settings: MailAccountSettings;
     identities: SenderIdentity[];
     inbound_token_set: boolean;
+};
+
+/** Flashed by the server right after a Forward or Google Group channel is generated. */
+export type CreatedChannel = {
+    uuid: string;
+    provider: ForwardingChannel;
+    email: string;
+    inbox: string;
 };
 
 export type SharedInboxChannels = {

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Webhooks;
 
 use App\Enums\MailAccountStatus;
-use App\Enums\MailProvider;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mail\CloudflareInboundRequest;
 use App\Jobs\Mail\IngestForwardedEmail;
@@ -66,7 +65,7 @@ class CloudflareInboundController extends Controller
         }
 
         $account = MailAccount::query()
-            ->where('provider', MailProvider::Forwarding)
+            ->forwardingChannels()
             ->where('email_address', $recipient)
             ->first();
 
