@@ -11,6 +11,7 @@ use App\Models\InboxUser;
 use App\Models\Organization;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,6 +20,8 @@ use Inertia\Response;
 
 class InboxSettingsController extends Controller
 {
+    public function __construct(protected AuditLogger $audit) {}
+
     public function index(Request $request, Organization $organization): Response
     {
         $this->authorize('view', $organization);
@@ -71,6 +74,7 @@ class InboxSettingsController extends Controller
         }
 
         $inbox->users()->syncWithoutDetaching([$request->user()->id => ['role' => InboxRole::Admin->value]]);
+        $this->audit->record('inbox.created', $organization, $request->user(), $inbox, ['name' => $inbox->name]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Inbox ":name" created. Connect a channel to start receiving mail.', ['name' => $inbox->name])]);
 
@@ -91,6 +95,7 @@ class InboxSettingsController extends Controller
         ]);
 
         $inbox->update($data);
+        $this->audit->record('inbox.updated', $organization, $request->user(), $inbox, ['name' => $inbox->name, 'email_address' => $inbox->email_address, 'color' => $inbox->color]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Inbox updated.')]);
 
@@ -127,6 +132,7 @@ class InboxSettingsController extends Controller
 
         $inbox->teams()->sync($teams);
         $inbox->users()->sync($users);
+        $this->audit->record('inbox.access_updated', $organization, $request->user(), $inbox, ['teams' => $teams, 'users' => $users]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Access updated.')]);
 
@@ -139,6 +145,7 @@ class InboxSettingsController extends Controller
         abort_unless($inbox->organization_id === $organization->id, 404);
 
         $inbox->delete();
+        $this->audit->record('inbox.deleted', $organization, $request->user(), $inbox, ['name' => $inbox->name]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Inbox deleted.')]);
 

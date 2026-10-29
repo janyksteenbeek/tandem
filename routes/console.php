@@ -27,3 +27,6 @@ Schedule::command('mail:imap:poll')->everyMinute()->withoutOverlapping()->descri
 
 // Conversations
 Schedule::command('conversations:wake-snoozed')->everyMinute()->withoutOverlapping()->description('Reopen conversations whose snooze elapsed');
+
+// Housekeeping
+Schedule::command('tandem:prune')->daily()->description('Prune old sync runs, webhook receipts and automation runs');

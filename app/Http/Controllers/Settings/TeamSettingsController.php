@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Models\Team;
 use App\Models\TeamMember;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,8 @@ use Inertia\Response;
 
 class TeamSettingsController extends Controller
 {
+    public function __construct(protected AuditLogger $audit) {}
+
     public function index(Request $request, Organization $organization): Response
     {
         $this->authorize('view', $organization);
@@ -48,6 +51,7 @@ class TeamSettingsController extends Controller
 
         $team = $organization->teams()->create(collect($data)->only(['name', 'color', 'description'])->all());
         $this->syncMembers($team, $data['members'] ?? []);
+        $this->audit->record('team.created', $organization, $request->user(), $team, ['name' => $team->name]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team ":name" created.', ['name' => $team->name])]);
 
@@ -67,6 +71,8 @@ class TeamSettingsController extends Controller
             $this->syncMembers($team, $data['members']);
         }
 
+        $this->audit->record('team.updated', $organization, $request->user(), $team, collect($data)->only(['name', 'color', 'description'])->all());
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team updated.')]);
 
         return back();
@@ -78,6 +84,7 @@ class TeamSettingsController extends Controller
         abort_unless($team->organization_id === $organization->id, 404);
 
         $team->delete();
+        $this->audit->record('team.deleted', $organization, $request->user(), $team, ['name' => $team->name]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team deleted.')]);
 

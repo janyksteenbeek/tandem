@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Organization;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,6 +16,8 @@ use Inertia\Response;
  */
 class OrganizationIntegrationController extends Controller
 {
+    public function __construct(protected AuditLogger $audit) {}
+
     public function edit(Request $request, Organization $organization): Response
     {
         $this->authorize('manage', $organization);
@@ -106,6 +109,12 @@ class OrganizationIntegrationController extends Controller
         }
 
         $organization->save();
+        $this->audit->record('organization.integrations_updated', $organization, $request->user(), $organization, [
+            'google_client_configured' => $organization->hasGoogleOAuthCredentials(),
+            'pubsub_topic' => $organization->google_pubsub_topic,
+            'business_hours' => $organization->business_hours !== null,
+            'outbound_smtp' => $organization->outbound_mail_settings !== null,
+        ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Integration settings saved.')]);
 

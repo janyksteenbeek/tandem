@@ -10,6 +10,7 @@ use App\Jobs\Mail\SyncMailAccount;
 use App\Models\Inbox;
 use App\Models\MailAccount;
 use App\Models\SyncRun;
+use App\Services\Audit\AuditLogger;
 use App\Services\Mail\MailProviderManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,8 @@ use Inertia\Response;
 
 class MailAccountController extends Controller
 {
+    public function __construct(protected AuditLogger $audit) {}
+
     /**
      * Personal accounts of the user plus shared inboxes they administer, with connection health.
      */
@@ -128,6 +131,7 @@ class MailAccountController extends Controller
         }
 
         $account->forceFill(['status' => MailAccountStatus::Disconnected])->save();
+        $this->audit->record('mail_account.disconnected', $account->organization, $request->user(), $account, ['email' => $account->email_address]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Account disconnected. Mail stays available in Tandem.')]);
 
@@ -145,6 +149,7 @@ class MailAccountController extends Controller
         }
 
         $inbox = $account->inbox;
+        $this->audit->record('mail_account.removed', $account->organization, $request->user(), $account, ['email' => $account->email_address, 'provider' => $account->provider->value]);
         $account->delete();
 
         if ($inbox->isPersonal() && $inbox->mailAccounts()->count() === 0) {

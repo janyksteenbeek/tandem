@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     AlertTriangle,
     Archive,
+    Bookmark,
     CheckCircle2,
     ChevronRight,
     Clock,
@@ -24,13 +25,14 @@ import InboxDot from '@/components/mail/InboxDot.vue';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { MailNav, NavInbox, ViewOption } from '@/types';
+import type { MailNav, NavInbox, SavedView, ViewOption } from '@/types';
 
 const props = defineProps<{
     activeInboxUuid?: string | null;
     activeView?: string | null;
     views?: ViewOption[];
     counts?: Record<string, number> | null;
+    savedViews?: SavedView[];
 }>();
 
 const emit = defineEmits<{ compose: [] }>();
@@ -76,6 +78,22 @@ const primaryViews = computed(() => (props.views ?? []).filter((v) => !['sent', 
 const secondaryViews = computed(() => (props.views ?? []).filter((v) => ['drafts', 'starred', 'sent', 'archive', 'all', 'spam', 'trash'].includes(v.value)));
 
 const showAllPersonal = computed(() => (nav.value?.personal.length ?? 0) > 1);
+
+const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
+    const params = new URLSearchParams();
+
+    Object.entries(view.filters ?? {}).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            value.forEach((v) => params.append(`${key}[]`, String(v)));
+        } else if (value !== null && value !== undefined && value !== '') {
+            params.set(key, String(value));
+        }
+    });
+
+    const qs = params.toString();
+
+    return `${inboxUrl(inbox, inbox === 'all' || inbox.type === 'personal' ? 'all' : 'open')}${qs ? `?${qs}` : ''}`;
+};
 </script>
 
 <template>
@@ -199,6 +217,15 @@ const showAllPersonal = computed(() => (nav.value?.personal.length ?? 0) > 1);
                                 <component :is="viewIcons[view.value] ?? Mail" class="size-3.5 text-muted-foreground" />
                                 <span class="flex-1 truncate">{{ viewLabels[view.value] ?? view.label }}</span>
                                 <span v-if="counts && counts[view.value]" class="text-[11px] text-muted-foreground tabular-nums">{{ counts[view.value] }}</span>
+                            </Link>
+                            <Link
+                                v-for="saved in savedViews ?? []"
+                                :key="`saved-${saved.id}`"
+                                :href="savedViewUrl(inbox, saved)"
+                                class="flex items-center gap-2 rounded-md px-2 py-1 text-[12.5px] text-sidebar-foreground/80 hover:bg-sidebar-accent"
+                            >
+                                <Bookmark class="size-3.5 text-brand" />
+                                <span class="flex-1 truncate">{{ saved.name }}</span>
                             </Link>
                             <details class="group/more">
                                 <summary class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[12px] text-muted-foreground select-none hover:bg-sidebar-accent">

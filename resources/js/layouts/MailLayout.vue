@@ -12,7 +12,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useKeyboard } from '@/composables/useKeyboard';
-import type { ViewOption } from '@/types';
+import type { SavedView, ViewOption } from '@/types';
 
 const props = defineProps<{
     activeInboxUuid?: string | null;
@@ -20,6 +20,7 @@ const props = defineProps<{
     views?: ViewOption[];
     counts?: Record<string, number> | null;
     hideNavButton?: boolean;
+    savedViews?: SavedView[];
 }>();
 
 const emit = defineEmits<{ compose: [] }>();
@@ -55,6 +56,7 @@ useKeyboard(() => [
                     :active-view="props.activeView"
                     :views="props.views"
                     :counts="props.counts"
+                    :saved-views="props.savedViews"
                     @compose="emit('compose')"
                 />
             </div>
