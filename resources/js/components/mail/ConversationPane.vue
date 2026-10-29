@@ -341,7 +341,7 @@ const openShare = () => {
         emit('loadShareTargets');
     }
 
-    shareOpen.value = true;
+    setTimeout(() => (shareOpen.value = true), 60);
 };
 
 const viewSource = (message: Message) => {
@@ -495,6 +495,7 @@ const go = (url: string) => router.visit(url);
                             :draft="activeDraft"
                             :accounts="inbox.accounts"
                             :is-shared="isShared"
+                            :fallback-from="{ name: inbox.name, email: inbox.email_address }"
                             compact
                             @sent="onSent"
                             @discarded="onDiscarded"

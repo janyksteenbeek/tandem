@@ -26,6 +26,7 @@ const props = defineProps<{
     isShared: boolean;
     showSubject?: boolean;
     compact?: boolean;
+    fallbackFrom?: { name: string; email: string | null } | null;
 }>();
 
 const emit = defineEmits<{
@@ -178,7 +179,9 @@ onBeforeUnmount(() => editor.value?.destroy());
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <span v-else class="truncate text-sm">{{ currentIdentity?.name }} <span class="text-muted-foreground">&lt;{{ currentIdentity?.email ?? 'no sending identity' }}&gt;</span></span>
+                <span v-else-if="currentIdentity" class="truncate text-sm">{{ currentIdentity.name }} <span class="text-muted-foreground">&lt;{{ currentIdentity.email }}&gt;</span></span>
+                <span v-else-if="fallbackFrom?.email" class="truncate text-sm">{{ fallbackFrom.name }} <span class="text-muted-foreground">&lt;{{ fallbackFrom.email }}&gt;</span></span>
+                <span v-else class="truncate text-sm text-warning-foreground">No sending address yet — add an identity or connect a channel in Settings.</span>
                 <div class="ml-auto flex items-center gap-2 text-[11px]">
                     <button v-if="!showCc" type="button" class="text-muted-foreground hover:text-foreground" @click="showCc = true">Cc</button>
                     <button v-if="!showBcc" type="button" class="text-muted-foreground hover:text-foreground" @click="showBcc = true">Bcc</button>

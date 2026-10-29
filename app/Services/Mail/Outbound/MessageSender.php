@@ -6,6 +6,7 @@ use App\Enums\ConversationEventType;
 use App\Enums\ConversationStatus;
 use App\Enums\DeliveryStatus;
 use App\Enums\DraftKind;
+use App\Enums\MailProvider;
 use App\Enums\MessageDirection;
 use App\Jobs\Mail\SendOutgoingMessage;
 use App\Models\Conversation;
@@ -171,9 +172,15 @@ class MessageSender
         if ($account) {
             $default = $account->identities->firstWhere('is_default', true);
 
-            return $default
-                ? new Address($default->email, $default->name)
-                : new Address($account->email_address, $account->display_name ?: $user->name);
+            if ($default) {
+                return new Address($default->email, $default->name);
+            }
+
+            if ($account->provider === MailProvider::Forwarding && $draft->inbox->email_address) {
+                return new Address($draft->inbox->email_address, $draft->inbox->name);
+            }
+
+            return new Address($account->email_address, $account->display_name ?: $user->name);
         }
 
         if ($draft->inbox->email_address) {
