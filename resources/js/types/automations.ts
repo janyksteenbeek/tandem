@@ -55,7 +55,9 @@ export type AutomationCondition = {
     value: AutomationConditionValue;
 };
 
-export type AutomationActionParams = Record<string, unknown>;
+export type AutomationParamValue = string | number | boolean | null | (string | number)[];
+
+export type AutomationActionParams = Record<string, AutomationParamValue>;
 
 export type AutomationAction = {
     type: string;

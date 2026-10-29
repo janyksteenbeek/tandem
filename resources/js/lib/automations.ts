@@ -1,5 +1,6 @@
 import type {
     AutomationAction,
+    AutomationActionParams,
     AutomationCatalog,
     AutomationCondition,
     AutomationConditionValue,
@@ -125,7 +126,7 @@ export function emptyCondition(catalog: AutomationCatalog): AutomationCondition 
     return { field: field?.value ?? 'sender', operator, value: coerceValue('', valueShapeOf(catalog, operator)) };
 }
 
-export function defaultParams(catalog: AutomationCatalog, type: string): Record<string, unknown> {
+export function defaultParams(catalog: AutomationCatalog, type: string): AutomationActionParams {
     switch (type) {
         case 'reply_with_template':
             return { template_id: null, cooldown_minutes: catalog.default_cooldown_minutes };
@@ -372,6 +373,8 @@ export function formatMinutes(minutes: number | null | undefined): string {
     return minutes === 1 ? '1 minute' : `${minutes} minutes`;
 }
 
+const action = (type: string, params: AutomationActionParams): AutomationAction => ({ type, params });
+
 export type StarterKey = 'out_of_office' | 'route_invoices' | 'vip_priority';
 
 export type StarterRule = {
@@ -393,10 +396,7 @@ export const STARTER_RULES: StarterRule[] = [
             trigger: 'conversation_received',
             conditions: [{ field: 'business_hours', operator: 'is_false', value: null }],
             actions: [
-                {
-                    type: 'reply_with_template',
-                    params: { template_id: lookups.templates[0]?.id ?? null, cooldown_minutes: catalog.default_cooldown_minutes },
-                },
+                action('reply_with_template', { template_id: lookups.templates[0]?.id ?? null, cooldown_minutes: catalog.default_cooldown_minutes }),
             ],
         }),
     },
@@ -415,8 +415,8 @@ export const STARTER_RULES: StarterRule[] = [
                 { field: 'recipient', operator: 'starts_with', value: 'billing@' },
             ],
             actions: [
-                { type: 'assign_team', params: { team_id: lookups.teams[0]?.id ?? null, strategy: 'least_busy' } },
-                { type: 'add_tag', params: { tag_id: null, tag_name: 'billing' } },
+                action('assign_team', { team_id: lookups.teams[0]?.id ?? null, strategy: 'least_busy' }),
+                action('add_tag', { tag_id: null, tag_name: 'billing' }),
             ],
         }),
     },
@@ -431,8 +431,8 @@ export const STARTER_RULES: StarterRule[] = [
             trigger: 'conversation_received',
             conditions: [{ field: 'sender', operator: 'in', value: ['@bigcorp.com'] }],
             actions: [
-                { type: 'add_tag', params: { tag_id: null, tag_name: 'VIP' } },
-                { type: 'set_priority', params: { priority: 'high' } },
+                action('add_tag', { tag_id: null, tag_name: 'VIP' }),
+                action('set_priority', { priority: 'high' }),
             ],
         }),
     },

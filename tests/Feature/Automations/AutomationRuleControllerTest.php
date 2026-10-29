@@ -66,7 +66,7 @@ test('admins can view the automation pages with catalogs and related data', func
         ->get(($this->url)('automations.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/automations/Index', false)
+            ->component('settings/automations/Index')
             ->has('rules', 1, fn (Assert $rule) => $rule
                 ->where('uuid', $this->rule->uuid)
                 ->where('name', 'Existing rule')
@@ -84,7 +84,7 @@ test('admins can view the automation pages with catalogs and related data', func
         ->get(($this->url)('automations.create'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/automations/Edit', false)
+            ->component('settings/automations/Edit')
             ->where('rule', null)
             ->has('inboxes', 1)
             ->has('tags', 1)
@@ -99,7 +99,7 @@ test('admins can view the automation pages with catalogs and related data', func
         ->get(($this->url)('automations.edit', ['rule' => $this->rule]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/automations/Edit', false)
+            ->component('settings/automations/Edit')
             ->where('rule.uuid', $this->rule->uuid)
             ->where('rule.inbox_uuid', $this->inbox->uuid)
             ->has('rule.conditions', 1)

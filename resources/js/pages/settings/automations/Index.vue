@@ -195,7 +195,7 @@ const conditionLabel = (rule: AutomationRuleSummary) => {
 <template>
     <Head title="Automations" />
 
-    <div class="w-full space-y-6 xl:w-[calc(100vw-38rem)] xl:max-w-4xl">
+    <div class="w-full space-y-6">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h1 class="font-display text-3xl leading-none">Automations</h1>

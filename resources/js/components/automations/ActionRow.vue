@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { defaultParams, formatMinutes, variableToken } from '@/lib/automations';
 import { chipClass } from '@/lib/mail';
-import type { AutomationAction, AutomationCatalog, AutomationLookups } from '@/types/automations';
+import type { AutomationAction, AutomationCatalog, AutomationLookups, AutomationParamValue } from '@/types/automations';
 
 const props = defineProps<{
     index: number;
@@ -33,7 +33,7 @@ const setType = (type: string) => {
     action.value = { type, params: defaultParams(props.catalog, type) };
 };
 
-const setParam = (key: string, value: unknown) => {
+const setParam = (key: string, value: AutomationParamValue) => {
     action.value = { ...action.value, params: { ...action.value.params, [key]: value } };
 };
 
@@ -164,8 +164,7 @@ const error = (key: string) => props.errors?.[key];
                             <SelectItem v-for="team in lookups.teams" :key="team.id" :value="String(team.id)">
                                 <span class="flex items-center gap-2">
                                     <span class="inline-block size-2.5 rounded-full bg-(--chip)" :class="chipClass(team.color)" />
-                                    {{ team.name }}
-                                    <span class="text-xs text-muted-foreground">{{ team.member_count }} {{ team.member_count === 1 ? 'member' : 'members' }}</span>
+                                    {{ team.name }}<span class="text-xs text-muted-foreground"> · {{ team.member_count }} {{ team.member_count === 1 ? 'member' : 'members' }}</span>
                                 </span>
                             </SelectItem>
                         </SelectContent>

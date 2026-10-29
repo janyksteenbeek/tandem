@@ -29,7 +29,7 @@ test('admins can list templates while members are forbidden', function () {
         ->get(($this->url)('templates.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('settings/templates/Index', false)
+            ->component('settings/templates/Index')
             ->has('templates', 1, fn (Assert $template) => $template->where('name', 'Welcome')->where('inbox', null)->etc())
             ->has('inboxes', 1)
             ->has('variables', 12));

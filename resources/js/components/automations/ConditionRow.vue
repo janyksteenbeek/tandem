@@ -51,8 +51,8 @@ const setValue = (value: AutomationCondition['value']) => {
             {{ index === 0 ? 'If' : conjunction }}
         </span>
 
-        <div class="grid gap-2 sm:grid-cols-[minmax(0,9rem)_minmax(0,10rem)_minmax(0,1fr)_auto] sm:items-start">
-            <div class="min-w-0">
+        <div class="flex flex-wrap items-start gap-2">
+            <div class="w-full min-w-0 sm:w-36">
                 <Select :model-value="condition.field" @update:model-value="(v) => setField(String(v))">
                     <SelectTrigger class="w-full" :aria-invalid="errors?.field ? true : undefined" aria-label="Field">
                         <SelectValue placeholder="Field" />
@@ -64,7 +64,7 @@ const setValue = (value: AutomationCondition['value']) => {
                 <InputError class="mt-1" :message="errors?.field" />
             </div>
 
-            <div class="min-w-0">
+            <div class="w-full min-w-0 sm:w-40">
                 <Select :model-value="condition.operator" @update:model-value="(v) => setOperator(String(v))">
                     <SelectTrigger class="w-full" :aria-invalid="errors?.operator ? true : undefined" aria-label="Operator">
                         <SelectValue placeholder="Operator" />
@@ -76,7 +76,7 @@ const setValue = (value: AutomationCondition['value']) => {
                 <InputError class="mt-1" :message="errors?.operator" />
             </div>
 
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1 basis-56">
                 <ValueInput
                     :model-value="condition.value"
                     :value-type="field?.value_type ?? 'text'"
@@ -90,7 +90,7 @@ const setValue = (value: AutomationCondition['value']) => {
                 <InputError class="mt-1" :message="errors?.value" />
             </div>
 
-            <Button type="button" variant="ghost" size="icon-sm" class="justify-self-end text-muted-foreground hover:text-destructive" aria-label="Remove condition" @click="emit('remove')">
+            <Button type="button" variant="ghost" size="icon-sm" class="ml-auto text-muted-foreground hover:text-destructive" aria-label="Remove condition" @click="emit('remove')">
                 <Trash2 />
             </Button>
         </div>

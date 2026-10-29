@@ -40,10 +40,7 @@ const current = computed(() => props.templates.find((template) => String(templat
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem v-for="template in templates" :key="template.id" :value="String(template.id)">
-                        <span class="flex items-center gap-2">
-                            <span>{{ template.name }}</span>
-                            <span v-if="template.category" class="rounded-full bg-secondary px-1.5 py-px text-[10px] text-secondary-foreground">{{ template.category }}</span>
-                        </span>
+                        {{ template.name }}<span v-if="template.category" class="text-xs text-muted-foreground"> · {{ template.category }}</span>
                     </SelectItem>
                 </SelectContent>
             </Select>

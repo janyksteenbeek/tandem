@@ -162,7 +162,7 @@ const formatActual = (value: unknown): string => {
                 <Input v-model="query" class="pl-8" placeholder="Search a subject or paste a conversation id" autocomplete="off" />
                 <Loader2 v-if="searching" class="absolute top-2.5 right-2.5 size-4 animate-spin text-muted-foreground" />
 
-                <ul v-if="results.length > 0" class="mt-2 max-h-56 divide-y overflow-y-auto rounded-lg border bg-popover shadow-float scrollbar-thin">
+                <ul v-if="results.length > 0" data-test="dry-run-results" class="mt-2 max-h-56 divide-y overflow-y-auto rounded-lg border bg-popover shadow-float scrollbar-thin">
                     <li v-for="item in results" :key="item.uuid">
                         <button type="button" class="flex w-full flex-col gap-0.5 px-3 py-2 text-left text-sm hover:bg-accent" @click="pick(item)">
                             <span class="flex items-center justify-between gap-2">
@@ -196,7 +196,7 @@ const formatActual = (value: unknown): string => {
                         cn(
                             'rounded-lg px-3 py-2',
                             verdict.tone === 'success' && 'bg-success/15 text-foreground',
-                            verdict.tone === 'warning' && 'bg-warning/20 text-warning-foreground',
+                            verdict.tone === 'warning' && 'bg-warning/20 text-foreground',
                             verdict.tone === 'muted' && 'bg-surface-sunken text-foreground',
                         )
                     "

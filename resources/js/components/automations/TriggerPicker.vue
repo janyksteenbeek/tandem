@@ -31,7 +31,7 @@ const businessHours = computed(() => trigger.value.startsWith('business_hours'))
     <div class="grid gap-4 sm:grid-cols-2">
         <div class="grid gap-2">
             <Label for="rule-trigger">Trigger</Label>
-            <Select id="rule-trigger" v-model="trigger">
+            <Select v-model="trigger">
                 <SelectTrigger class="w-full" :aria-invalid="errors?.trigger ? true : undefined">
                     <SelectValue placeholder="Pick a moment" />
                 </SelectTrigger>
@@ -45,7 +45,7 @@ const businessHours = computed(() => trigger.value.startsWith('business_hours'))
 
         <div class="grid gap-2">
             <Label for="rule-inbox">Inbox scope</Label>
-            <Select id="rule-inbox" v-model="inboxModel">
+            <Select v-model="inboxModel">
                 <SelectTrigger class="w-full" :aria-invalid="errors?.inbox_uuid ? true : undefined">
                     <SelectValue />
                 </SelectTrigger>
