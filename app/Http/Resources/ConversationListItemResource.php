@@ -23,7 +23,8 @@ class ConversationListItemResource extends JsonResource
         $participants = collect($this->participants ?? []);
         $ownAddresses = $this->inbox->mailAccounts->pluck('email_address')->map(fn ($e) => strtolower($e));
 
-        $counterpart = $participants->first(fn (array $p) => ! $ownAddresses->contains(strtolower($p['email']))) ?? $participants->first();
+        $others = $participants->reject(fn (array $p) => $ownAddresses->contains(strtolower($p['email'])))->values();
+        $counterpart = $others->first() ?? $participants->first();
 
         return [
             'uuid' => $this->uuid,
@@ -51,7 +52,7 @@ class ConversationListItemResource extends JsonResource
             'last_activity_at' => $this->last_activity_at?->toISOString(),
             'last_direction' => $this->last_outbound_at && (! $this->last_inbound_at || $this->last_outbound_at->gt($this->last_inbound_at)) ? 'outbound' : 'inbound',
             'counterpart' => $counterpart,
-            'participants' => $participants->take(6)->values()->all(),
+            'participants' => $others->take(6)->values()->all(),
             'assignee' => $this->assignee ? UserSummaryResource::make($this->assignee)->resolve() : null,
             'tags' => TagResource::collection($this->tags)->resolve(),
         ];

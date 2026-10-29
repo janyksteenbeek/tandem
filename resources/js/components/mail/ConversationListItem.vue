@@ -59,7 +59,7 @@ const participantsLabel = computed(() => {
                 :class="cn('transition', (selectionMode || selected) && 'opacity-0')"
             />
             <span
-                :class="cn('absolute inset-0 flex items-center justify-center rounded-full transition', selectionMode || selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-hover:bg-background/90')"
+                :class="cn('absolute inset-0 flex items-center justify-center rounded-full bg-surface-raised ring-1 ring-border transition', selectionMode || selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100')"
             >
                 <Checkbox :model-value="selected" class="size-5" aria-label="Select conversation" />
             </span>

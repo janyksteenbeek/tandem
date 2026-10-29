@@ -20,7 +20,7 @@ class CommentResource extends JsonResource
             'uuid' => $this->uuid,
             'body' => $this->body,
             'mentions' => $this->mentions ?? [],
-            'user' => UserSummaryResource::make($this->whenLoaded('user')),
+            'user' => UserSummaryResource::make($this->user)->resolve(),
             'created_at' => $this->created_at?->toISOString(),
             'edited_at' => $this->edited_at?->toISOString(),
         ];

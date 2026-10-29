@@ -24,3 +24,6 @@ Schedule::command('automations:business-hours')
 // Polling is the safety net for every IMAP account; `mail:imap:idle` (see docs/providers/imap.md)
 // delivers changes instantly for servers that support IDLE. The command applies poll_minutes itself.
 Schedule::command('mail:imap:poll')->everyMinute()->withoutOverlapping()->description('Queue incremental syncs for due IMAP accounts');
+
+// Conversations
+Schedule::command('conversations:wake-snoozed')->everyMinute()->withoutOverlapping()->description('Reopen conversations whose snooze elapsed');
