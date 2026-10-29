@@ -19,6 +19,7 @@ const props = defineProps<{
     activeView?: string | null;
     views?: ViewOption[];
     counts?: Record<string, number> | null;
+    hideNavButton?: boolean;
 }>();
 
 const emit = defineEmits<{ compose: [] }>();
@@ -75,6 +76,7 @@ useKeyboard(() => [
 
             <main class="relative flex min-w-0 flex-1 flex-col">
                 <Button
+                    v-if="!props.hideNavButton"
                     variant="outline"
                     size="icon"
                     class="absolute top-2.5 left-2 z-20 size-8 md:hidden"

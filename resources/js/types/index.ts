@@ -3,3 +3,5 @@ export * from './navigation';
 export * from './organizations';
 export * from './ui';
 export * from './mail';
+export * from './settings';
+export * from './automations';

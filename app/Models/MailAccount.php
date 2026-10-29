@@ -186,6 +186,14 @@ class MailAccount extends Model
         ])->save();
     }
 
+    /**
+     * Paused accounts keep their mail but skip every provider round-trip (sync and write-back).
+     */
+    public function isPaused(): bool
+    {
+        return (bool) $this->setting('sync_paused', false);
+    }
+
     public function forwardingAddress(): ?string
     {
         return $this->provider === MailProvider::Forwarding ? $this->email_address : null;

@@ -51,7 +51,7 @@ class PushMailboxChange implements ShouldQueue
 
     public function handle(MailProviderManager $providers): void
     {
-        if (in_array($this->account->status, [MailAccountStatus::Disconnected, MailAccountStatus::NeedsReauth], true)) {
+        if ($this->account->isPaused() || in_array($this->account->status, [MailAccountStatus::Disconnected, MailAccountStatus::NeedsReauth], true)) {
             return;
         }
 

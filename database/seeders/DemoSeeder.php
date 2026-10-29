@@ -151,7 +151,7 @@ class DemoSeeder extends Seeder
             'email_address' => 'jamie.okafor@gmail.com',
             'display_name' => 'Jamie Okafor',
             'credentials' => ['access_token' => 'demo', 'refresh_token' => 'demo', 'expires_at' => now()->addHour()->timestamp, 'oauth_organization_id' => $organization->id],
-            'settings' => ['demo' => true],
+            'settings' => ['demo' => true, 'sync_paused' => true],
             'sync_state' => ['history_id' => '424242'],
             'status' => MailAccountStatus::Connected,
             'last_synced_at' => now()->subMinutes(3),

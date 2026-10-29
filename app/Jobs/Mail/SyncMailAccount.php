@@ -60,6 +60,10 @@ class SyncMailAccount implements ShouldBeUniqueUntilProcessing, ShouldQueue
 
     public function handle(MailProviderManager $providers): void
     {
+        if ($this->account->isPaused()) {
+            return;
+        }
+
         $account = $this->account->fresh();
 
         if (! $account) {

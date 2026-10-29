@@ -350,7 +350,7 @@ const showPane = computed(() => !isMobile.value || Boolean(props.conversation));
 <template>
     <Head :title="`${title} · ${viewLabel}`" />
 
-    <MailLayout :active-inbox-uuid="inbox.uuid" :active-view="view" :views="views" :counts="counts" @compose="openCompose()">
+    <MailLayout :active-inbox-uuid="inbox.uuid" :active-view="view" :views="views" :counts="counts" :hide-nav-button="isMobile && Boolean(conversation)" @compose="openCompose()">
         <ResizablePanelGroup direction="horizontal" class="h-full" auto-save-id="tandem-mail-panes">
             <ResizablePanel v-if="showList" :default-size="36" :min-size="26" :max-size="55" :class="cn('flex min-w-0 flex-col', isMobile && 'flex-1')">
                 <ListToolbar ref="toolbar" :title="title" :subtitle="subtitle" :filters="filters" :members="members" :tags="tags" :is-shared="isShared" @update="updateFilters" @save-view="saveView" />

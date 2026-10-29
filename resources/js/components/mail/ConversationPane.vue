@@ -511,24 +511,24 @@ const go = (url: string) => router.visit(url);
 
             <footer v-if="composerMode === 'none'" class="border-t bg-surface/80 px-4 py-2.5">
                 <div class="mx-auto flex max-w-4xl items-center gap-2">
-                    <Button v-if="canAct" variant="outline" class="h-9 flex-1 justify-start gap-2 rounded-xl text-sm text-muted-foreground shadow-none hover:text-foreground" @click="startReply('reply')">
-                        <Reply class="size-4" /> Reply to {{ local.counterpart?.name || local.counterpart?.email || 'thread' }}…
-                        <kbd class="ml-auto rounded border px-1 text-[10px]">R</kbd>
+                    <Button v-if="canAct" variant="outline" class="h-9 min-w-0 flex-1 justify-start gap-2 rounded-xl text-sm text-muted-foreground shadow-none hover:text-foreground" @click="startReply('reply')">
+                        <Reply class="size-4 shrink-0" /> <span class="truncate">Reply to {{ local.counterpart?.name || local.counterpart?.email || 'thread' }}…</span>
+                        <kbd class="ml-auto hidden rounded border px-1 text-[10px] sm:inline">R</kbd>
                     </Button>
                     <p v-else class="flex-1 text-xs text-muted-foreground">You have read-only access to this inbox.</p>
                     <Tooltip v-if="canAct">
-                        <TooltipTrigger as-child><Button variant="outline" size="icon" class="size-9 rounded-xl shadow-none" aria-label="Reply all" @click="startReply('reply_all')"><ReplyAll class="size-4" /></Button></TooltipTrigger>
+                        <TooltipTrigger as-child><Button variant="outline" size="icon" class="hidden size-9 shrink-0 rounded-xl shadow-none sm:inline-flex" aria-label="Reply all" @click="startReply('reply_all')"><ReplyAll class="size-4" /></Button></TooltipTrigger>
                         <TooltipContent>Reply all <kbd class="ml-1 rounded border px-1 text-[10px]">A</kbd></TooltipContent>
                     </Tooltip>
                     <Tooltip v-if="canAct">
-                        <TooltipTrigger as-child><Button variant="outline" size="icon" class="size-9 rounded-xl shadow-none" aria-label="Forward" @click="startReply('forward')"><Forward class="size-4" /></Button></TooltipTrigger>
+                        <TooltipTrigger as-child><Button variant="outline" size="icon" class="hidden size-9 shrink-0 rounded-xl shadow-none sm:inline-flex" aria-label="Forward" @click="startReply('forward')"><Forward class="size-4" /></Button></TooltipTrigger>
                         <TooltipContent>Forward <kbd class="ml-1 rounded border px-1 text-[10px]">F</kbd></TooltipContent>
                     </Tooltip>
                     <Tooltip v-if="canAct">
                         <TooltipTrigger as-child>
-                            <Button variant="outline" class="h-9 gap-2 rounded-xl border-highlight/50 bg-highlight/10 text-sm shadow-none hover:bg-highlight/20" @click="openComment">
-                                <MessageSquareText class="size-4 text-highlight-foreground" /> Comment
-                                <kbd class="rounded border px-1 text-[10px]">M</kbd>
+                            <Button variant="outline" class="h-9 shrink-0 gap-2 rounded-xl border-highlight/50 bg-highlight/10 text-sm shadow-none hover:bg-highlight/20" @click="openComment">
+                                <MessageSquareText class="size-4 text-highlight-foreground" /> <span class="hidden sm:inline">Comment</span>
+                                <kbd class="hidden rounded border px-1 text-[10px] sm:inline">M</kbd>
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>Internal note for teammates — never emailed</TooltipContent>

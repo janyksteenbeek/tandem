@@ -63,7 +63,7 @@ export const PRIORITY_META: Record<
     none: { label: 'No priority', short: '', className: 'text-muted-foreground' },
     low: { label: 'Low', short: 'Low', className: 'text-muted-foreground' },
     normal: { label: 'Normal', short: 'Normal', className: 'text-info' },
-    high: { label: 'High', short: 'High', className: 'text-warning-foreground' },
+    high: { label: 'High', short: 'High', className: 'text-warning' },
     urgent: { label: 'Urgent', short: 'Urgent', className: 'text-destructive' },
 };
 

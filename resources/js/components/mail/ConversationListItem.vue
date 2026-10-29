@@ -76,6 +76,14 @@ const participantsLabel = computed(() => {
                     <span v-if="item.message_count > 1" class="rounded-full bg-muted px-1.5 text-[10px] font-medium">{{ item.message_count }}</span>
                     <span v-if="isSnoozed" class="flex items-center gap-0.5 text-highlight-foreground"><Clock class="size-3" />{{ snoozeLabel(item.snoozed_until) }}</span>
                     <span v-else>{{ listTime(item.last_message_at) }}</span>
+                    <button
+                        type="button"
+                        :class="cn('-mr-1 rounded p-0.5 transition', item.is_starred ? 'text-highlight opacity-100' : 'opacity-0 group-hover:opacity-100 hover:text-highlight')"
+                        :aria-label="item.is_starred ? 'Unstar' : 'Star'"
+                        @click.stop="emit('star', item)"
+                    >
+                        <Star class="size-3.5" :class="item.is_starred && 'fill-current'" />
+                    </button>
                 </span>
             </div>
 
@@ -111,15 +119,6 @@ const participantsLabel = computed(() => {
                 <span v-if="item.tags.length > 3" class="text-[10px] text-muted-foreground">+{{ item.tags.length - 3 }}</span>
             </div>
         </div>
-
-        <button
-            type="button"
-            :class="cn('absolute top-2.5 right-2 rounded p-0.5 transition', item.is_starred ? 'text-highlight opacity-100' : 'text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-highlight')"
-            :aria-label="item.is_starred ? 'Unstar' : 'Star'"
-            @click.stop="emit('star', item)"
-        >
-            <Star class="size-3.5" :class="item.is_starred && 'fill-current'" />
-        </button>
 
         <span v-if="item.shared_inbox_ids.length && !showInbox" class="absolute right-2 bottom-2" title="Shared with a team inbox">
             <InboxDot color="plum" size="sm" />
