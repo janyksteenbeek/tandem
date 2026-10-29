@@ -376,6 +376,7 @@ useKeyboard(() => [
     { keys: 's', description: 'Star', handler: toggleStar },
     { keys: 'u', description: 'Mark unread', handler: () => { void actions.markRead(local.value.uuid, false); emit('back'); } },
     { keys: 'd', description: 'Done', handler: () => isShared.value && setStatus('closed') },
+    { keys: 'h', description: 'Snooze until tomorrow', handler: () => { const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(9, 0, 0, 0); snooze(tomorrow.toISOString()); } },
     { keys: 'i', description: 'Assign to me', handler: () => isShared.value && assign(me.value.id) },
     { keys: 'escape', description: 'Back', handler: () => { if (composerMode.value !== 'none' && !activeDraft.value) { composerMode.value = 'none'; } else { emit('back'); } } },
 ]);

@@ -30,7 +30,7 @@ const groups = [
             ['#', 'Trash'],
             ['s', 'Star / unstar'],
             ['u', 'Mark unread'],
-            ['h', 'Snooze (Later)'],
+            ['h', 'Snooze until tomorrow 9:00'],
             ['d', 'Mark done (close)'],
             ['i', 'Assign to me'],
             ['x', 'Select conversation'],
