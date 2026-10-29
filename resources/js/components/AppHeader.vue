@@ -52,7 +52,9 @@ const auth = computed(() => page.props.auth);
 const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
 const dashboardUrl = computed(() =>
-    page.props.currentOrganization ? dashboard(page.props.currentOrganization.slug).url : '/',
+    page.props.currentOrganization
+        ? dashboard(page.props.currentOrganization.slug).url
+        : '/',
 );
 
 const activeItemStyles =

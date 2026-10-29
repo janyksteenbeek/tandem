@@ -1,6 +1,14 @@
 export type CatalogOption = { value: string; label: string };
 
-export type ConditionValueType = 'inbox' | 'email' | 'text' | 'tag' | 'user' | 'boolean' | 'status' | 'priority';
+export type ConditionValueType =
+    | 'inbox'
+    | 'email'
+    | 'text'
+    | 'tag'
+    | 'user'
+    | 'boolean'
+    | 'status'
+    | 'priority';
 
 export type OperatorValueShape = 'string' | 'array' | 'none';
 
@@ -55,7 +63,12 @@ export type AutomationCondition = {
     value: AutomationConditionValue;
 };
 
-export type AutomationParamValue = string | number | boolean | null | (string | number)[];
+export type AutomationParamValue =
+    | string
+    | number
+    | boolean
+    | null
+    | (string | number)[];
 
 export type AutomationActionParams = Record<string, AutomationParamValue>;
 
@@ -129,16 +142,39 @@ export type AutomationRun = {
 
 export type AutomationRunPage = {
     data: AutomationRun[];
-    meta: { current_page: number; last_page: number; per_page: number; total: number };
+    meta: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    };
 };
 
-export type AutomationInboxOption = { uuid: string; name: string; color: string | null };
+export type AutomationInboxOption = {
+    uuid: string;
+    name: string;
+    color: string | null;
+};
 
-export type AutomationTagOption = { id: number; name: string; slug: string; color: string | null };
+export type AutomationTagOption = {
+    id: number;
+    name: string;
+    slug: string;
+    color: string | null;
+};
 
-export type AutomationUserOption = { id: number; name: string; avatar: string | null };
+export type AutomationUserOption = {
+    id: number;
+    name: string;
+    avatar: string | null;
+};
 
-export type AutomationTeamOption = { id: number; name: string; color: string | null; member_count: number };
+export type AutomationTeamOption = {
+    id: number;
+    name: string;
+    color: string | null;
+    member_count: number;
+};
 
 export type AutomationTemplateOption = {
     id: number;

@@ -16,43 +16,43 @@ The full operator guide lives in [`docs/providers/cloudflare.md`](../../docs/pro
 
 ## Deploy
 
-1. **Enable Email Routing** on the zone: Cloudflare dashboard -> *Email* -> *Email Routing* ->
-   *Get started*. Accept the MX and TXT (SPF) records Cloudflare proposes for the forwarding
+1. **Enable Email Routing** on the zone: Cloudflare dashboard -> _Email_ -> _Email Routing_ ->
+   _Get started_. Accept the MX and TXT (SPF) records Cloudflare proposes for the forwarding
    domain. If the forwarding domain is a sub-domain, add the records for that sub-domain.
 2. **Install and log in**:
 
-   ```sh
-   cd cloudflare/email-worker
-   npm install
-   npx wrangler login
-   ```
+    ```sh
+    cd cloudflare/email-worker
+    npm install
+    npx wrangler login
+    ```
 
 3. **Configure** `wrangler.toml`: set `TANDEM_INGEST_URL` to your Tandem URL +
    `/webhooks/cloudflare/inbound`. Adjust `MAX_BYTES` to match `TANDEM_FORWARDING_MAX_BYTES`.
 4. **Deploy** the Worker and set the secret (it must equal `TANDEM_FORWARDING_WEBHOOK_SECRET`):
 
-   ```sh
-   npm run deploy
-   npx wrangler secret put TANDEM_WEBHOOK_SECRET
-   ```
+    ```sh
+    npm run deploy
+    npx wrangler secret put TANDEM_WEBHOOK_SECRET
+    ```
 
-5. **Route mail to the Worker**: *Email Routing* -> *Routing rules* -> *Catch-all address* ->
-   action *Send to a Worker* -> select `tandem-email-worker` -> enable the rule.
+5. **Route mail to the Worker**: _Email Routing_ -> _Routing rules_ -> _Catch-all address_ ->
+   action _Send to a Worker_ -> select `tandem-email-worker` -> enable the rule.
 6. **Test**:
-   - Locally, without Cloudflare: `php artisan mail:forwarding:simulate <address>` delivers
-     `tests/Fixtures/mail/simple.eml` to a forwarding address; add `--http` to go through the
-     signed webhook as well.
-   - End to end: create a forwarding address in an inbox's settings, send a real email to it (or
-     press *Send test email*), then watch `npx wrangler tail` and the inbox.
+    - Locally, without Cloudflare: `php artisan mail:forwarding:simulate <address>` delivers
+      `tests/Fixtures/mail/simple.eml` to a forwarding address; add `--http` to go through the
+      signed webhook as well.
+    - End to end: create a forwarding address in an inbox's settings, send a real email to it (or
+      press _Send test email_), then watch `npx wrangler tail` and the inbox.
 
 ## Configuration
 
-| Name                  | Type   | Description                                                                 |
-| --------------------- | ------ | --------------------------------------------------------------------------- |
-| `TANDEM_INGEST_URL`    | var    | Absolute URL of the Tandem webhook.                                          |
-| `TANDEM_WEBHOOK_SECRET`| secret | Shared HMAC secret. Same value as `TANDEM_FORWARDING_WEBHOOK_SECRET`.        |
-| `MAX_BYTES`           | var    | Reject messages above this size before upload (default 26214400 = 25 MiB).  |
-| `FALLBACK_FORWARD_TO` | var    | Optional verified destination address that also receives a copy.            |
+| Name                   | Type   | Description                                                                |
+| ---------------------- | ------ | -------------------------------------------------------------------------- |
+| `TANDEM_INGEST_URL`     | var    | Absolute URL of the Tandem webhook.                                         |
+| `TANDEM_WEBHOOK_SECRET` | secret | Shared HMAC secret. Same value as `TANDEM_FORWARDING_WEBHOOK_SECRET`.       |
+| `MAX_BYTES`            | var    | Reject messages above this size before upload (default 26214400 = 25 MiB). |
+| `FALLBACK_FORWARD_TO`  | var    | Optional verified destination address that also receives a copy.           |
 
 ## Behaviour
 
@@ -62,7 +62,7 @@ The full operator guide lives in [`docs/providers/cloudflare.md`](../../docs/pro
 - Retries up to 3 times with exponential backoff on network errors and 5xx responses.
 - `2xx` (`queued`, `duplicate`, `unknown_recipient`) is success: the message is accepted.
 - `413` rejects the message as too large.
-- Any other final failure rejects with *"Tandem temporarily unavailable, please retry"* so the
+- Any other final failure rejects with _"Tandem temporarily unavailable, please retry"_ so the
   sending MTA keeps the message in its queue and retries instead of silently dropping it.
 
 ## Tests

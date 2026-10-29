@@ -23,8 +23,15 @@ test('forwarded mail shows up in the list in real time', async ({ page }) => {
     const file = `test-results/realtime-${Date.now()}.eml`;
     writeFileSync(file, eml);
 
-    execSync(`php artisan mail:forwarding:simulate ${address} ${file}`, { cwd: process.cwd(), stdio: 'pipe' });
+    execSync(`php artisan mail:forwarding:simulate ${address} ${file}`, {
+        cwd: process.cwd(),
+        stdio: 'pipe',
+    });
 
-    await expect(page.locator('article', { hasText: subject })).toBeVisible({ timeout: 20_000 });
-    await expect(page.locator('article', { hasText: subject })).toContainText('Hedy Lamarr');
+    await expect(page.locator('article', { hasText: subject })).toBeVisible({
+        timeout: 20_000,
+    });
+    await expect(page.locator('article', { hasText: subject })).toContainText(
+        'Hedy Lamarr',
+    );
 });

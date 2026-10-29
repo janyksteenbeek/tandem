@@ -1,19 +1,33 @@
 {
-  "history": [
-    {
-      "id": "1002",
-      "messages": [{"id": "msg-1", "threadId": "thread-1"}],
-      "labelsRemoved": [
-        {"message": {"id": "msg-1", "threadId": "thread-1", "labelIds": ["TRASH"]}, "labelIds": ["INBOX"]}
-      ]
-    },
-    {
-      "id": "1003",
-      "messages": [{"id": "msg-1", "threadId": "thread-1"}],
-      "labelsAdded": [
-        {"message": {"id": "msg-1", "threadId": "thread-1", "labelIds": ["TRASH"]}, "labelIds": ["TRASH"]}
-      ]
-    }
-  ],
-  "historyId": "1020"
+    "history": [
+        {
+            "id": "1002",
+            "messages": [{ "id": "msg-1", "threadId": "thread-1" }],
+            "labelsRemoved": [
+                {
+                    "message": {
+                        "id": "msg-1",
+                        "threadId": "thread-1",
+                        "labelIds": ["TRASH"]
+                    },
+                    "labelIds": ["INBOX"]
+                }
+            ]
+        },
+        {
+            "id": "1003",
+            "messages": [{ "id": "msg-1", "threadId": "thread-1" }],
+            "labelsAdded": [
+                {
+                    "message": {
+                        "id": "msg-1",
+                        "threadId": "thread-1",
+                        "labelIds": ["TRASH"]
+                    },
+                    "labelIds": ["TRASH"]
+                }
+            ]
+        }
+    ],
+    "historyId": "1020"
 }

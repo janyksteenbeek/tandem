@@ -25,7 +25,8 @@ defineProps<Props>();
 const leaveOrganizationDialogOpen = ref(false);
 const organizationLeaving = ref<Organization | null>(null);
 
-const canLeaveOrganization = (organization: Organization) => !organization.isPersonal && organization.role !== 'owner';
+const canLeaveOrganization = (organization: Organization) =>
+    !organization.isPersonal && organization.role !== 'owner';
 
 const openLeaveOrganizationDialog = (organization: Organization) => {
     organizationLeaving.value = organization;
@@ -74,8 +75,13 @@ defineOptions({
                 <div class="flex items-center gap-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="font-medium">{{ organization.name }}</span>
-                            <Badge v-if="organization.isPersonal" variant="secondary">
+                            <span class="font-medium">{{
+                                organization.name
+                            }}</span>
+                            <Badge
+                                v-if="organization.isPersonal"
+                                variant="secondary"
+                            >
                                 Personal
                             </Badge>
                         </div>
@@ -93,7 +99,11 @@ defineOptions({
                                     data-test="organization-leave-button"
                                     variant="ghost"
                                     size="sm"
-                                    @click="openLeaveOrganizationDialog(organization)"
+                                    @click="
+                                        openLeaveOrganizationDialog(
+                                            organization,
+                                        )
+                                    "
                                 >
                                     <LogOut class="h-4 w-4" />
                                 </Button>
@@ -151,5 +161,8 @@ defineOptions({
         </div>
     </div>
 
-    <LeaveOrganizationModal v-model:open="leaveOrganizationDialogOpen" :organization="organizationLeaving" />
+    <LeaveOrganizationModal
+        v-model:open="leaveOrganizationDialogOpen"
+        :organization="organizationLeaving"
+    />
 </template>

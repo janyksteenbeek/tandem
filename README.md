@@ -4,7 +4,7 @@ Tandem is a calm, fast email client for people and the teams they work in. Conne
 
 - **Personal email, first class** — Inbox, Starred, Later (snooze), Drafts, Sent, Archive, Spam, Trash; threading, rich-text compose with inline images and attachments, multiple accounts and sender identities, search across every account, keyboard-driven navigation, bulk actions.
 - **Shared team inboxes** — assign, reassign, Open / Waiting / Later / Done, tags, priorities, followers, internal comments with @mentions, shared drafts, activity timeline, presence and collision detection, views for Unassigned / Assigned to me / All.
-- **Personal → team collaboration** — explicitly *share* a personal conversation with a team inbox (it stays in your mailbox) or *transfer* it (the team inbox owns it). Neither touches your provider; the distinction is shown in the UI.
+- **Personal → team collaboration** — explicitly _share_ a personal conversation with a team inbox (it stays in your mailbox) or _transfer_ it (the team inbox owns it). Neither touches your provider; the distinction is shown in the UI.
 - **Providers** — Gmail API (OAuth per organization, history sync, Pub/Sub push with watch renewal and reconciliation), IMAP/SMTP (UID/UIDVALIDITY tracking, IDLE and polling, SMTP sending), Cloudflare Email Routing (Google Group and Forward channels on generated addresses, handled by a real Email Worker).
 - **Automations** — a rule engine with triggers, conditions and actions, business hours, reusable templates with variables, auto-responders with cooldowns and loop prevention, and a full audit history.
 
@@ -26,7 +26,7 @@ php artisan horizon                   # queues: mail-inbound, mail-outbound, mai
 php artisan schedule:work             # watch renewal, IMAP polling, reconciliation, snooze wake-ups, business hours
 ```
 
-Demo login: `demo@tandem.test` / `password` (organization *Northwind Labs*). The seeder pushes hand-written MIME through the real ingestion pipeline, so what you see is exactly how synced mail behaves.
+Demo login: `demo@tandem.test` / `password` (organization _Northwind Labs_). The seeder pushes hand-written MIME through the real ingestion pipeline, so what you see is exactly how synced mail behaves.
 
 Optional long-running process for instant IMAP delivery: `php artisan mail:imap:idle`.
 

@@ -4,12 +4,22 @@ import { VueRenderer } from '@tiptap/vue-3';
 import MentionList from '@/components/mail/MentionList.vue';
 import type { UserSummary } from '@/types';
 
-export function mentionSuggestion(members: () => UserSummary[]): Omit<SuggestionOptions<UserSummary, MentionNodeAttrs>, 'editor'> {
+export function mentionSuggestion(
+    members: () => UserSummary[],
+): Omit<SuggestionOptions<UserSummary, MentionNodeAttrs>, 'editor'> {
     return {
         char: '@',
         items: ({ query }) =>
             members()
-                .filter((member) => member.name.toLowerCase().includes(query.toLowerCase()) || member.email.toLowerCase().includes(query.toLowerCase()))
+                .filter(
+                    (member) =>
+                        member.name
+                            .toLowerCase()
+                            .includes(query.toLowerCase()) ||
+                        member.email
+                            .toLowerCase()
+                            .includes(query.toLowerCase()),
+                )
                 .slice(0, 6),
         render: () => {
             let component: VueRenderer | null = null;
@@ -26,7 +36,10 @@ export function mentionSuggestion(members: () => UserSummary[]): Omit<Suggestion
 
             return {
                 onStart: (props) => {
-                    component = new VueRenderer(MentionList, { props, editor: props.editor });
+                    component = new VueRenderer(MentionList, {
+                        props,
+                        editor: props.editor,
+                    });
                     popup = document.createElement('div');
                     popup.className = 'fixed z-[60]';
                     popup.appendChild(component.element as HTMLElement);
@@ -44,7 +57,15 @@ export function mentionSuggestion(members: () => UserSummary[]): Omit<Suggestion
                         return true;
                     }
 
-                    return (component?.ref as { onKeyDown?: (p: { event: KeyboardEvent }) => boolean } | null)?.onKeyDown?.(props) ?? false;
+                    return (
+                        (
+                            component?.ref as {
+                                onKeyDown?: (p: {
+                                    event: KeyboardEvent;
+                                }) => boolean;
+                            } | null
+                        )?.onKeyDown?.(props) ?? false
+                    );
                 },
                 onExit: () => {
                     popup?.remove();

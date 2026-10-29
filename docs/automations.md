@@ -7,29 +7,29 @@ notify a manager when a conversation is reopened. Everything lives in the backen
 
 ## Concepts
 
-| Concept | Model | Notes |
-| --- | --- | --- |
-| Rule | `AutomationRule` | Belongs to an organization. `inbox_id = null` means "every shared inbox of the organization"; otherwise the rule only fires for conversations **owned** by that inbox (conversations merely shared into it do not count). Ordered by `position`. |
-| Trigger | `AutomationTrigger` enum | When the rule is evaluated (see below). |
-| Condition | JSON on the rule | Combined with `match: "all"` or `match: "any"`. A rule with no conditions always matches. |
-| Action | JSON on the rule | Executed in order inside one database transaction per rule. |
-| Run | `AutomationRun` | Audit row per rule per evaluation: `matched`, `skipped` or `failed` with full details. |
-| Template | `MessageTemplate` | Subject + HTML body with variables, used by `reply_with_template`. |
-| Ledger | `AutoresponderSend` | One row per automated reply (rule, conversation, recipient, sent_at); drives cooldowns. |
+| Concept   | Model                    | Notes                                                                                                                                                                                                                                            |
+| --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Rule      | `AutomationRule`         | Belongs to an organization. `inbox_id = null` means "every shared inbox of the organization"; otherwise the rule only fires for conversations **owned** by that inbox (conversations merely shared into it do not count). Ordered by `position`. |
+| Trigger   | `AutomationTrigger` enum | When the rule is evaluated (see below).                                                                                                                                                                                                          |
+| Condition | JSON on the rule         | Combined with `match: "all"` or `match: "any"`. A rule with no conditions always matches.                                                                                                                                                        |
+| Action    | JSON on the rule         | Executed in order inside one database transaction per rule.                                                                                                                                                                                      |
+| Run       | `AutomationRun`          | Audit row per rule per evaluation: `matched`, `skipped` or `failed` with full details.                                                                                                                                                           |
+| Template  | `MessageTemplate`        | Subject + HTML body with variables, used by `reply_with_template`.                                                                                                                                                                               |
+| Ledger    | `AutoresponderSend`      | One row per automated reply (rule, conversation, recipient, sent_at); drives cooldowns.                                                                                                                                                          |
 
 Personal inboxes (`organization_id = null`) never run automations.
 
 ### Triggers
 
-| Value | Fires when |
-| --- | --- |
-| `conversation_received` | An inbound message creates a new conversation (`MessageIngested` with `isNewConversation`). |
-| `reply_received` | An inbound message lands in an existing conversation. |
-| `conversation_assigned` | A conversation gets an assignee (`ConversationAssigned` with a non-null assignee). |
-| `conversation_moved` | A conversation is moved to another inbox. |
-| `conversation_closed` | Status changes to `closed`. |
-| `conversation_reopened` | Status changes from `closed` to `open`, or an inbound message reopens a closed conversation. |
-| `tag_added` | A tag is attached. |
+| Value                                             | Fires when                                                                                                                                             |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `conversation_received`                           | An inbound message creates a new conversation (`MessageIngested` with `isNewConversation`).                                                            |
+| `reply_received`                                  | An inbound message lands in an existing conversation.                                                                                                  |
+| `conversation_assigned`                           | A conversation gets an assignee (`ConversationAssigned` with a non-null assignee).                                                                     |
+| `conversation_moved`                              | A conversation is moved to another inbox.                                                                                                              |
+| `conversation_closed`                             | Status changes to `closed`.                                                                                                                            |
+| `conversation_reopened`                           | Status changes from `closed` to `open`, or an inbound message reopens a closed conversation.                                                           |
+| `tag_added`                                       | A tag is attached.                                                                                                                                     |
 | `business_hours_started` / `business_hours_ended` | Evaluated every minute by `automations:business-hours` against every **open** conversation in the relevant inboxes (max 500 per organization per run). |
 
 Event-driven triggers are handled by the queued listener `App\Listeners\Automations\RunAutomations`
@@ -43,18 +43,18 @@ on the `automations` queue. Make sure a Horizon supervisor processes that queue.
 { "field": "sender", "operator": "equals", "value": "@acme.com" }
 ```
 
-| Field | Compares | Value type | Operators |
-| --- | --- | --- | --- |
-| `inbox` | Owning inbox uuid | `inbox` (uuid) | equals, not_equals, in, not_in |
-| `sender` | From address of the triggering inbound message (falls back to the latest inbound message, then the first participant) | `email` | equals, not_equals, contains, not_contains, starts_with, ends_with, matches_regex, in, not_in, is_set, is_empty |
-| `recipient` | All To/Cc/Bcc addresses of that message (any may match) | `email` | same as sender |
-| `subject` | Conversation subject | `text` | equals, not_equals, contains, not_contains, starts_with, ends_with, matches_regex, is_set, is_empty |
-| `body` | Plain-text body of the inbound message (falls back to the snippet) | `text` | same as subject |
-| `tag` | Slugs of attached tags (any may match; value is slugified, so `VIP` matches `vip`) | `tag` (slug) | equals, not_equals, contains, not_contains, in, not_in, is_set, is_empty |
-| `assignee` | Assignee user id | `user` (id) | equals, not_equals, in, not_in, is_set, is_empty |
-| `business_hours` | Whether the organization is open right now | `boolean` | is_true, is_false |
-| `status` | `open`, `pending`, `snoozed`, `closed` | `status` | equals, not_equals, in, not_in |
-| `priority` | `none`, `low`, `normal`, `high`, `urgent` | `priority` | equals, not_equals, in, not_in |
+| Field            | Compares                                                                                                              | Value type     | Operators                                                                                                       |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------- |
+| `inbox`          | Owning inbox uuid                                                                                                     | `inbox` (uuid) | equals, not_equals, in, not_in                                                                                  |
+| `sender`         | From address of the triggering inbound message (falls back to the latest inbound message, then the first participant) | `email`        | equals, not_equals, contains, not_contains, starts_with, ends_with, matches_regex, in, not_in, is_set, is_empty |
+| `recipient`      | All To/Cc/Bcc addresses of that message (any may match)                                                               | `email`        | same as sender                                                                                                  |
+| `subject`        | Conversation subject                                                                                                  | `text`         | equals, not_equals, contains, not_contains, starts_with, ends_with, matches_regex, is_set, is_empty             |
+| `body`           | Plain-text body of the inbound message (falls back to the snippet)                                                    | `text`         | same as subject                                                                                                 |
+| `tag`            | Slugs of attached tags (any may match; value is slugified, so `VIP` matches `vip`)                                    | `tag` (slug)   | equals, not_equals, contains, not_contains, in, not_in, is_set, is_empty                                        |
+| `assignee`       | Assignee user id                                                                                                      | `user` (id)    | equals, not_equals, in, not_in, is_set, is_empty                                                                |
+| `business_hours` | Whether the organization is open right now                                                                            | `boolean`      | is_true, is_false                                                                                               |
+| `status`         | `open`, `pending`, `snoozed`, `closed`                                                                                | `status`       | equals, not_equals, in, not_in                                                                                  |
+| `priority`       | `none`, `low`, `normal`, `high`, `urgent`                                                                             | `priority`     | equals, not_equals, in, not_in                                                                                  |
 
 Operator value shapes: `in` / `not_in` take an array of strings, `is_set` / `is_empty` / `is_true` /
 `is_false` take no value (`null`), everything else takes a single string. All text comparisons are
@@ -73,19 +73,19 @@ the allowed `operators`), `operators` (with `value_shape`), `actions` (with `par
 { "type": "assign_team", "params": { "team_id": 4, "strategy": "round_robin" } }
 ```
 
-| Type | Params | Behaviour |
-| --- | --- | --- |
-| `reply_with_template` | `template_id` (required), `cooldown_minutes?` | Sends the template as a reply to the inbound sender, see *Auto-responders*. |
-| `assign_user` | `user_id` | Assigns an organization member. |
-| `assign_team` | `team_id`, `strategy: "round_robin" \| "least_busy"` | Round robin cycles through team members (cache counter per team); least busy picks the member with the fewest open/pending conversations in the organization. |
-| `move_to_inbox` | `inbox_uuid` | Moves the conversation; `origin_inbox_id` is kept. |
-| `add_tag` | `tag_id` **or** `tag_name` | `tag_name` finds or creates an organization tag. |
-| `remove_tag` | `tag_id` **or** `tag_name` | No-op when the tag is missing or not attached. |
-| `set_priority` | `priority: "none" \| "low" \| "normal" \| "high" \| "urgent"` | |
-| `set_status` | `status: "open" \| "pending" \| "closed"` | Snoozing is not supported. |
-| `notify_users` | `user_ids: []`, `message?` | Database notification (`App\Notifications\AutomationNotification`) for each member. |
-| `add_follower` | `user_id` | |
-| `add_comment` | `body` | Internal note authored by the rule creator (or the organization owner). Supports variables. |
+| Type                  | Params                                                        | Behaviour                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `reply_with_template` | `template_id` (required), `cooldown_minutes?`                 | Sends the template as a reply to the inbound sender, see _Auto-responders_.                                                                                   |
+| `assign_user`         | `user_id`                                                     | Assigns an organization member.                                                                                                                               |
+| `assign_team`         | `team_id`, `strategy: "round_robin" \| "least_busy"`          | Round robin cycles through team members (cache counter per team); least busy picks the member with the fewest open/pending conversations in the organization. |
+| `move_to_inbox`       | `inbox_uuid`                                                  | Moves the conversation; `origin_inbox_id` is kept.                                                                                                            |
+| `add_tag`             | `tag_id` **or** `tag_name`                                    | `tag_name` finds or creates an organization tag.                                                                                                              |
+| `remove_tag`          | `tag_id` **or** `tag_name`                                    | No-op when the tag is missing or not attached.                                                                                                                |
+| `set_priority`        | `priority: "none" \| "low" \| "normal" \| "high" \| "urgent"` |                                                                                                                                                               |
+| `set_status`          | `status: "open" \| "pending" \| "closed"`                     | Snoozing is not supported.                                                                                                                                    |
+| `notify_users`        | `user_ids: []`, `message?`                                    | Database notification (`App\Notifications\AutomationNotification`) for each member.                                                                           |
+| `add_follower`        | `user_id`                                                     |                                                                                                                                                               |
+| `add_comment`         | `body`                                                        | Internal note authored by the rule creator (or the organization owner). Supports variables.                                                                   |
 
 Each action writes the same `ConversationEvent` a human would (`assigned`, `moved`, `tag_added`,
 `priority_changed`, ...) with a `null` actor and `automation_rule_id` in the payload, and dispatches
@@ -98,20 +98,27 @@ when skipped (`already_assigned`, `tag_not_found`, `cooldown`, `auto_submitted`,
 
 ```json
 {
-  "name": "Route billing to Finance",
-  "description": "Anything sent to billing@ goes to the finance team",
-  "inbox_uuid": null,
-  "trigger": "conversation_received",
-  "match": "all",
-  "is_active": true,
-  "cooldown_minutes": null,
-  "conditions": [
-    { "field": "recipient", "operator": "equals", "value": "billing@acme.com" }
-  ],
-  "actions": [
-    { "type": "move_to_inbox", "params": { "inbox_uuid": "9d3f..." } },
-    { "type": "assign_team", "params": { "team_id": 4, "strategy": "least_busy" } }
-  ]
+    "name": "Route billing to Finance",
+    "description": "Anything sent to billing@ goes to the finance team",
+    "inbox_uuid": null,
+    "trigger": "conversation_received",
+    "match": "all",
+    "is_active": true,
+    "cooldown_minutes": null,
+    "conditions": [
+        {
+            "field": "recipient",
+            "operator": "equals",
+            "value": "billing@acme.com"
+        }
+    ],
+    "actions": [
+        { "type": "move_to_inbox", "params": { "inbox_uuid": "9d3f..." } },
+        {
+            "type": "assign_team",
+            "params": { "team_id": 4, "strategy": "least_busy" }
+        }
+    ]
 }
 ```
 
@@ -124,18 +131,18 @@ the same conversation inside the window is skipped (`reason: "cooldown"`). The a
 Templates and `add_comment` bodies use `{{ variable }}` placeholders. Values are HTML-escaped and
 unknown variables render as empty strings.
 
-| Variable | Value |
-| --- | --- |
-| `{{ contact.name }}` | Sender name (falls back to the local part of the address) |
-| `{{ contact.first_name }}` | First word of the name |
-| `{{ contact.email }}` | Sender address (Reply-To preferred) |
-| `{{ conversation.subject }}` | |
-| `{{ conversation.id }}` | Conversation uuid |
-| `{{ inbox.name }}` | |
-| `{{ organization.name }}` | |
-| `{{ assignee.name }}` / `{{ assignee.first_name }}` | Empty when unassigned |
-| `{{ date }}` / `{{ time }}` | Now, in the organization's business-hours timezone |
-| `{{ next_business_day }}` | e.g. `Monday November 2, 2026` |
+| Variable                                            | Value                                                     |
+| --------------------------------------------------- | --------------------------------------------------------- |
+| `{{ contact.name }}`                                | Sender name (falls back to the local part of the address) |
+| `{{ contact.first_name }}`                          | First word of the name                                    |
+| `{{ contact.email }}`                               | Sender address (Reply-To preferred)                       |
+| `{{ conversation.subject }}`                        |                                                           |
+| `{{ conversation.id }}`                             | Conversation uuid                                         |
+| `{{ inbox.name }}`                                  |                                                           |
+| `{{ organization.name }}`                           |                                                           |
+| `{{ assignee.name }}` / `{{ assignee.first_name }}` | Empty when unassigned                                     |
+| `{{ date }}` / `{{ time }}`                         | Now, in the organization's business-hours timezone        |
+| `{{ next_business_day }}`                           | e.g. `Monday November 2, 2026`                            |
 
 Template HTML is sanitized with `HtmlSanitizer` on save and again before sending.
 
@@ -145,17 +152,20 @@ Stored on `organizations.business_hours`:
 
 ```json
 {
-  "timezone": "Europe/Amsterdam",
-  "days": {
-    "mon": [{ "start": "09:00", "end": "17:30" }],
-    "tue": [{ "start": "09:00", "end": "12:00" }, { "start": "13:00", "end": "17:30" }],
-    "wed": [{ "start": "09:00", "end": "17:30" }],
-    "thu": [{ "start": "09:00", "end": "17:30" }],
-    "fri": [{ "start": "09:00", "end": "16:00" }],
-    "sat": [],
-    "sun": []
-  },
-  "holidays": ["2026-12-25", "2026-12-26"]
+    "timezone": "Europe/Amsterdam",
+    "days": {
+        "mon": [{ "start": "09:00", "end": "17:30" }],
+        "tue": [
+            { "start": "09:00", "end": "12:00" },
+            { "start": "13:00", "end": "17:30" }
+        ],
+        "wed": [{ "start": "09:00", "end": "17:30" }],
+        "thu": [{ "start": "09:00", "end": "17:30" }],
+        "fri": [{ "start": "09:00", "end": "16:00" }],
+        "sat": [],
+        "sun": []
+    },
+    "holidays": ["2026-12-25", "2026-12-26"]
 }
 ```
 
@@ -200,18 +210,24 @@ Every evaluation writes an `AutomationRun`:
 
 ```json
 {
-  "status": "matched",
-  "trigger": "conversation_received",
-  "details": {
-    "match": "all",
-    "conditions": [
-      { "field": "sender", "operator": "equals", "value": "@acme.com", "actual": "jane@acme.com", "passed": true }
-    ],
-    "actions": [
-      { "type": "add_tag", "status": "done", "tag_id": 12, "tag": "VIP" },
-      { "type": "set_priority", "status": "done", "priority": "high" }
-    ]
-  }
+    "status": "matched",
+    "trigger": "conversation_received",
+    "details": {
+        "match": "all",
+        "conditions": [
+            {
+                "field": "sender",
+                "operator": "equals",
+                "value": "@acme.com",
+                "actual": "jane@acme.com",
+                "passed": true
+            }
+        ],
+        "actions": [
+            { "type": "add_tag", "status": "done", "tag_id": 12, "tag": "VIP" },
+            { "type": "set_priority", "status": "done", "priority": "high" }
+        ]
+    }
 }
 ```
 
@@ -226,23 +242,23 @@ A rule that throws never affects other rules, and the engine never throws into t
 
 All routes live under `/{organization-slug}/settings/...` and require the owner or admin role.
 
-| Method | Route | Name | Purpose |
-| --- | --- | --- | --- |
-| GET | `settings/automations` | `automations.index` | Inertia `settings/automations/Index` with `rules`, `catalog` |
-| GET | `settings/automations/create` | `automations.create` | Inertia `settings/automations/Edit` (`rule: null`) |
-| POST | `settings/automations` | `automations.store` | Create; redirects to edit |
-| GET | `settings/automations/{rule}/edit` | `automations.edit` | Inertia `settings/automations/Edit` with `rule`, `recentRuns`, `inboxes`, `tags`, `users`, `teams`, `templates`, `catalog` |
-| PUT | `settings/automations/{rule}` | `automations.update` | |
-| DELETE | `settings/automations/{rule}` | `automations.destroy` | Soft delete |
-| PATCH | `settings/automations/{rule}/toggle` | `automations.toggle` | Body `{ is_active?: bool }`; omitted flips |
-| POST | `settings/automations/reorder` | `automations.reorder` | Body `{ rules: [uuid, ...] }` in the new order |
-| GET | `settings/automations/{rule}/runs` | `automations.runs` | JSON `{ data: [...], meta: {...} }`; `?status=&per_page=&page=` |
-| POST | `settings/automations/{rule}/test` | `automations.test` | Body `{ conversation_uuid, conditions?, match? }` → `{ matched, match, conditions: [...], would_run }` |
-| GET | `settings/templates` | `templates.index` | Inertia `settings/templates/Index` with `templates`, `inboxes`, `variables` |
-| POST | `settings/templates` | `templates.store` | `{ name, category?, subject?, body_html, inbox_uuid? }` |
-| PUT | `settings/templates/{template}` | `templates.update` | |
-| DELETE | `settings/templates/{template}` | `templates.destroy` | |
-| POST | `settings/templates/preview` | `templates.preview` | `{ body_html, subject?, conversation_uuid? }` → `{ subject, body_html, variables, conversation }` |
+| Method | Route                                | Name                  | Purpose                                                                                                                    |
+| ------ | ------------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `settings/automations`               | `automations.index`   | Inertia `settings/automations/Index` with `rules`, `catalog`                                                               |
+| GET    | `settings/automations/create`        | `automations.create`  | Inertia `settings/automations/Edit` (`rule: null`)                                                                         |
+| POST   | `settings/automations`               | `automations.store`   | Create; redirects to edit                                                                                                  |
+| GET    | `settings/automations/{rule}/edit`   | `automations.edit`    | Inertia `settings/automations/Edit` with `rule`, `recentRuns`, `inboxes`, `tags`, `users`, `teams`, `templates`, `catalog` |
+| PUT    | `settings/automations/{rule}`        | `automations.update`  |                                                                                                                            |
+| DELETE | `settings/automations/{rule}`        | `automations.destroy` | Soft delete                                                                                                                |
+| PATCH  | `settings/automations/{rule}/toggle` | `automations.toggle`  | Body `{ is_active?: bool }`; omitted flips                                                                                 |
+| POST   | `settings/automations/reorder`       | `automations.reorder` | Body `{ rules: [uuid, ...] }` in the new order                                                                             |
+| GET    | `settings/automations/{rule}/runs`   | `automations.runs`    | JSON `{ data: [...], meta: {...} }`; `?status=&per_page=&page=`                                                            |
+| POST   | `settings/automations/{rule}/test`   | `automations.test`    | Body `{ conversation_uuid, conditions?, match? }` → `{ matched, match, conditions: [...], would_run }`                     |
+| GET    | `settings/templates`                 | `templates.index`     | Inertia `settings/templates/Index` with `templates`, `inboxes`, `variables`                                                |
+| POST   | `settings/templates`                 | `templates.store`     | `{ name, category?, subject?, body_html, inbox_uuid? }`                                                                    |
+| PUT    | `settings/templates/{template}`      | `templates.update`    |                                                                                                                            |
+| DELETE | `settings/templates/{template}`      | `templates.destroy`   |                                                                                                                            |
+| POST   | `settings/templates/preview`         | `templates.preview`   | `{ body_html, subject?, conversation_uuid? }` → `{ subject, body_html, variables, conversation }`                          |
 
 ## Examples
 
@@ -250,11 +266,18 @@ All routes live under `/{organization-slug}/settings/...` and require the owner 
 
 ```json
 {
-  "name": "Out of office",
-  "trigger": "conversation_received",
-  "match": "all",
-  "conditions": [{ "field": "business_hours", "operator": "is_false", "value": null }],
-  "actions": [{ "type": "reply_with_template", "params": { "template_id": 3, "cooldown_minutes": 1440 } }]
+    "name": "Out of office",
+    "trigger": "conversation_received",
+    "match": "all",
+    "conditions": [
+        { "field": "business_hours", "operator": "is_false", "value": null }
+    ],
+    "actions": [
+        {
+            "type": "reply_with_template",
+            "params": { "template_id": 3, "cooldown_minutes": 1440 }
+        }
+    ]
 }
 ```
 
@@ -262,7 +285,10 @@ Template body:
 
 ```html
 <p>Hi {{ contact.first_name }},</p>
-<p>Thanks for contacting {{ organization.name }}. We're closed right now and will get back to you on {{ next_business_day }}.</p>
+<p>
+    Thanks for contacting {{ organization.name }}. We're closed right now and
+    will get back to you on {{ next_business_day }}.
+</p>
 ```
 
 ### After-hours responder for the support inbox only
@@ -275,18 +301,32 @@ sender per day).
 
 ```json
 {
-  "name": "Billing to Finance",
-  "trigger": "conversation_received",
-  "match": "any",
-  "conditions": [
-    { "field": "recipient", "operator": "equals", "value": "billing@acme.com" },
-    { "field": "subject", "operator": "matches_regex", "value": "\\b(invoice|receipt|refund)\\b" }
-  ],
-  "actions": [
-    { "type": "move_to_inbox", "params": { "inbox_uuid": "<finance inbox uuid>" } },
-    { "type": "assign_team", "params": { "team_id": 7, "strategy": "least_busy" } },
-    { "type": "add_tag", "params": { "tag_name": "billing" } }
-  ]
+    "name": "Billing to Finance",
+    "trigger": "conversation_received",
+    "match": "any",
+    "conditions": [
+        {
+            "field": "recipient",
+            "operator": "equals",
+            "value": "billing@acme.com"
+        },
+        {
+            "field": "subject",
+            "operator": "matches_regex",
+            "value": "\\b(invoice|receipt|refund)\\b"
+        }
+    ],
+    "actions": [
+        {
+            "type": "move_to_inbox",
+            "params": { "inbox_uuid": "<finance inbox uuid>" }
+        },
+        {
+            "type": "assign_team",
+            "params": { "team_id": 7, "strategy": "least_busy" }
+        },
+        { "type": "add_tag", "params": { "tag_name": "billing" } }
+    ]
 }
 ```
 
@@ -294,17 +334,32 @@ sender per day).
 
 ```json
 {
-  "name": "VIP customers",
-  "trigger": "conversation_received",
-  "match": "any",
-  "conditions": [
-    { "field": "sender", "operator": "in", "value": ["@bigcorp.com", "@enterprise.io"] }
-  ],
-  "actions": [
-    { "type": "add_tag", "params": { "tag_name": "VIP" } },
-    { "type": "set_priority", "params": { "priority": "urgent" } },
-    { "type": "notify_users", "params": { "user_ids": [2, 5], "message": "VIP conversation received" } },
-    { "type": "add_comment", "params": { "body": "Auto-flagged: {{ contact.email }} is a VIP account." } }
-  ]
+    "name": "VIP customers",
+    "trigger": "conversation_received",
+    "match": "any",
+    "conditions": [
+        {
+            "field": "sender",
+            "operator": "in",
+            "value": ["@bigcorp.com", "@enterprise.io"]
+        }
+    ],
+    "actions": [
+        { "type": "add_tag", "params": { "tag_name": "VIP" } },
+        { "type": "set_priority", "params": { "priority": "urgent" } },
+        {
+            "type": "notify_users",
+            "params": {
+                "user_ids": [2, 5],
+                "message": "VIP conversation received"
+            }
+        },
+        {
+            "type": "add_comment",
+            "params": {
+                "body": "Auto-flagged: {{ contact.email }} is a VIP account."
+            }
+        }
+    ]
 }
 ```

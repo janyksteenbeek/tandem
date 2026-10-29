@@ -2,7 +2,13 @@ import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch, type Ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { api, reportError } from '@/lib/http';
-import type { Draft, DraftAttachment, DraftKind, EmailAddress, Message } from '@/types';
+import type {
+    Draft,
+    DraftAttachment,
+    DraftKind,
+    EmailAddress,
+    Message,
+} from '@/types';
 
 export type DraftPatch = {
     to?: EmailAddress[];
@@ -36,8 +42,15 @@ export function useDraft(initial?: Draft | null) {
         saving.value = true;
 
         try {
-            const data = await api.patch<{ draft: Draft }>(`/drafts/${draft.value.uuid}`, patch as Record<string, unknown>);
-            draft.value = { ...draft.value, ...data.draft, html_body: draft.value.html_body };
+            const data = await api.patch<{ draft: Draft }>(
+                `/drafts/${draft.value.uuid}`,
+                patch as Record<string, unknown>,
+            );
+            draft.value = {
+                ...draft.value,
+                ...data.draft,
+                html_body: draft.value.html_body,
+            };
             lastSavedAt.value = data.draft.last_saved_at;
             dirty.value = Object.keys(pending.value).length > 0;
         } catch (error) {
@@ -50,8 +63,17 @@ export function useDraft(initial?: Draft | null) {
 
     const debouncedFlush = useDebounceFn(flush, 900);
 
-    const create = async (params: { inbox: string; conversation?: string | null; kind: DraftKind; in_reply_to?: string | null; is_shared?: boolean }) => {
-        const data = await api.post<{ draft: Draft }>('/drafts', params as Record<string, unknown>);
+    const create = async (params: {
+        inbox: string;
+        conversation?: string | null;
+        kind: DraftKind;
+        in_reply_to?: string | null;
+        is_shared?: boolean;
+    }) => {
+        const data = await api.post<{ draft: Draft }>(
+            '/drafts',
+            params as Record<string, unknown>,
+        );
         draft.value = data.draft;
         lastSavedAt.value = data.draft.last_saved_at;
         dirty.value = false;
@@ -70,7 +92,10 @@ export function useDraft(initial?: Draft | null) {
         void debouncedFlush();
     };
 
-    const upload = async (file: File, inline = false): Promise<DraftAttachment | null> => {
+    const upload = async (
+        file: File,
+        inline = false,
+    ): Promise<DraftAttachment | null> => {
         if (!draft.value) {
             return null;
         }
@@ -80,8 +105,14 @@ export function useDraft(initial?: Draft | null) {
         form.append('inline', inline ? '1' : '0');
 
         try {
-            const data = await api.post<{ attachment: DraftAttachment }>(`/drafts/${draft.value.uuid}/attachments`, form);
-            draft.value.attachments = [...draft.value.attachments, data.attachment];
+            const data = await api.post<{ attachment: DraftAttachment }>(
+                `/drafts/${draft.value.uuid}/attachments`,
+                form,
+            );
+            draft.value.attachments = [
+                ...draft.value.attachments,
+                data.attachment,
+            ];
 
             return data.attachment;
         } catch (error) {
@@ -96,16 +127,22 @@ export function useDraft(initial?: Draft | null) {
             return;
         }
 
-        draft.value.attachments = draft.value.attachments.filter((a) => a.uuid !== attachment.uuid);
+        draft.value.attachments = draft.value.attachments.filter(
+            (a) => a.uuid !== attachment.uuid,
+        );
 
         try {
-            await api.delete(`/drafts/${draft.value.uuid}/attachments/${attachment.uuid}`);
+            await api.delete(
+                `/drafts/${draft.value.uuid}/attachments/${attachment.uuid}`,
+            );
         } catch (error) {
             reportError(error);
         }
     };
 
-    const send = async (then: 'open' | 'close' | 'pending' = 'open'): Promise<{ message: Message; conversation_uuid: string } | null> => {
+    const send = async (
+        then: 'open' | 'close' | 'pending' = 'open',
+    ): Promise<{ message: Message; conversation_uuid: string } | null> => {
         if (!draft.value) {
             return null;
         }
@@ -114,9 +151,14 @@ export function useDraft(initial?: Draft | null) {
         sending.value = true;
 
         try {
-            const data = await api.post<{ message: Message; conversation_uuid: string }>(`/drafts/${draft.value.uuid}/send`, { then });
+            const data = await api.post<{
+                message: Message;
+                conversation_uuid: string;
+            }>(`/drafts/${draft.value.uuid}/send`, { then });
             draft.value = null;
-            toast.success('Sending…', { description: 'We will let you know if delivery fails.' });
+            toast.success('Sending…', {
+                description: 'We will let you know if delivery fails.',
+            });
 
             return data;
         } catch (error) {
@@ -163,5 +205,18 @@ export function useDraft(initial?: Draft | null) {
         }
     });
 
-    return { draft, saving, sending, dirty, savedLabel, create, update, flush, upload, removeAttachment, send, discard };
+    return {
+        draft,
+        saving,
+        sending,
+        dirty,
+        savedLabel,
+        create,
+        update,
+        flush,
+        upload,
+        removeAttachment,
+        send,
+        discard,
+    };
 }

@@ -2,13 +2,13 @@
 
 ## Processes
 
-| Process | Command | Notes |
-|---|---|---|
-| Web | PHP-FPM / Octane serving `public/` | `APP_URL` must be the public HTTPS origin (OAuth redirect and webhooks derive from it). |
-| Queues | `php artisan horizon` | Supervisor consumes `mail-inbound, mail-outbound, mail-sync, broadcasts, notifications, automations, default`. Timeout is 300s for initial syncs. |
-| Scheduler | `php artisan schedule:run` every minute (cron) | Gmail watch renewal (hourly), Gmail reconcile (15 min), IMAP poll (1 min), snooze wake-ups (1 min), business-hours triggers (1 min). |
-| Realtime | `php artisan reverb:start` | Put behind TLS (`REVERB_SCHEME=https`), expose the port to browsers. |
-| IMAP IDLE (optional) | `php artisan mail:imap:idle` | One process; reconnects with backoff. |
+| Process              | Command                                        | Notes                                                                                                                                             |
+| -------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web                  | PHP-FPM / Octane serving `public/`             | `APP_URL` must be the public HTTPS origin (OAuth redirect and webhooks derive from it).                                                           |
+| Queues               | `php artisan horizon`                          | Supervisor consumes `mail-inbound, mail-outbound, mail-sync, broadcasts, notifications, automations, default`. Timeout is 300s for initial syncs. |
+| Scheduler            | `php artisan schedule:run` every minute (cron) | Gmail watch renewal (hourly), Gmail reconcile (15 min), IMAP poll (1 min), snooze wake-ups (1 min), business-hours triggers (1 min).              |
+| Realtime             | `php artisan reverb:start`                     | Put behind TLS (`REVERB_SCHEME=https`), expose the port to browsers.                                                                              |
+| IMAP IDLE (optional) | `php artisan mail:imap:idle`                   | One process; reconnects with backoff.                                                                                                             |
 
 ## Environment
 

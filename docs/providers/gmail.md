@@ -21,15 +21,16 @@ adapter behaves in production.
 3. Fill in the app name, support email and developer contact.
 4. Under **Scopes**, add exactly the scopes Tandem requests (`config/tandem.php`, `gmail.scopes`):
 
-   | Scope | Why |
-   | --- | --- |
-   | `https://www.googleapis.com/auth/gmail.modify` | read mail, send mail, change labels (read/unread, star, archive, trash, spam) |
-   | `https://www.googleapis.com/auth/userinfo.email` | learn which Google account was connected |
-   | `https://www.googleapis.com/auth/userinfo.profile` | default display name for the sender identity |
+    | Scope                                              | Why                                                                           |
+    | -------------------------------------------------- | ----------------------------------------------------------------------------- |
+    | `https://www.googleapis.com/auth/gmail.modify`     | read mail, send mail, change labels (read/unread, star, archive, trash, spam) |
+    | `https://www.googleapis.com/auth/userinfo.email`   | learn which Google account was connected                                      |
+    | `https://www.googleapis.com/auth/userinfo.profile` | default display name for the sender identity                                  |
 
-   `gmail.modify` is a restricted scope. While the app is in **Testing** mode only listed test
-   users can connect and refresh tokens expire after seven days; publish the app (and complete
-   Google's verification for restricted scopes) before using it with customers.
+    `gmail.modify` is a restricted scope. While the app is in **Testing** mode only listed test
+    users can connect and refresh tokens expire after seven days; publish the app (and complete
+    Google's verification for restricted scopes) before using it with customers.
+
 5. Add the Google accounts that will connect during testing under **Test users**.
 
 ## 3. Create an OAuth client (Web application)
@@ -38,13 +39,14 @@ adapter behaves in production.
 2. Application type: **Web application**.
 3. **Authorized redirect URIs**: add
 
-   ```
-   {APP_URL}/mail/connect/gmail/callback
-   ```
+    ```
+    {APP_URL}/mail/connect/gmail/callback
+    ```
 
-   where `{APP_URL}` is the `APP_URL` of your Tandem installation (for example
-   `https://mail.example.com/mail/connect/gmail/callback`). Local development with HTTP works
-   for `http://localhost` style URLs only.
+    where `{APP_URL}` is the `APP_URL` of your Tandem installation (for example
+    `https://mail.example.com/mail/connect/gmail/callback`). Local development with HTTP works
+    for `http://localhost` style URLs only.
+
 4. Copy the **Client ID** and **Client secret**.
 
 ### Where to put the Client ID and Secret
@@ -73,19 +75,20 @@ Tandem then runs an incremental sync for that account.
 2. Grant Gmail permission to publish to it: open the topic, **Permissions → Add principal**, add
    `gmail-api-push@system.gserviceaccount.com` with the role **Pub/Sub Publisher**.
 3. Create a **push subscription** on the topic:
-   - Delivery type: **Push**
-   - Endpoint URL:
+    - Delivery type: **Push**
+    - Endpoint URL:
 
-     ```
-     {APP_URL}/webhooks/gmail/push/{TANDEM_GMAIL_PUBSUB_TOKEN}
-     ```
+        ```
+        {APP_URL}/webhooks/gmail/push/{TANDEM_GMAIL_PUBSUB_TOKEN}
+        ```
 
-     `TANDEM_GMAIL_PUBSUB_TOKEN` is a long random secret from your `.env`
-     (`openssl rand -hex 24`). Requests with a different token are answered with 404.
-   - Acknowledgement deadline: 60 seconds is plenty; the endpoint answers immediately and queues
-     the work.
-   - Retry policy: exponential backoff. Redeliveries are harmless; every Pub/Sub `messageId` is
-     processed once (`webhook_receipts`).
+        `TANDEM_GMAIL_PUBSUB_TOKEN` is a long random secret from your `.env`
+        (`openssl rand -hex 24`). Requests with a different token are answered with 404.
+
+    - Acknowledgement deadline: 60 seconds is plenty; the endpoint answers immediately and queues
+      the work.
+    - Retry policy: exponential backoff. Redeliveries are harmless; every Pub/Sub `messageId` is
+      processed once (`webhook_receipts`).
 4. Put the topic name in Tandem: either per organization (**Organization settings → Integrations
    → Google → Pub/Sub topic**) or globally via `GOOGLE_PUBSUB_TOPIC`.
 
@@ -127,14 +130,14 @@ syncing.
 
 ## 7. How syncing works
 
-| Phase | What happens |
-| --- | --- |
+| Phase                                   | What happens                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Initial import (`SyncRunType::Initial`) | Records the mailbox `historyId`, mirrors Gmail labels into `mail_folders`, then pages through `messages.list` with `newer_than:{days}d -in:chats` (spam and trash included). Each page token is stored in `sync_state.initial_page_token`, so a crashed job resumes where it stopped. At most `TANDEM_GMAIL_SYNC_BATCH_SIZE` messages are fetched per job run; the job re-dispatches itself until the list is exhausted and then sets `initial_sync_completed_at`. Drafts are skipped. |
-| Push notification | Pub/Sub delivers `{emailAddress, historyId}`. If the `historyId` is newer than `sync_state.history_id`, an incremental `SyncMailAccount` job is queued (bursts collapse into one job). |
-| Incremental sync | `history.list` from the stored cursor. `messageAdded` → fetch raw and ingest; `labelAdded`/`labelRemoved` → re-read the label set and refresh the message and conversation flags; `messageDeleted` → soft delete locally. The cursor advances only after every page has been applied. |
-| Reconcile | Gmail keeps history for a limited time. A `404` on `history.list` (or a missing cursor) starts a reconcile: the current `historyId` is remembered, mail since `last_synced_at` (minus one day, or the last 7 days) is listed and re-ingested in batches, and the cursor is moved to the remembered id when done. Ingestion is idempotent on the Gmail message id, so nothing is duplicated. |
-| Watch renewal | Google expires a watch after 7 days. `mail:gmail:renew-watches` runs hourly and renews every healthy account whose watch is missing or expires within `watch_renew_before_hours` (24). |
-| Safety net | `mail:gmail:reconcile` runs every 15 minutes and queues an incremental sync for healthy accounts that have not synced for `TANDEM_GMAIL_RECONCILE_MINUTES`, covering lost push messages. |
+| Push notification                       | Pub/Sub delivers `{emailAddress, historyId}`. If the `historyId` is newer than `sync_state.history_id`, an incremental `SyncMailAccount` job is queued (bursts collapse into one job).                                                                                                                                                                                                                                                                                                |
+| Incremental sync                        | `history.list` from the stored cursor. `messageAdded` → fetch raw and ingest; `labelAdded`/`labelRemoved` → re-read the label set and refresh the message and conversation flags; `messageDeleted` → soft delete locally. The cursor advances only after every page has been applied.                                                                                                                                                                                                 |
+| Reconcile                               | Gmail keeps history for a limited time. A `404` on `history.list` (or a missing cursor) starts a reconcile: the current `historyId` is remembered, mail since `last_synced_at` (minus one day, or the last 7 days) is listed and re-ingested in batches, and the cursor is moved to the remembered id when done. Ingestion is idempotent on the Gmail message id, so nothing is duplicated.                                                                                           |
+| Watch renewal                           | Google expires a watch after 7 days. `mail:gmail:renew-watches` runs hourly and renews every healthy account whose watch is missing or expires within `watch_renew_before_hours` (24).                                                                                                                                                                                                                                                                                                |
+| Safety net                              | `mail:gmail:reconcile` runs every 15 minutes and queues an incremental sync for healthy accounts that have not synced for `TANDEM_GMAIL_RECONCILE_MINUTES`, covering lost push messages.                                                                                                                                                                                                                                                                                               |
 
 Mailbox actions from Tandem (read/unread, star, archive, move to inbox, trash/restore, spam,
 labels) are applied with `messages.batchModify`, `messages.trash` and `messages.untrash`.
@@ -147,7 +150,7 @@ Gmail `threadId` so replies stay in the original thread.
 Google rejected the refresh token (`invalid_grant`) or an API call returned 401/403 for missing
 scopes. Common causes: the user revoked access at <https://myaccount.google.com/permissions>,
 the password was changed on a Workspace account with that policy, the OAuth app is still in
-*Testing* mode (tokens expire after 7 days), or the consent screen scopes were changed. The
+_Testing_ mode (tokens expire after 7 days), or the consent screen scopes were changed. The
 user must reconnect via `/mail/connect/gmail`; the account keeps its inbox and history.
 
 **`history.list` returns 404 / "historyId too old"**
@@ -156,6 +159,7 @@ and logs `Gmail reconcile started`. If reconciles happen constantly, make sure t
 the `mail-sync` queue are running so the cursor keeps advancing.
 
 **No push notifications arrive**
+
 - Check the subscription's endpoint URL contains the current `TANDEM_GMAIL_PUBSUB_TOKEN`.
 - Confirm `gmail-api-push@system.gserviceaccount.com` has **Pub/Sub Publisher** on the topic.
 - The watch may have expired: run `php artisan mail:gmail:renew-watches` and inspect

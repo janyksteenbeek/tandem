@@ -29,18 +29,34 @@ const dashboardUrl = computed(() =>
 const slug = computed(() => page.props.currentOrganization?.slug);
 
 const mainNavItems = computed<NavItem[]>(() => [
-    ...(slug.value ? [{ title: 'Mail', href: `/${slug.value}/mail`, icon: Mail }] : []),
+    ...(slug.value
+        ? [{ title: 'Mail', href: `/${slug.value}/mail`, icon: Mail }]
+        : []),
     { title: 'Mail accounts', href: '/settings/mail-accounts', icon: Settings },
     ...(slug.value
         ? [
-              { title: 'Inboxes', href: `/settings/organizations/${slug.value}/inboxes`, icon: Inbox },
-              { title: 'Teams', href: `/settings/organizations/${slug.value}/teams`, icon: Users },
-              ...(page.props.canManageOrganization ? [{ title: 'Automations', href: `/${slug.value}/settings/automations`, icon: Workflow }] : []),
+              {
+                  title: 'Inboxes',
+                  href: `/settings/organizations/${slug.value}/inboxes`,
+                  icon: Inbox,
+              },
+              {
+                  title: 'Teams',
+                  href: `/settings/organizations/${slug.value}/teams`,
+                  icon: Users,
+              },
+              ...(page.props.canManageOrganization
+                  ? [
+                        {
+                            title: 'Automations',
+                            href: `/${slug.value}/settings/automations`,
+                            icon: Workflow,
+                        },
+                    ]
+                  : []),
           ]
         : []),
 ]);
-
-
 </script>
 
 <template>

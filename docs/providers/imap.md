@@ -9,38 +9,38 @@ by the same ingestion pipeline as every other provider.
 
 Stored on the `mail_accounts` row.
 
-| Column        | Key                      | Values                                                                 |
-|---------------|--------------------------|------------------------------------------------------------------------|
-| `settings`    | `imap.host`              | Hostname                                                               |
-|               | `imap.port`              | `993` (SSL/TLS) or `143` (STARTTLS / none)                             |
-|               | `imap.encryption`        | `ssl`, `tls` (both = implicit TLS), `starttls`, `none`                 |
-|               | `imap.username`          | Login name, usually the address                                        |
-|               | `imap.validate_cert`     | `true` (default). Set `false` only for self-signed internal servers    |
-|               | `smtp.host`              | Hostname                                                               |
-|               | `smtp.port`              | `587` (STARTTLS) or `465` (implicit TLS)                               |
-|               | `smtp.encryption`        | `ssl` (implicit), `tls`/`starttls` (STARTTLS), `none`                  |
-|               | `smtp.username`          | Defaults to the IMAP username                                          |
-|               | `smtp.append_sent`       | `true` (default): copy sent mail into the Sent folder with `\Seen`     |
-| `credentials` | `password`               | IMAP password / app password                                           |
-|               | `smtp_password`          | Optional, when SMTP uses a different password                          |
+| Column        | Key                  | Values                                                              |
+| ------------- | -------------------- | ------------------------------------------------------------------- |
+| `settings`    | `imap.host`          | Hostname                                                            |
+|               | `imap.port`          | `993` (SSL/TLS) or `143` (STARTTLS / none)                          |
+|               | `imap.encryption`    | `ssl`, `tls` (both = implicit TLS), `starttls`, `none`              |
+|               | `imap.username`      | Login name, usually the address                                     |
+|               | `imap.validate_cert` | `true` (default). Set `false` only for self-signed internal servers |
+|               | `smtp.host`          | Hostname                                                            |
+|               | `smtp.port`          | `587` (STARTTLS) or `465` (implicit TLS)                            |
+|               | `smtp.encryption`    | `ssl` (implicit), `tls`/`starttls` (STARTTLS), `none`               |
+|               | `smtp.username`      | Defaults to the IMAP username                                       |
+|               | `smtp.append_sent`   | `true` (default): copy sent mail into the Sent folder with `\Seen`  |
+| `credentials` | `password`           | IMAP password / app password                                        |
+|               | `smtp_password`      | Optional, when SMTP uses a different password                       |
 
 Application config (`config/tandem.php`, `imap` section):
 
-| Key                 | Env                            | Default | Meaning                                                   |
-|---------------------|--------------------------------|---------|-----------------------------------------------------------|
-| `poll_minutes`      | `TANDEM_IMAP_POLL_MINUTES`      | `2`     | How often `mail:imap:poll` queues an incremental sync      |
-| `initial_sync_days` | `TANDEM_IMAP_INITIAL_SYNC_DAYS` | `90`    | Window of history fetched on first sync                   |
-| `batch_size`        | `TANDEM_IMAP_BATCH_SIZE`        | `100`   | Messages fetched per folder per job run                   |
+| Key                 | Env                            | Default | Meaning                                               |
+| ------------------- | ------------------------------ | ------- | ----------------------------------------------------- |
+| `poll_minutes`      | `TANDEM_IMAP_POLL_MINUTES`      | `2`     | How often `mail:imap:poll` queues an incremental sync |
+| `initial_sync_days` | `TANDEM_IMAP_INITIAL_SYNC_DAYS` | `90`    | Window of history fetched on first sync               |
+| `batch_size`        | `TANDEM_IMAP_BATCH_SIZE`        | `100`   | Messages fetched per folder per job run               |
 
 ## Security
 
-* `credentials` is an `encrypted:array` cast: passwords are encrypted at rest with `APP_KEY`
+- `credentials` is an `encrypted:array` cast: passwords are encrypted at rest with `APP_KEY`
   (AES-256-CBC) and never leave the server. Rotating `APP_KEY` without re-encrypting invalidates
-  stored passwords; users then see the account as *Needs reconnect*.
-* Passwords are never written to logs, sync run stats or error messages; the adapter translates
+  stored passwords; users then see the account as _Needs reconnect_.
+- Passwords are never written to logs, sync run stats or error messages; the adapter translates
   library errors into short human-readable messages before they are stored.
-* Certificates are validated by default. Disabling validation is a per-account opt-in.
-* Prefer provider "app passwords" over the primary account password where the provider offers them
+- Certificates are validated by default. Disabling validation is a per-account opt-in.
+- Prefer provider "app passwords" over the primary account password where the provider offers them
   (Fastmail, iCloud, Zoho, Yahoo all require this when two-factor is enabled).
 
 ## How sync works
@@ -96,15 +96,15 @@ Per folder, one connection per run:
 
 ### Write-back
 
-| Action          | IMAP                                                                   |
-|-----------------|------------------------------------------------------------------------|
-| mark (un)read   | `UID STORE ±FLAGS (\Seen)`                                             |
-| star            | `UID STORE ±FLAGS (\Flagged)`                                          |
+| Action          | IMAP                                                                                                |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| mark (un)read   | `UID STORE ±FLAGS (\Seen)`                                                                          |
+| star            | `UID STORE ±FLAGS (\Flagged)`                                                                       |
 | archive         | `UID MOVE` to the Archive folder (created as `Archive` / `INBOX.Archive` when the mailbox has none) |
-| trash / restore | `UID MOVE` to Trash / back to INBOX                                    |
-| spam            | `UID MOVE` to Junk / back to INBOX                                     |
-| move to folder  | `UID MOVE` to the chosen folder                                        |
-| labels          | not supported (`UnsupportedOperationException`)                        |
+| trash / restore | `UID MOVE` to Trash / back to INBOX                                                                 |
+| spam            | `UID MOVE` to Junk / back to INBOX                                                                  |
+| move to folder  | `UID MOVE` to the chosen folder                                                                     |
+| labels          | not supported (`UnsupportedOperationException`)                                                     |
 
 After a move the local row is updated with the new folder, UID and provider id using the server's
 `COPYUID` response (UIDPLUS). Servers without UIDPLUS are handled by looking the message up by
@@ -121,10 +121,10 @@ Sent-folder sync recognises it instead of ingesting a duplicate.
 
 ## IDLE vs polling
 
-* **Polling** (`mail:imap:poll`) is scheduled every minute in `routes/console.php` and queues an
+- **Polling** (`mail:imap:poll`) is scheduled every minute in `routes/console.php` and queues an
   incremental `SyncMailAccount` job for every IMAP account whose `last_synced_at` is older than
   `poll_minutes`. It is the safety net and the only mechanism for servers without IDLE.
-* **IDLE** (`mail:imap:idle`) keeps a connection open on INBOX and queues a sync the moment the
+- **IDLE** (`mail:imap:idle`) keeps a connection open on INBOX and queues a sync the moment the
   server announces `EXISTS` / `EXPUNGE`. Delivery becomes near-instant and the poll becomes a
   no-op for that account. The command re-issues IDLE every `--timeout` seconds (default 1740 s,
   RFC 2177 recommends staying under 29 minutes), reconnects with exponential backoff
@@ -174,26 +174,26 @@ and polling can both fire without doing duplicate work.
 
 ## Common provider settings
 
-| Provider                | IMAP host                    | IMAP port / enc. | SMTP host                       | SMTP port / enc. | Notes                                                                 |
-|-------------------------|------------------------------|------------------|---------------------------------|------------------|-----------------------------------------------------------------------|
-| Fastmail                | `imap.fastmail.com`          | 993 / ssl        | `smtp.fastmail.com`             | 465 / ssl        | Requires an app password (Settings → Privacy & Security → Integrations) |
-| Outlook.com / Office 365| `outlook.office365.com`      | 993 / ssl        | `smtp.office365.com`            | 587 / starttls   | Basic auth is disabled for many tenants; needs an app password or an admin enabling SMTP AUTH |
-| iCloud Mail             | `imap.mail.me.com`           | 993 / ssl        | `smtp.mail.me.com`              | 587 / starttls   | App-specific password required; username is the full iCloud address   |
-| Zoho Mail               | `imap.zoho.com` (`.eu`)      | 993 / ssl        | `smtp.zoho.com` (`.eu`)         | 465 / ssl        | Enable IMAP in Zoho settings; app password when 2FA is on              |
-| Yahoo                   | `imap.mail.yahoo.com`        | 993 / ssl        | `smtp.mail.yahoo.com`           | 465 / ssl        | App password required                                                 |
-| Gmail over IMAP         | `imap.gmail.com`             | 993 / ssl        | `smtp.gmail.com`                | 465 / ssl        | Prefer the native Gmail provider; `[Gmail]/All Mail` is skipped automatically |
-| Generic cPanel / Dovecot| `mail.yourdomain.tld`        | 993 / ssl        | `mail.yourdomain.tld`           | 465 / ssl or 587 / starttls | Folder names are often `INBOX.Sent`, `INBOX.Trash`; handled by the name mapper |
+| Provider                 | IMAP host               | IMAP port / enc. | SMTP host               | SMTP port / enc.            | Notes                                                                                         |
+| ------------------------ | ----------------------- | ---------------- | ----------------------- | --------------------------- | --------------------------------------------------------------------------------------------- |
+| Fastmail                 | `imap.fastmail.com`     | 993 / ssl        | `smtp.fastmail.com`     | 465 / ssl                   | Requires an app password (Settings → Privacy & Security → Integrations)                       |
+| Outlook.com / Office 365 | `outlook.office365.com` | 993 / ssl        | `smtp.office365.com`    | 587 / starttls              | Basic auth is disabled for many tenants; needs an app password or an admin enabling SMTP AUTH |
+| iCloud Mail              | `imap.mail.me.com`      | 993 / ssl        | `smtp.mail.me.com`      | 587 / starttls              | App-specific password required; username is the full iCloud address                           |
+| Zoho Mail                | `imap.zoho.com` (`.eu`) | 993 / ssl        | `smtp.zoho.com` (`.eu`) | 465 / ssl                   | Enable IMAP in Zoho settings; app password when 2FA is on                                     |
+| Yahoo                    | `imap.mail.yahoo.com`   | 993 / ssl        | `smtp.mail.yahoo.com`   | 465 / ssl                   | App password required                                                                         |
+| Gmail over IMAP          | `imap.gmail.com`        | 993 / ssl        | `smtp.gmail.com`        | 465 / ssl                   | Prefer the native Gmail provider; `[Gmail]/All Mail` is skipped automatically                 |
+| Generic cPanel / Dovecot | `mail.yourdomain.tld`   | 993 / ssl        | `mail.yourdomain.tld`   | 465 / ssl or 587 / starttls | Folder names are often `INBOX.Sent`, `INBOX.Trash`; handled by the name mapper                |
 
 ## Troubleshooting
 
-| Symptom                                                          | Cause / fix                                                                                                   |
-|------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| "The IMAP server rejected the username or password."             | Wrong credentials, or the provider requires an app password / has IMAP disabled. Account status becomes *Needs reconnect*; fix via the update endpoint. |
-| "Could not establish a secure connection ..."                    | Port/encryption mismatch (993 needs `ssl`, 143 needs `starttls` or `none`) or an untrusted certificate. Fix the setting rather than disabling validation. |
-| "Could not reach the IMAP server at host:port ..."               | DNS, firewall or the server is down. The sync job retries with backoff; nothing is lost.                      |
-| New mail arrives late                                            | IDLE is not running (check `mail:imap:idle` process and `IDLE` in the connection test capabilities) and polling is limited by `poll_minutes`. |
-| Messages reappear as unread / duplicated conversations           | Should not happen: check `sync_runs.stats.errors` for parse failures; those UIDs are skipped and logged with `IMAP message could not be ingested`. |
-| Whole folder re-synced                                           | `UIDVALIDITY` changed on the server (mailbox rebuilt or migrated). Expected; existing messages are matched by `Message-ID`. |
-| Sent mail not in the Sent folder                                 | `smtp.append_sent` is `false`, or the server has no Sent folder and refused `CREATE`; see `Could not append sent message` warnings in the log. |
-| Old mail missing                                                 | Only `initial_sync_days` of history is fetched by design. Raise the value and re-run an initial sync (clear `initial_sync_completed_at` and folder cursors). |
-| Archive lands in `INBOX.Archive`                                 | The server uses an INBOX namespace; the adapter detected sibling folders prefixed with `INBOX.` and followed suit. |
+| Symptom                                                | Cause / fix                                                                                                                                                  |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "The IMAP server rejected the username or password."   | Wrong credentials, or the provider requires an app password / has IMAP disabled. Account status becomes _Needs reconnect_; fix via the update endpoint.      |
+| "Could not establish a secure connection ..."          | Port/encryption mismatch (993 needs `ssl`, 143 needs `starttls` or `none`) or an untrusted certificate. Fix the setting rather than disabling validation.    |
+| "Could not reach the IMAP server at host:port ..."     | DNS, firewall or the server is down. The sync job retries with backoff; nothing is lost.                                                                     |
+| New mail arrives late                                  | IDLE is not running (check `mail:imap:idle` process and `IDLE` in the connection test capabilities) and polling is limited by `poll_minutes`.                |
+| Messages reappear as unread / duplicated conversations | Should not happen: check `sync_runs.stats.errors` for parse failures; those UIDs are skipped and logged with `IMAP message could not be ingested`.           |
+| Whole folder re-synced                                 | `UIDVALIDITY` changed on the server (mailbox rebuilt or migrated). Expected; existing messages are matched by `Message-ID`.                                  |
+| Sent mail not in the Sent folder                       | `smtp.append_sent` is `false`, or the server has no Sent folder and refused `CREATE`; see `Could not append sent message` warnings in the log.               |
+| Old mail missing                                       | Only `initial_sync_days` of history is fetched by design. Raise the value and re-run an initial sync (clear `initial_sync_completed_at` and folder cursors). |
+| Archive lands in `INBOX.Archive`                       | The server uses an INBOX namespace; the adapter detected sibling folders prefixed with `INBOX.` and followed suit.                                           |

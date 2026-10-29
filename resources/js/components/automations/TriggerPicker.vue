@@ -3,9 +3,18 @@ import { computed } from 'vue';
 import InboxDot from '@/components/mail/InboxDot.vue';
 import InputError from '@/components/InputError.vue';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { TRIGGER_HINTS } from '@/lib/automations';
-import type { AutomationCatalog, AutomationInboxOption } from '@/types/automations';
+import type {
+    AutomationCatalog,
+    AutomationInboxOption,
+} from '@/types/automations';
 
 const props = defineProps<{
     catalog: AutomationCatalog;
@@ -24,7 +33,9 @@ const inboxModel = computed({
 });
 
 const hint = computed(() => TRIGGER_HINTS[trigger.value] ?? '');
-const businessHours = computed(() => trigger.value.startsWith('business_hours'));
+const businessHours = computed(() =>
+    trigger.value.startsWith('business_hours'),
+);
 </script>
 
 <template>
@@ -32,11 +43,19 @@ const businessHours = computed(() => trigger.value.startsWith('business_hours'))
         <div class="grid gap-2">
             <Label for="rule-trigger">Trigger</Label>
             <Select v-model="trigger">
-                <SelectTrigger class="w-full" :aria-invalid="errors?.trigger ? true : undefined">
+                <SelectTrigger
+                    class="w-full"
+                    :aria-invalid="errors?.trigger ? true : undefined"
+                >
                     <SelectValue placeholder="Pick a moment" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem v-for="option in catalog.triggers" :key="option.value" :value="option.value">{{ option.label }}</SelectItem>
+                    <SelectItem
+                        v-for="option in catalog.triggers"
+                        :key="option.value"
+                        :value="option.value"
+                        >{{ option.label }}</SelectItem
+                    >
                 </SelectContent>
             </Select>
             <p class="text-xs text-muted-foreground">{{ hint }}</p>
@@ -46,20 +65,40 @@ const businessHours = computed(() => trigger.value.startsWith('business_hours'))
         <div class="grid gap-2">
             <Label for="rule-inbox">Inbox scope</Label>
             <Select v-model="inboxModel">
-                <SelectTrigger class="w-full" :aria-invalid="errors?.inbox_uuid ? true : undefined">
+                <SelectTrigger
+                    class="w-full"
+                    :aria-invalid="errors?.inbox_uuid ? true : undefined"
+                >
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem :value="ALL">All shared inboxes</SelectItem>
-                    <SelectItem v-for="option in props.inboxes" :key="option.uuid" :value="option.uuid">
-                        <span class="flex items-center gap-2"><InboxDot :color="option.color" size="sm" />{{ option.name }}</span>
+                    <SelectItem
+                        v-for="option in props.inboxes"
+                        :key="option.uuid"
+                        :value="option.uuid"
+                    >
+                        <span class="flex items-center gap-2"
+                            ><InboxDot :color="option.color" size="sm" />{{
+                                option.name
+                            }}</span
+                        >
                     </SelectItem>
                 </SelectContent>
             </Select>
             <p class="text-xs text-muted-foreground">
-                <template v-if="inbox">Only conversations owned by this inbox. Shared-in conversations do not count.</template>
-                <template v-else-if="businessHours">Every open conversation in every shared inbox of the organization.</template>
-                <template v-else>Personal inboxes never run automations; this covers every shared one.</template>
+                <template v-if="inbox"
+                    >Only conversations owned by this inbox. Shared-in
+                    conversations do not count.</template
+                >
+                <template v-else-if="businessHours"
+                    >Every open conversation in every shared inbox of the
+                    organization.</template
+                >
+                <template v-else
+                    >Personal inboxes never run automations; this covers every
+                    shared one.</template
+                >
             </p>
             <InputError :message="errors?.inbox_uuid" />
         </div>

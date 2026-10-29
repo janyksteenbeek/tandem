@@ -1,9 +1,9 @@
 {
-  "message": {
-    "data": "__DATA__",
-    "messageId": "2070443601311540",
-    "message_id": "2070443601311540",
-    "publishTime": "2026-10-29T10:00:00.000Z"
-  },
-  "subscription": "projects/tandem-test/subscriptions/gmail-push"
+    "message": {
+        "data": "__DATA__",
+        "messageId": "2070443601311540",
+        "message_id": "2070443601311540",
+        "publishTime": "2026-10-29T10:00:00.000Z"
+    },
+    "subscription": "projects/tandem-test/subscriptions/gmail-push"
 }

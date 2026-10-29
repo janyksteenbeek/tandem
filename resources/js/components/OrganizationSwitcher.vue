@@ -63,9 +63,12 @@ const switchOrganization = (organization: Organization) => {
             const segment = `/${previousOrganizationSlug}`;
 
             if (currentUrl.includes(segment)) {
-                router.visit(currentUrl.replace(segment, `/${organization.slug}`), {
-                    replace: true,
-                });
+                router.visit(
+                    currentUrl.replace(segment, `/${organization.slug}`),
+                    {
+                        replace: true,
+                    },
+                );
 
                 return;
             }

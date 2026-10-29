@@ -6,7 +6,11 @@ import { useAppearance } from '@/composables/useAppearance';
  * Renders provider HTML inside a sandboxed, script-less iframe so email CSS can never
  * leak into the app and nothing in the message can run code.
  */
-const props = defineProps<{ html: string | null; text: string | null; allowRemoteImages?: boolean }>();
+const props = defineProps<{
+    html: string | null;
+    text: string | null;
+    allowRemoteImages?: boolean;
+}>();
 
 const frame = ref<HTMLIFrameElement | null>(null);
 const height = ref(80);
@@ -14,11 +18,20 @@ const { resolvedAppearance } = useAppearance();
 let observer: ResizeObserver | null = null;
 
 const escape = (value: string) =>
-    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 
 const body = computed(() => {
     if (props.html) {
-        return props.allowRemoteImages === false ? props.html.replace(/(<img\b[^>]*\bsrc=)(["'])(https?:)/gi, '$1$2data:,blocked#$3') : props.html;
+        return props.allowRemoteImages === false
+            ? props.html.replace(
+                  /(<img\b[^>]*\bsrc=)(["'])(https?:)/gi,
+                  '$1$2data:,blocked#$3',
+              )
+            : props.html;
     }
 
     return `<pre class="plain">${escape(props.text ?? '')}</pre>`;
@@ -47,7 +60,11 @@ const measure = () => {
         return;
     }
 
-    height.value = Math.min(Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight, 40) + 8, 20000);
+    height.value = Math.min(
+        Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight, 40) +
+            8,
+        20000,
+    );
 };
 
 const attach = () => {
@@ -62,7 +79,9 @@ const attach = () => {
     measure();
     observer = new ResizeObserver(() => measure());
     observer.observe(doc.body);
-    doc.querySelectorAll('img').forEach((img) => img.addEventListener('load', measure));
+    doc.querySelectorAll('img').forEach((img) =>
+        img.addEventListener('load', measure),
+    );
 };
 
 watch(srcdoc, () => setTimeout(attach, 30));

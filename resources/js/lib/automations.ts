@@ -18,7 +18,13 @@ import type {
  * defaults and offer starter templates. Pure functions so they are trivially testable.
  */
 
-export const EMPTY_LOOKUPS: AutomationLookups = { inboxes: [], tags: [], users: [], teams: [], templates: [] };
+export const EMPTY_LOOKUPS: AutomationLookups = {
+    inboxes: [],
+    tags: [],
+    users: [],
+    teams: [],
+    templates: [],
+};
 
 const TRIGGER_PHRASES: Record<string, string> = {
     conversation_received: 'a new conversation arrives',
@@ -33,15 +39,20 @@ const TRIGGER_PHRASES: Record<string, string> = {
 };
 
 export const TRIGGER_HINTS: Record<string, string> = {
-    conversation_received: 'An inbound message starts a brand-new conversation.',
-    reply_received: 'An inbound message lands in a conversation that already exists.',
-    conversation_assigned: 'Someone (or another rule) assigns the conversation.',
+    conversation_received:
+        'An inbound message starts a brand-new conversation.',
+    reply_received:
+        'An inbound message lands in a conversation that already exists.',
+    conversation_assigned:
+        'Someone (or another rule) assigns the conversation.',
     conversation_moved: 'The conversation is moved into another inbox.',
     conversation_reopened: 'A closed conversation comes back to life.',
     conversation_closed: 'The conversation is marked as closed.',
     tag_added: 'A tag is attached to the conversation.',
-    business_hours_started: 'Checked every minute against every open conversation when you open.',
-    business_hours_ended: 'Checked every minute against every open conversation when you close.',
+    business_hours_started:
+        'Checked every minute against every open conversation when you open.',
+    business_hours_ended:
+        'Checked every minute against every open conversation when you close.',
 };
 
 const ACTION_VERBS: Record<string, string> = {
@@ -60,34 +71,56 @@ const ACTION_VERBS: Record<string, string> = {
 
 const PLACEHOLDER = '…';
 
-export function fieldFor(catalog: AutomationCatalog, value: string): CatalogField | undefined {
+export function fieldFor(
+    catalog: AutomationCatalog,
+    value: string,
+): CatalogField | undefined {
     return catalog.fields.find((field) => field.value === value);
 }
 
-export function operatorFor(catalog: AutomationCatalog, value: string): CatalogOperator | undefined {
+export function operatorFor(
+    catalog: AutomationCatalog,
+    value: string,
+): CatalogOperator | undefined {
     return catalog.operators.find((operator) => operator.value === value);
 }
 
-export function actionFor(catalog: AutomationCatalog, value: string): CatalogAction | undefined {
+export function actionFor(
+    catalog: AutomationCatalog,
+    value: string,
+): CatalogAction | undefined {
     return catalog.actions.find((action) => action.value === value);
 }
 
-export function operatorsForField(catalog: AutomationCatalog, field: string): CatalogOperator[] {
+export function operatorsForField(
+    catalog: AutomationCatalog,
+    field: string,
+): CatalogOperator[] {
     const allowed = fieldFor(catalog, field)?.operators ?? [];
 
-    return allowed.map((value) => operatorFor(catalog, value)).filter((operator): operator is CatalogOperator => Boolean(operator));
+    return allowed
+        .map((value) => operatorFor(catalog, value))
+        .filter((operator): operator is CatalogOperator => Boolean(operator));
 }
 
-export function valueShapeOf(catalog: AutomationCatalog, operator: string): OperatorValueShape {
+export function valueShapeOf(
+    catalog: AutomationCatalog,
+    operator: string,
+): OperatorValueShape {
     return operatorFor(catalog, operator)?.value_shape ?? 'string';
 }
 
-export function triggerPhrase(catalog: AutomationCatalog, trigger: string): string {
+export function triggerPhrase(
+    catalog: AutomationCatalog,
+    trigger: string,
+): string {
     if (TRIGGER_PHRASES[trigger]) {
         return TRIGGER_PHRASES[trigger];
     }
 
-    const label = catalog.triggers.find((option) => option.value === trigger)?.label;
+    const label = catalog.triggers.find(
+        (option) => option.value === trigger,
+    )?.label;
 
     return label ? lowerFirst(label) : 'something happens';
 }
@@ -99,7 +132,10 @@ export function actionLabel(catalog: AutomationCatalog, type: string): string {
 /**
  * Convert a stored value into the shape an operator expects, keeping as much input as possible.
  */
-export function coerceValue(value: AutomationConditionValue, shape: OperatorValueShape): AutomationConditionValue {
+export function coerceValue(
+    value: AutomationConditionValue,
+    shape: OperatorValueShape,
+): AutomationConditionValue {
     if (shape === 'none') {
         return null;
     }
@@ -119,19 +155,36 @@ export function coerceValue(value: AutomationConditionValue, shape: OperatorValu
     return value ?? '';
 }
 
-export function emptyCondition(catalog: AutomationCatalog): AutomationCondition {
-    const field = catalog.fields.find((candidate) => candidate.value === 'sender') ?? catalog.fields[0];
+export function emptyCondition(
+    catalog: AutomationCatalog,
+): AutomationCondition {
+    const field =
+        catalog.fields.find((candidate) => candidate.value === 'sender') ??
+        catalog.fields[0];
     const operator = field?.operators[0] ?? 'equals';
 
-    return { field: field?.value ?? 'sender', operator, value: coerceValue('', valueShapeOf(catalog, operator)) };
+    return {
+        field: field?.value ?? 'sender',
+        operator,
+        value: coerceValue('', valueShapeOf(catalog, operator)),
+    };
 }
 
-export function defaultParams(catalog: AutomationCatalog, type: string): AutomationActionParams {
+export function defaultParams(
+    catalog: AutomationCatalog,
+    type: string,
+): AutomationActionParams {
     switch (type) {
         case 'reply_with_template':
-            return { template_id: null, cooldown_minutes: catalog.default_cooldown_minutes };
+            return {
+                template_id: null,
+                cooldown_minutes: catalog.default_cooldown_minutes,
+            };
         case 'assign_team':
-            return { team_id: null, strategy: catalog.strategies[0]?.value ?? 'round_robin' };
+            return {
+                team_id: null,
+                strategy: catalog.strategies[0]?.value ?? 'round_robin',
+            };
         case 'set_priority':
             return { priority: 'high' };
         case 'set_status':
@@ -153,7 +206,10 @@ export function defaultParams(catalog: AutomationCatalog, type: string): Automat
     }
 }
 
-export function emptyAction(catalog: AutomationCatalog, type = 'add_tag'): AutomationAction {
+export function emptyAction(
+    catalog: AutomationCatalog,
+    type = 'add_tag',
+): AutomationAction {
     return { type, params: defaultParams(catalog, type) };
 }
 
@@ -183,11 +239,19 @@ function list(values: string[], conjunction: 'or' | 'and' | 'nor'): string {
     return `${values.slice(0, -1).join(', ')} ${conjunction} ${values[values.length - 1]}`;
 }
 
-function nameOf<T extends { name: string }>(items: T[], predicate: (item: T) => boolean): string | null {
+function nameOf<T extends { name: string }>(
+    items: T[],
+    predicate: (item: T) => boolean,
+): string | null {
     return items.find(predicate)?.name ?? null;
 }
 
-function describeValue(catalog: AutomationCatalog, field: CatalogField | undefined, raw: string, lookups: AutomationLookups): string {
+function describeValue(
+    catalog: AutomationCatalog,
+    field: CatalogField | undefined,
+    raw: string,
+    lookups: AutomationLookups,
+): string {
     const value = raw.trim();
 
     if (value === '') {
@@ -196,21 +260,44 @@ function describeValue(catalog: AutomationCatalog, field: CatalogField | undefin
 
     switch (field?.value_type) {
         case 'inbox':
-            return nameOf(lookups.inboxes, (inbox) => inbox.uuid === value) ?? quote(value);
+            return (
+                nameOf(lookups.inboxes, (inbox) => inbox.uuid === value) ??
+                quote(value)
+            );
         case 'user':
-            return nameOf(lookups.users, (user) => String(user.id) === value) ?? `user #${value}`;
+            return (
+                nameOf(lookups.users, (user) => String(user.id) === value) ??
+                `user #${value}`
+            );
         case 'tag':
-            return nameOf(lookups.tags, (tag) => tag.slug === value || tag.name.toLowerCase() === value.toLowerCase()) ?? quote(value);
+            return (
+                nameOf(
+                    lookups.tags,
+                    (tag) =>
+                        tag.slug === value ||
+                        tag.name.toLowerCase() === value.toLowerCase(),
+                ) ?? quote(value)
+            );
         case 'status':
-            return lowerFirst(catalog.statuses.find((option) => option.value === value)?.label ?? value);
+            return lowerFirst(
+                catalog.statuses.find((option) => option.value === value)
+                    ?.label ?? value,
+            );
         case 'priority':
-            return lowerFirst(catalog.priorities.find((option) => option.value === value)?.label ?? value);
+            return lowerFirst(
+                catalog.priorities.find((option) => option.value === value)
+                    ?.label ?? value,
+            );
         default:
             return quote(value);
     }
 }
 
-export function describeCondition(condition: AutomationCondition, catalog: AutomationCatalog, lookups: AutomationLookups = EMPTY_LOOKUPS): string {
+export function describeCondition(
+    condition: AutomationCondition,
+    catalog: AutomationCatalog,
+    lookups: AutomationLookups = EMPTY_LOOKUPS,
+): string {
     const field = fieldFor(catalog, condition.field);
     const operator = operatorFor(catalog, condition.operator);
     const subject = lowerFirst(field?.label ?? humanize(condition.field));
@@ -232,13 +319,20 @@ export function describeCondition(condition: AutomationCondition, catalog: Autom
     }
 
     if (operator?.value_shape === 'array') {
-        const values = (Array.isArray(condition.value) ? condition.value : condition.value ? [condition.value] : [])
-            .map((item) => describeValue(catalog, field, String(item), lookups));
+        const values = (
+            Array.isArray(condition.value)
+                ? condition.value
+                : condition.value
+                  ? [condition.value]
+                  : []
+        ).map((item) => describeValue(catalog, field, String(item), lookups));
 
         return `${subject} ${verb} ${list(values, condition.operator === 'not_in' ? 'nor' : 'or')}`;
     }
 
-    const single = Array.isArray(condition.value) ? (condition.value[0] ?? '') : (condition.value ?? '');
+    const single = Array.isArray(condition.value)
+        ? (condition.value[0] ?? '')
+        : (condition.value ?? '');
 
     return `${subject} ${verb} ${describeValue(catalog, field, String(single), lookups)}`;
 }
@@ -251,35 +345,66 @@ function present(value: unknown): boolean {
     return value !== null && value !== undefined && String(value).trim() !== '';
 }
 
-export function describeAction(action: AutomationAction, catalog: AutomationCatalog, lookups: AutomationLookups = EMPTY_LOOKUPS): string {
+export function describeAction(
+    action: AutomationAction,
+    catalog: AutomationCatalog,
+    lookups: AutomationLookups = EMPTY_LOOKUPS,
+): string {
     switch (action.type) {
         case 'reply_with_template': {
-            const template = lookups.templates.find((candidate) => String(candidate.id) === String(param(action, 'template_id')));
+            const template = lookups.templates.find(
+                (candidate) =>
+                    String(candidate.id) ===
+                    String(param(action, 'template_id')),
+            );
 
-            return template ? `reply with ${quote(template.name)}` : ACTION_VERBS[action.type];
+            return template
+                ? `reply with ${quote(template.name)}`
+                : ACTION_VERBS[action.type];
         }
         case 'assign_user': {
-            const user = nameOf(lookups.users, (candidate) => String(candidate.id) === String(param(action, 'user_id')));
+            const user = nameOf(
+                lookups.users,
+                (candidate) =>
+                    String(candidate.id) === String(param(action, 'user_id')),
+            );
 
             return user ? `assign to ${user}` : ACTION_VERBS[action.type];
         }
         case 'add_follower': {
-            const user = nameOf(lookups.users, (candidate) => String(candidate.id) === String(param(action, 'user_id')));
+            const user = nameOf(
+                lookups.users,
+                (candidate) =>
+                    String(candidate.id) === String(param(action, 'user_id')),
+            );
 
-            return user ? `add ${user} as a follower` : ACTION_VERBS[action.type];
+            return user
+                ? `add ${user} as a follower`
+                : ACTION_VERBS[action.type];
         }
         case 'assign_team': {
-            const team = nameOf(lookups.teams, (candidate) => String(candidate.id) === String(param(action, 'team_id')));
-            const strategy = catalog.strategies.find((option) => option.value === param(action, 'strategy'))?.label;
+            const team = nameOf(
+                lookups.teams,
+                (candidate) =>
+                    String(candidate.id) === String(param(action, 'team_id')),
+            );
+            const strategy = catalog.strategies.find(
+                (option) => option.value === param(action, 'strategy'),
+            )?.label;
 
             if (!team) {
                 return ACTION_VERBS[action.type];
             }
 
-            return strategy ? `assign to ${team} (${lowerFirst(strategy)})` : `assign to ${team}`;
+            return strategy
+                ? `assign to ${team} (${lowerFirst(strategy)})`
+                : `assign to ${team}`;
         }
         case 'move_to_inbox': {
-            const inbox = nameOf(lookups.inboxes, (candidate) => candidate.uuid === param(action, 'inbox_uuid'));
+            const inbox = nameOf(
+                lookups.inboxes,
+                (candidate) => candidate.uuid === param(action, 'inbox_uuid'),
+            );
 
             return inbox ? `move to ${inbox}` : ACTION_VERBS[action.type];
         }
@@ -288,38 +413,68 @@ export function describeAction(action: AutomationAction, catalog: AutomationCata
             const verb = action.type === 'add_tag' ? 'add tag' : 'remove tag';
             const tagId = param(action, 'tag_id');
             const tagName = param(action, 'tag_name');
-            const tag = present(tagId) ? nameOf(lookups.tags, (candidate) => String(candidate.id) === String(tagId)) : null;
+            const tag = present(tagId)
+                ? nameOf(
+                      lookups.tags,
+                      (candidate) => String(candidate.id) === String(tagId),
+                  )
+                : null;
 
             if (tag) {
                 return `${verb} ${tag}`;
             }
 
-            return present(tagName) ? `${verb} ${String(tagName).trim()}` : ACTION_VERBS[action.type];
+            return present(tagName)
+                ? `${verb} ${String(tagName).trim()}`
+                : ACTION_VERBS[action.type];
         }
         case 'set_priority': {
-            const priority = catalog.priorities.find((option) => option.value === param(action, 'priority'))?.label;
+            const priority = catalog.priorities.find(
+                (option) => option.value === param(action, 'priority'),
+            )?.label;
 
-            return priority ? `set priority to ${lowerFirst(priority)}` : ACTION_VERBS[action.type];
+            return priority
+                ? `set priority to ${lowerFirst(priority)}`
+                : ACTION_VERBS[action.type];
         }
         case 'set_status': {
-            const status = catalog.statuses.find((option) => option.value === param(action, 'status'))?.label;
+            const status = catalog.statuses.find(
+                (option) => option.value === param(action, 'status'),
+            )?.label;
 
-            return status ? `mark as ${lowerFirst(status)}` : ACTION_VERBS[action.type];
+            return status
+                ? `mark as ${lowerFirst(status)}`
+                : ACTION_VERBS[action.type];
         }
         case 'notify_users': {
-            const ids = Array.isArray(param(action, 'user_ids')) ? (param(action, 'user_ids') as unknown[]).map(String) : [];
-            const names = ids.map((id) => nameOf(lookups.users, (candidate) => String(candidate.id) === id) ?? `user #${id}`);
+            const ids = Array.isArray(param(action, 'user_ids'))
+                ? (param(action, 'user_ids') as unknown[]).map(String)
+                : [];
+            const names = ids.map(
+                (id) =>
+                    nameOf(
+                        lookups.users,
+                        (candidate) => String(candidate.id) === id,
+                    ) ?? `user #${id}`,
+            );
 
             if (names.length === 0) {
                 return ACTION_VERBS[action.type];
             }
 
-            return names.length > 3 ? `notify ${names.length} people` : `notify ${list(names, 'and')}`;
+            return names.length > 3
+                ? `notify ${names.length} people`
+                : `notify ${list(names, 'and')}`;
         }
         case 'add_comment':
-            return present(param(action, 'body')) ? 'leave an internal note' : ACTION_VERBS[action.type];
+            return present(param(action, 'body'))
+                ? 'leave an internal note'
+                : ACTION_VERBS[action.type];
         default:
-            return ACTION_VERBS[action.type] ?? lowerFirst(actionLabel(catalog, action.type));
+            return (
+                ACTION_VERBS[action.type] ??
+                lowerFirst(actionLabel(catalog, action.type))
+            );
     }
 }
 
@@ -335,16 +490,33 @@ export type SummarizableRule = {
  * One plain-English sentence for the whole rule, e.g.
  * "When a new conversation arrives in Support, if sender ends with “@acme.com”, then add tag VIP and set priority to high."
  */
-export function summarizeRule(rule: SummarizableRule, catalog: AutomationCatalog, lookups: AutomationLookups = EMPTY_LOOKUPS): string {
-    const inbox = rule.inbox_uuid ? nameOf(lookups.inboxes, (candidate) => candidate.uuid === rule.inbox_uuid) : null;
+export function summarizeRule(
+    rule: SummarizableRule,
+    catalog: AutomationCatalog,
+    lookups: AutomationLookups = EMPTY_LOOKUPS,
+): string {
+    const inbox = rule.inbox_uuid
+        ? nameOf(
+              lookups.inboxes,
+              (candidate) => candidate.uuid === rule.inbox_uuid,
+          )
+        : null;
     const when = `When ${triggerPhrase(catalog, rule.trigger)}${inbox ? ` in ${inbox}` : ''}`;
 
-    const conditions = rule.conditions.map((condition) => describeCondition(condition, catalog, lookups));
+    const conditions = rule.conditions.map((condition) =>
+        describeCondition(condition, catalog, lookups),
+    );
     const conjunction = rule.match === 'any' ? 'or' : 'and';
-    const ifClause = conditions.length > 0 ? `, if ${list(conditions, conjunction)}` : '';
+    const ifClause =
+        conditions.length > 0 ? `, if ${list(conditions, conjunction)}` : '';
 
-    const actions = rule.actions.map((action) => describeAction(action, catalog, lookups));
-    const thenClause = actions.length > 0 ? `${conditions.length > 0 ? ', then' : ','} ${list(actions, 'and')}` : ', do nothing yet';
+    const actions = rule.actions.map((action) =>
+        describeAction(action, catalog, lookups),
+    );
+    const thenClause =
+        actions.length > 0
+            ? `${conditions.length > 0 ? ', then' : ','} ${list(actions, 'and')}`
+            : ', do nothing yet';
 
     return `${when}${ifClause}${thenClause}.`;
 }
@@ -373,7 +545,10 @@ export function formatMinutes(minutes: number | null | undefined): string {
     return minutes === 1 ? '1 minute' : `${minutes} minutes`;
 }
 
-const action = (type: string, params: AutomationActionParams): AutomationAction => ({ type, params });
+const action = (
+    type: string,
+    params: AutomationActionParams,
+): AutomationAction => ({ type, params });
 
 export type StarterKey = 'out_of_office' | 'route_invoices' | 'vip_priority';
 
@@ -381,7 +556,10 @@ export type StarterRule = {
     key: StarterKey;
     title: string;
     blurb: string;
-    build: (catalog: AutomationCatalog, lookups: AutomationLookups) => AutomationRuleForm;
+    build: (
+        catalog: AutomationCatalog,
+        lookups: AutomationLookups,
+    ) => AutomationRuleForm;
 };
 
 export const STARTER_RULES: StarterRule[] = [
@@ -392,11 +570,17 @@ export const STARTER_RULES: StarterRule[] = [
         build: (catalog, lookups) => ({
             ...emptyRuleForm(catalog),
             name: 'Out of office',
-            description: 'Let people know when to expect us when we are closed.',
+            description:
+                'Let people know when to expect us when we are closed.',
             trigger: 'conversation_received',
-            conditions: [{ field: 'business_hours', operator: 'is_false', value: null }],
+            conditions: [
+                { field: 'business_hours', operator: 'is_false', value: null },
+            ],
             actions: [
-                action('reply_with_template', { template_id: lookups.templates[0]?.id ?? null, cooldown_minutes: catalog.default_cooldown_minutes }),
+                action('reply_with_template', {
+                    template_id: lookups.templates[0]?.id ?? null,
+                    cooldown_minutes: catalog.default_cooldown_minutes,
+                }),
             ],
         }),
     },
@@ -407,15 +591,27 @@ export const STARTER_RULES: StarterRule[] = [
         build: (catalog, lookups) => ({
             ...emptyRuleForm(catalog),
             name: 'Route invoices to finance',
-            description: 'Invoices, receipts and refunds land with the right people.',
+            description:
+                'Invoices, receipts and refunds land with the right people.',
             trigger: 'conversation_received',
             match: 'any',
             conditions: [
-                { field: 'subject', operator: 'matches_regex', value: '\\b(invoice|receipt|refund)\\b' },
-                { field: 'recipient', operator: 'starts_with', value: 'billing@' },
+                {
+                    field: 'subject',
+                    operator: 'matches_regex',
+                    value: '\\b(invoice|receipt|refund)\\b',
+                },
+                {
+                    field: 'recipient',
+                    operator: 'starts_with',
+                    value: 'billing@',
+                },
             ],
             actions: [
-                action('assign_team', { team_id: lookups.teams[0]?.id ?? null, strategy: 'least_busy' }),
+                action('assign_team', {
+                    team_id: lookups.teams[0]?.id ?? null,
+                    strategy: 'least_busy',
+                }),
                 action('add_tag', { tag_id: null, tag_name: 'billing' }),
             ],
         }),
@@ -429,7 +625,9 @@ export const STARTER_RULES: StarterRule[] = [
             name: 'VIP customers',
             description: 'Keep an eye on the accounts that matter most.',
             trigger: 'conversation_received',
-            conditions: [{ field: 'sender', operator: 'in', value: ['@bigcorp.com'] }],
+            conditions: [
+                { field: 'sender', operator: 'in', value: ['@bigcorp.com'] },
+            ],
             actions: [
                 action('add_tag', { tag_id: null, tag_name: 'VIP' }),
                 action('set_priority', { priority: 'high' }),
@@ -438,7 +636,11 @@ export const STARTER_RULES: StarterRule[] = [
     },
 ];
 
-export function starterRule(key: string | null | undefined, catalog: AutomationCatalog, lookups: AutomationLookups): AutomationRuleForm | null {
+export function starterRule(
+    key: string | null | undefined,
+    catalog: AutomationCatalog,
+    lookups: AutomationLookups,
+): AutomationRuleForm | null {
     const starter = STARTER_RULES.find((candidate) => candidate.key === key);
 
     return starter ? starter.build(catalog, lookups) : null;
@@ -461,7 +663,10 @@ export function textToHtml(text: string): string {
 
     return trimmed
         .split(/\n{2,}/)
-        .map((paragraph) => `<p>${escapeHtml(paragraph.trim()).replace(/\n/g, '<br>')}</p>`)
+        .map(
+            (paragraph) =>
+                `<p>${escapeHtml(paragraph.trim()).replace(/\n/g, '<br>')}</p>`,
+        )
         .join('\n');
 }
 
@@ -472,7 +677,9 @@ export function htmlToText(html: string): string {
         return '';
     }
 
-    const simple = /^(<p>[\s\S]*?<\/p>\s*)+$/i.test(trimmed) && !/<(?!\/?p\b|br\b)[a-z]/i.test(trimmed);
+    const simple =
+        /^(<p>[\s\S]*?<\/p>\s*)+$/i.test(trimmed) &&
+        !/<(?!\/?p\b|br\b)[a-z]/i.test(trimmed);
 
     if (!simple) {
         return trimmed;
@@ -486,11 +693,19 @@ export function htmlToText(html: string): string {
     );
 }
 
-export function insertAtCursor(text: string, insert: string, selectionStart: number, selectionEnd: number): { text: string; cursor: number } {
+export function insertAtCursor(
+    text: string,
+    insert: string,
+    selectionStart: number,
+    selectionEnd: number,
+): { text: string; cursor: number } {
     const before = text.slice(0, selectionStart);
     const after = text.slice(selectionEnd);
 
-    return { text: `${before}${insert}${after}`, cursor: selectionStart + insert.length };
+    return {
+        text: `${before}${insert}${after}`,
+        cursor: selectionStart + insert.length,
+    };
 }
 
 export function variableToken(key: string): string {
@@ -498,11 +713,17 @@ export function variableToken(key: string): string {
 }
 
 function escapeHtml(value: string): string {
-    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 }
 
 function unescapeHtml(value: string): string {
-    return value.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    return value
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
 }
 
 function lowerFirst(value: string): string {

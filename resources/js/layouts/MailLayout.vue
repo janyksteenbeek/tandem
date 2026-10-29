@@ -40,8 +40,17 @@ useEcho(`user.${userId.value}`, '.user.inbox', () => {
 });
 
 useKeyboard(() => [
-    { keys: 'mod+k', description: 'Command palette', handler: () => (paletteOpen.value = !paletteOpen.value), allowInInput: true },
-    { keys: 'shift+/', description: 'Shortcuts', handler: () => (shortcutsOpen.value = true) },
+    {
+        keys: 'mod+k',
+        description: 'Command palette',
+        handler: () => (paletteOpen.value = !paletteOpen.value),
+        allowInInput: true,
+    },
+    {
+        keys: 'shift+/',
+        description: 'Shortcuts',
+        handler: () => (shortcutsOpen.value = true),
+    },
     { keys: 'c', description: 'Compose', handler: () => emit('compose') },
 ]);
 </script>
@@ -50,7 +59,10 @@ useKeyboard(() => [
     <TooltipProvider :delay-duration="200">
         <div class="flex h-dvh w-full overflow-hidden bg-background">
             <div class="hidden md:flex">
-                <MailRail @open-search="paletteOpen = true" @open-shortcuts="shortcutsOpen = true" />
+                <MailRail
+                    @open-search="paletteOpen = true"
+                    @open-shortcuts="shortcutsOpen = true"
+                />
                 <MailSidebar
                     :active-inbox-uuid="props.activeInboxUuid"
                     :active-view="props.activeView"
@@ -64,13 +76,19 @@ useKeyboard(() => [
             <Sheet v-model:open="mobileNavOpen">
                 <SheetContent side="left" class="w-[19.5rem] p-0">
                     <div class="flex h-full">
-                        <MailRail @open-search="paletteOpen = true" @open-shortcuts="shortcutsOpen = true" />
+                        <MailRail
+                            @open-search="paletteOpen = true"
+                            @open-shortcuts="shortcutsOpen = true"
+                        />
                         <MailSidebar
                             :active-inbox-uuid="props.activeInboxUuid"
                             :active-view="props.activeView"
                             :views="props.views"
                             :counts="props.counts"
-                            @compose="mobileNavOpen = false; emit('compose')"
+                            @compose="
+                                mobileNavOpen = false;
+                                emit('compose');
+                            "
                         />
                     </div>
                 </SheetContent>
@@ -90,7 +108,10 @@ useKeyboard(() => [
                 <slot />
             </main>
 
-            <CommandPalette v-model:open="paletteOpen" @compose="emit('compose')" />
+            <CommandPalette
+                v-model:open="paletteOpen"
+                @compose="emit('compose')"
+            />
             <KeyboardShortcutsDialog v-model:open="shortcutsOpen" />
             <Toaster position="bottom-right" rich-colors close-button />
         </div>

@@ -54,7 +54,10 @@ export function fullTime(iso: string | null | undefined): string {
         return `Yesterday at ${format(date, 'HH:mm')}`;
     }
 
-    return format(date, isThisYear(date) ? 'EEE d MMM, HH:mm' : 'd MMM yyyy, HH:mm');
+    return format(
+        date,
+        isThisYear(date) ? 'EEE d MMM, HH:mm' : 'd MMM yyyy, HH:mm',
+    );
 }
 
 export function relative(iso: string | null | undefined): string {

@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { chipClass, displayName, formatAddressList, initialsOf } from '@/lib/mail';
+import {
+    chipClass,
+    displayName,
+    formatAddressList,
+    initialsOf,
+} from '@/lib/mail';
 import { bytes, listTime } from '@/lib/time';
 
 describe('mail helpers', () => {
     it('falls back to the mailbox name when a contact has no display name', () => {
-        expect(displayName({ name: null, email: 'ada@example.org' })).toBe('ada');
-        expect(displayName({ name: '  Ada Lovelace ', email: 'ada@example.org' })).toBe('Ada Lovelace');
+        expect(displayName({ name: null, email: 'ada@example.org' })).toBe(
+            'ada',
+        );
+        expect(
+            displayName({ name: '  Ada Lovelace ', email: 'ada@example.org' }),
+        ).toBe('Ada Lovelace');
         expect(displayName(null)).toBe('Unknown');
     });
 
@@ -21,14 +30,21 @@ describe('mail helpers', () => {
     });
 
     it('formats address lists the way mail clients expect', () => {
-        expect(formatAddressList([{ name: 'Ada', email: 'ada@example.org' }, { name: null, email: 'bob@example.org' }])).toBe('Ada <ada@example.org>, bob@example.org');
+        expect(
+            formatAddressList([
+                { name: 'Ada', email: 'ada@example.org' },
+                { name: null, email: 'bob@example.org' },
+            ]),
+        ).toBe('Ada <ada@example.org>, bob@example.org');
     });
 });
 
 describe('time helpers', () => {
     it('renders compact list timestamps', () => {
         expect(listTime(new Date().toISOString())).toBe('now');
-        expect(listTime(new Date(Date.now() - 5 * 60_000).toISOString())).toBe('5m');
+        expect(listTime(new Date(Date.now() - 5 * 60_000).toISOString())).toBe(
+            '5m',
+        );
         expect(listTime(null)).toBe('');
     });
 

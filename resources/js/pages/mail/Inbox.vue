@@ -12,14 +12,29 @@ import EmptyState from '@/components/mail/EmptyState.vue';
 import ListSkeleton from '@/components/mail/ListSkeleton.vue';
 import ListToolbar from '@/components/mail/ListToolbar.vue';
 import { Button } from '@/components/ui/button';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from '@/components/ui/resizable';
 import { useConversationActions } from '@/composables/useConversationActions';
 import { useKeyboard } from '@/composables/useKeyboard';
 import MailLayout from '@/layouts/MailLayout.vue';
 import { api, reportError } from '@/lib/http';
 import { viewLabel as viewLabelFor } from '@/lib/mail';
 import { cn } from '@/lib/utils';
-import type { Conversation, ConversationFilters, ConversationListItem as ListItem, CursorPage, Inbox, SavedView, ShareTarget, Tag, UserSummary, ViewOption } from '@/types';
+import type {
+    Conversation,
+    ConversationFilters,
+    ConversationListItem as ListItem,
+    CursorPage,
+    Inbox,
+    SavedView,
+    ShareTarget,
+    Tag,
+    UserSummary,
+    ViewOption,
+} from '@/types';
 
 const props = defineProps<{
     inbox: Inbox;
@@ -73,17 +88,28 @@ watch(
 );
 
 const activeUuid = computed(() => props.conversation?.uuid ?? null);
-const viewLabel = computed(() => viewLabelFor(props.view, props.views.find((v) => v.value === props.view)?.label));
-const title = computed(() => (props.inbox.uuid === 'all' ? 'All personal mail' : props.inbox.name));
+const viewLabel = computed(() =>
+    viewLabelFor(
+        props.view,
+        props.views.find((v) => v.value === props.view)?.label,
+    ),
+);
+const title = computed(() =>
+    props.inbox.uuid === 'all' ? 'All personal mail' : props.inbox.name,
+);
 const subtitle = computed(() => {
     if (props.filters.q) {
         return `Results for “${props.filters.q}”`;
     }
 
-    return props.inbox.uuid === 'all' ? `${viewLabel.value} across ${props.inbox.accounts.length} accounts` : (props.inbox.email_address ?? viewLabel.value);
+    return props.inbox.uuid === 'all'
+        ? `${viewLabel.value} across ${props.inbox.accounts.length} accounts`
+        : (props.inbox.email_address ?? viewLabel.value);
 });
 
-const baseUrl = computed(() => `/${slug.value}/mail/${props.inbox.uuid}/${props.view}`);
+const baseUrl = computed(
+    () => `/${slug.value}/mail/${props.inbox.uuid}/${props.view}`,
+);
 
 const queryString = (filters: ConversationFilters) => {
     const params = new URLSearchParams();
@@ -115,12 +141,20 @@ const openConversation = (item: ListItem) => {
 };
 
 const closeConversation = () => {
-    router.visit(`${baseUrl.value}${queryString(props.filters)}`, { only: ['conversation'], preserveState: true, preserveScroll: true });
+    router.visit(`${baseUrl.value}${queryString(props.filters)}`, {
+        only: ['conversation'],
+        preserveState: true,
+        preserveScroll: true,
+    });
 };
 
 const updateFilters = (filters: ConversationFilters) => {
     loadingList.value = true;
-    router.visit(`${baseUrl.value}${queryString(filters)}`, { only: ['conversations', 'filters', 'counts'], preserveState: true, preserveScroll: true });
+    router.visit(`${baseUrl.value}${queryString(filters)}`, {
+        only: ['conversations', 'filters', 'counts'],
+        preserveState: true,
+        preserveScroll: true,
+    });
 };
 
 const loadMore = () => {
@@ -129,7 +163,10 @@ const loadMore = () => {
     }
 
     loadingMore.value = true;
-    router.reload({ only: ['conversations'], data: { ...props.filters, cursor: nextCursor.value } });
+    router.reload({
+        only: ['conversations'],
+        data: { ...props.filters, cursor: nextCursor.value },
+    });
 };
 
 const onScroll = (event: Event) => {
@@ -162,7 +199,11 @@ const belongsToView = (item: ListItem): boolean => {
         case 'open':
             return notJunk && item.status === 'open';
         case 'assigned':
-            return notJunk && item.assignee?.id === userId.value && ['open', 'pending'].includes(item.status);
+            return (
+                notJunk &&
+                item.assignee?.id === userId.value &&
+                ['open', 'pending'].includes(item.status)
+            );
         case 'unassigned':
             return notJunk && !item.assignee && item.status === 'open';
         case 'pending':
@@ -215,18 +256,33 @@ const removeFromList = (uuid: string) => {
     }
 };
 
-const channelIds = computed(() => (props.inbox.uuid === 'all' ? (page.props.mailNav?.personal ?? []).map((i) => i.id) : [props.inbox.id]));
+const channelIds = computed(() =>
+    props.inbox.uuid === 'all'
+        ? (page.props.mailNav?.personal ?? []).map((i) => i.id)
+        : [props.inbox.id],
+);
 
 channelIds.value.forEach((id) => {
-    useEcho<{ reason: string; conversation: ListItem | null; removed_from_inbox_ids: number[] }>(`inbox.${id}`, '.conversation.updated', (payload) => {
+    useEcho<{
+        reason: string;
+        conversation: ListItem | null;
+        removed_from_inbox_ids: number[];
+    }>(`inbox.${id}`, '.conversation.updated', (payload) => {
         if (!payload.conversation) {
             return;
         }
 
-        const stillVisible = payload.conversation.inbox_id === id || payload.conversation.shared_inbox_ids.includes(id);
+        const stillVisible =
+            payload.conversation.inbox_id === id ||
+            payload.conversation.shared_inbox_ids.includes(id);
 
-        if (payload.reason === 'deleted' || (!stillVisible && payload.removed_from_inbox_ids.includes(id))) {
-            const index = items.value.findIndex((i) => i.uuid === payload.conversation!.uuid);
+        if (
+            payload.reason === 'deleted' ||
+            (!stillVisible && payload.removed_from_inbox_ids.includes(id))
+        ) {
+            const index = items.value.findIndex(
+                (i) => i.uuid === payload.conversation!.uuid,
+            );
 
             if (index !== -1) {
                 items.value.splice(index, 1);
@@ -249,7 +305,10 @@ const toggleSelect = (item: ListItem, shift: boolean) => {
 
     if (shift && cursorIndex.value >= 0) {
         const target = items.value.findIndex((i) => i.uuid === item.uuid);
-        const [from, to] = [Math.min(cursorIndex.value, target), Math.max(cursorIndex.value, target)];
+        const [from, to] = [
+            Math.min(cursorIndex.value, target),
+            Math.max(cursorIndex.value, target),
+        ];
         items.value.slice(from, to + 1).forEach((i) => next.add(i.uuid));
     } else if (next.has(item.uuid)) {
         next.delete(item.uuid);
@@ -268,7 +327,10 @@ const bulk = (action: string, params?: Record<string, unknown>) => {
         return;
     }
 
-    if (['archive', 'trash', 'spam'].includes(action) || (action === 'status' && params?.status !== props.view)) {
+    if (
+        ['archive', 'trash', 'spam'].includes(action) ||
+        (action === 'status' && params?.status !== props.view)
+    ) {
         uuids.forEach((uuid) => {
             const index = items.value.findIndex((i) => i.uuid === uuid);
 
@@ -294,15 +356,28 @@ const moveCursor = (delta: number) => {
         return;
     }
 
-    const current = activeUuid.value ? items.value.findIndex((i) => i.uuid === activeUuid.value) : cursorIndex.value;
-    const next = Math.max(0, Math.min(items.value.length - 1, (current === -1 ? (delta > 0 ? -1 : items.value.length) : current) + delta));
+    const current = activeUuid.value
+        ? items.value.findIndex((i) => i.uuid === activeUuid.value)
+        : cursorIndex.value;
+    const next = Math.max(
+        0,
+        Math.min(
+            items.value.length - 1,
+            (current === -1 ? (delta > 0 ? -1 : items.value.length) : current) +
+                delta,
+        ),
+    );
     cursorIndex.value = next;
 
     if (activeUuid.value || !isMobile.value) {
         openConversation(items.value[next]);
     }
 
-    nextTick(() => listEl.value?.querySelectorAll('article')[next]?.scrollIntoView({ block: 'nearest' }));
+    nextTick(() =>
+        listEl.value
+            ?.querySelectorAll('article')
+            [next]?.scrollIntoView({ block: 'nearest' }),
+    );
 };
 
 const saveView = async () => {
@@ -313,7 +388,11 @@ const saveView = async () => {
     }
 
     try {
-        await api.post('/saved-views', { name, filters: props.filters, inbox: props.inbox.uuid === 'all' ? null : props.inbox.uuid });
+        await api.post('/saved-views', {
+            name,
+            filters: props.filters,
+            inbox: props.inbox.uuid === 'all' ? null : props.inbox.uuid,
+        });
         router.reload({ only: ['savedViews'] });
     } catch (error) {
         reportError(error);
@@ -322,21 +401,56 @@ const saveView = async () => {
 
 const loadShareTargets = () => router.reload({ only: ['shareTargets'] });
 
-const goView = (view: string) => router.visit(`/${slug.value}/mail/${props.inbox.uuid}/${view}`);
+const goView = (view: string) =>
+    router.visit(`/${slug.value}/mail/${props.inbox.uuid}/${view}`);
 
 useKeyboard(() => [
     { keys: 'j', description: 'Next', handler: () => moveCursor(1) },
     { keys: 'k', description: 'Previous', handler: () => moveCursor(-1) },
     { keys: 'arrowdown', description: 'Next', handler: () => moveCursor(1) },
     { keys: 'arrowup', description: 'Previous', handler: () => moveCursor(-1) },
-    { keys: 'enter', description: 'Open', handler: () => cursorIndex.value >= 0 && items.value[cursorIndex.value] && openConversation(items.value[cursorIndex.value]) },
-    { keys: 'x', description: 'Select', handler: () => cursorIndex.value >= 0 && items.value[cursorIndex.value] && toggleSelect(items.value[cursorIndex.value], false) },
-    { keys: '/', description: 'Search', handler: () => toolbar.value?.focusSearch() },
-    { keys: 'g i', description: 'Inbox', handler: () => goView(isShared.value ? 'open' : 'inbox') },
-    { keys: 'g s', description: 'Starred', handler: () => goView(isShared.value ? 'assigned' : 'starred') },
+    {
+        keys: 'enter',
+        description: 'Open',
+        handler: () =>
+            cursorIndex.value >= 0 &&
+            items.value[cursorIndex.value] &&
+            openConversation(items.value[cursorIndex.value]),
+    },
+    {
+        keys: 'x',
+        description: 'Select',
+        handler: () =>
+            cursorIndex.value >= 0 &&
+            items.value[cursorIndex.value] &&
+            toggleSelect(items.value[cursorIndex.value], false),
+    },
+    {
+        keys: '/',
+        description: 'Search',
+        handler: () => toolbar.value?.focusSearch(),
+    },
+    {
+        keys: 'g i',
+        description: 'Inbox',
+        handler: () => goView(isShared.value ? 'open' : 'inbox'),
+    },
+    {
+        keys: 'g s',
+        description: 'Starred',
+        handler: () => goView(isShared.value ? 'assigned' : 'starred'),
+    },
     { keys: 'g t', description: 'Sent', handler: () => goView('sent') },
     { keys: 'g d', description: 'Drafts', handler: () => goView('drafts') },
-    { keys: 'escape', description: 'Clear selection', handler: () => { if (selected.value.size) { selected.value = new Set(); } } },
+    {
+        keys: 'escape',
+        description: 'Clear selection',
+        handler: () => {
+            if (selected.value.size) {
+                selected.value = new Set();
+            }
+        },
+    },
 ]);
 
 const openCompose = (to?: string | null) => {
@@ -351,16 +465,69 @@ const showPane = computed(() => !isMobile.value || Boolean(props.conversation));
 <template>
     <Head :title="`${title} · ${viewLabel}`" />
 
-    <MailLayout :active-inbox-uuid="inbox.uuid" :active-view="view" :views="views" :counts="counts" :saved-views="savedViews" :hide-nav-button="isMobile && Boolean(conversation)" @compose="openCompose()">
-        <ResizablePanelGroup direction="horizontal" class="h-full" auto-save-id="tandem-mail-panes">
-            <ResizablePanel v-if="showList" :default-size="36" :min-size="26" :max-size="55" :class="cn('flex min-w-0 flex-col', isMobile && 'flex-1')">
-                <ListToolbar ref="toolbar" :title="title" :subtitle="subtitle" :filters="filters" :members="members" :tags="tags" :is-shared="isShared" @update="updateFilters" @save-view="saveView" />
-                <BulkBar v-if="selected.size" :count="selected.size" :is-shared="isShared" :members="members" :tags="tags" @clear="selected = new Set()" @action="bulk" />
+    <MailLayout
+        :active-inbox-uuid="inbox.uuid"
+        :active-view="view"
+        :views="views"
+        :counts="counts"
+        :saved-views="savedViews"
+        :hide-nav-button="isMobile && Boolean(conversation)"
+        @compose="openCompose()"
+    >
+        <ResizablePanelGroup
+            direction="horizontal"
+            class="h-full"
+            auto-save-id="tandem-mail-panes"
+        >
+            <ResizablePanel
+                v-if="showList"
+                :default-size="36"
+                :min-size="26"
+                :max-size="55"
+                :class="cn('flex min-w-0 flex-col', isMobile && 'flex-1')"
+            >
+                <ListToolbar
+                    ref="toolbar"
+                    :title="title"
+                    :subtitle="subtitle"
+                    :filters="filters"
+                    :members="members"
+                    :tags="tags"
+                    :is-shared="isShared"
+                    @update="updateFilters"
+                    @save-view="saveView"
+                />
+                <BulkBar
+                    v-if="selected.size"
+                    :count="selected.size"
+                    :is-shared="isShared"
+                    :members="members"
+                    :tags="tags"
+                    @clear="selected = new Set()"
+                    @action="bulk"
+                />
 
-                <div ref="listEl" class="relative flex-1 overflow-y-auto scrollbar-thin" @scroll.passive="onScroll">
+                <div
+                    ref="listEl"
+                    class="relative scrollbar-thin flex-1 overflow-y-auto"
+                    @scroll.passive="onScroll"
+                >
                     <ListSkeleton v-if="loadingList && items.length === 0" />
-                    <EmptyState v-else-if="items.length === 0" :view="filters.q ? 'search' : view">
-                        <Button v-if="view === 'inbox' && inbox.accounts.length === 0" variant="outline" size="sm" class="mt-4" as="a" href="/settings/mail-accounts">Connect an account</Button>
+                    <EmptyState
+                        v-else-if="items.length === 0"
+                        :view="filters.q ? 'search' : view"
+                    >
+                        <Button
+                            v-if="
+                                view === 'inbox' && inbox.accounts.length === 0
+                            "
+                            variant="outline"
+                            size="sm"
+                            class="mt-4"
+                            as="a"
+                            href="/settings/mail-accounts"
+                            >Connect an account</Button
+                        >
                     </EmptyState>
                     <template v-else>
                         <ConversationListItem
@@ -376,19 +543,45 @@ const showPane = computed(() => !isMobile.value || Boolean(props.conversation));
                             @toggle="toggleSelect"
                             @star="starItem"
                         />
-                        <div v-if="nextCursor" class="flex items-center justify-center py-4">
-                            <Button variant="ghost" size="sm" class="gap-2 text-xs text-muted-foreground" :disabled="loadingMore" @click="loadMore">
-                                <Loader2 v-if="loadingMore" class="size-3.5 animate-spin" /> {{ loadingMore ? 'Loading…' : 'Load more' }}
+                        <div
+                            v-if="nextCursor"
+                            class="flex items-center justify-center py-4"
+                        >
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                class="gap-2 text-xs text-muted-foreground"
+                                :disabled="loadingMore"
+                                @click="loadMore"
+                            >
+                                <Loader2
+                                    v-if="loadingMore"
+                                    class="size-3.5 animate-spin"
+                                />
+                                {{ loadingMore ? 'Loading…' : 'Load more' }}
                             </Button>
                         </div>
-                        <p v-else-if="items.length > 20" class="py-6 text-center font-display text-sm text-muted-foreground italic">That is everything. Nicely done.</p>
+                        <p
+                            v-else-if="items.length > 20"
+                            class="py-6 text-center font-display text-sm text-muted-foreground italic"
+                        >
+                            That is everything. Nicely done.
+                        </p>
                     </template>
                 </div>
             </ResizablePanel>
 
-            <ResizableHandle v-if="showList && showPane && !isMobile" with-handle class="w-px bg-border" />
+            <ResizableHandle
+                v-if="showList && showPane && !isMobile"
+                with-handle
+                class="w-px bg-border"
+            />
 
-            <ResizablePanel v-if="showPane" :default-size="64" class="flex min-w-0 flex-col">
+            <ResizablePanel
+                v-if="showPane"
+                :default-size="64"
+                class="flex min-w-0 flex-col"
+            >
                 <ConversationPane
                     v-if="conversation"
                     :key="conversation.uuid"
@@ -403,15 +596,48 @@ const showPane = computed(() => !isMobile.value || Boolean(props.conversation));
                     @removed="removeFromList"
                     @load-share-targets="loadShareTargets"
                 />
-                <div v-else class="flex h-full flex-col items-center justify-center bg-surface-sunken/40 px-8 text-center">
-                    <p class="font-display text-3xl text-foreground/80">Pick a conversation.</p>
+                <div
+                    v-else
+                    class="flex h-full flex-col items-center justify-center bg-surface-sunken/40 px-8 text-center"
+                >
+                    <p class="font-display text-3xl text-foreground/80">
+                        Pick a conversation.
+                    </p>
                     <p class="mt-2 max-w-sm text-sm text-muted-foreground">
-                        Use <kbd class="rounded border bg-muted px-1 text-[11px]">J</kbd> / <kbd class="rounded border bg-muted px-1 text-[11px]">K</kbd> to move, <kbd class="rounded border bg-muted px-1 text-[11px]">↵</kbd> to open, <kbd class="rounded border bg-muted px-1 text-[11px]">C</kbd> to compose and <kbd class="rounded border bg-muted px-1 text-[11px]">?</kbd> for the full cheat sheet.
+                        Use
+                        <kbd class="rounded border bg-muted px-1 text-[11px]"
+                            >J</kbd
+                        >
+                        /
+                        <kbd class="rounded border bg-muted px-1 text-[11px]"
+                            >K</kbd
+                        >
+                        to move,
+                        <kbd class="rounded border bg-muted px-1 text-[11px]"
+                            >↵</kbd
+                        >
+                        to open,
+                        <kbd class="rounded border bg-muted px-1 text-[11px]"
+                            >C</kbd
+                        >
+                        to compose and
+                        <kbd class="rounded border bg-muted px-1 text-[11px]"
+                            >?</kbd
+                        >
+                        for the full cheat sheet.
                     </p>
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>
 
-        <ComposeDialog v-model:open="composeOpen" :inbox="inbox.uuid === 'all' ? null : inbox" :inboxes="[...(page.props.mailNav?.personal ?? []), ...(page.props.mailNav?.shared ?? [])]" :default-to="composeTo" />
+        <ComposeDialog
+            v-model:open="composeOpen"
+            :inbox="inbox.uuid === 'all' ? null : inbox"
+            :inboxes="[
+                ...(page.props.mailNav?.personal ?? []),
+                ...(page.props.mailNav?.shared ?? []),
+            ]"
+            :default-to="composeTo"
+        />
     </MailLayout>
 </template>

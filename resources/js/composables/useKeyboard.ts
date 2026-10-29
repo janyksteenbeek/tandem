@@ -16,7 +16,12 @@ function isTypingTarget(target: EventTarget | null): boolean {
 
     const tag = target.tagName.toLowerCase();
 
-    return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable;
+    return (
+        tag === 'input' ||
+        tag === 'textarea' ||
+        tag === 'select' ||
+        target.isContentEditable
+    );
 }
 
 function matches(combo: string, event: KeyboardEvent): boolean {
@@ -26,7 +31,9 @@ function matches(combo: string, event: KeyboardEvent): boolean {
     const wantsShift = parts.includes('shift');
     const wantsAlt = parts.includes('alt');
 
-    const modPressed = navigator.platform.toUpperCase().includes('MAC') ? event.metaKey : event.ctrlKey;
+    const modPressed = navigator.platform.toUpperCase().includes('MAC')
+        ? event.metaKey
+        : event.ctrlKey;
 
     if (wantsMod !== modPressed) {
         return false;
@@ -59,7 +66,11 @@ export function useKeyboard(shortcuts: () => Shortcut[]): void {
         const typing = isTypingTarget(event.target);
 
         for (const shortcut of shortcuts()) {
-            if (typing && !shortcut.allowInInput && !MODIFIER_PATTERN.test(shortcut.keys)) {
+            if (
+                typing &&
+                !shortcut.allowInInput &&
+                !MODIFIER_PATTERN.test(shortcut.keys)
+            ) {
                 continue;
             }
 

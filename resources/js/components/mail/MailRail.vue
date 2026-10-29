@@ -47,22 +47,35 @@ const canManage = computed(() => Boolean(page.props.canManageOrganization));
 const { isCurrentOrParentUrl } = useCurrentUrl();
 const { appearance, updateAppearance } = useAppearance();
 
-const mailUrl = computed(() => (organization.value ? `/${organization.value.slug}/mail` : '/'));
+const mailUrl = computed(() =>
+    organization.value ? `/${organization.value.slug}/mail` : '/',
+);
 const settingsUrl = computed(() => '/settings/mail-accounts');
 const automationsUrl = computed(() =>
-    organization.value ? `/${organization.value.slug}/settings/automations` : '/settings/mail-accounts',
+    organization.value
+        ? `/${organization.value.slug}/settings/automations`
+        : '/settings/mail-accounts',
 );
 const teamsUrl = computed(() =>
-    organization.value ? `/settings/organizations/${organization.value.slug}/inboxes` : '/settings/organizations',
+    organization.value
+        ? `/settings/organizations/${organization.value.slug}/inboxes`
+        : '/settings/organizations',
 );
 
 const items = computed(() => [
-    { title: 'Mail', href: mailUrl.value, icon: Inbox, active: isCurrentOrParentUrl(mailUrl.value) },
+    {
+        title: 'Mail',
+        href: mailUrl.value,
+        icon: Inbox,
+        active: isCurrentOrParentUrl(mailUrl.value),
+    },
     {
         title: 'Inboxes & teams',
         href: teamsUrl.value,
         icon: Users,
-        active: isCurrentOrParentUrl(`/settings/organizations/${organization.value?.slug}`),
+        active: isCurrentOrParentUrl(
+            `/settings/organizations/${organization.value?.slug}`,
+        ),
         hidden: !organization.value,
     },
     {
@@ -72,17 +85,33 @@ const items = computed(() => [
         active: isCurrentOrParentUrl(automationsUrl.value),
         hidden: !canManage.value,
     },
-    { title: 'Settings', href: settingsUrl.value, icon: Settings, active: isCurrentOrParentUrl('/settings') && !isCurrentOrParentUrl('/settings/organizations') },
+    {
+        title: 'Settings',
+        href: settingsUrl.value,
+        icon: Settings,
+        active:
+            isCurrentOrParentUrl('/settings') &&
+            !isCurrentOrParentUrl('/settings/organizations'),
+    },
 ]);
 
 const switchOrganization = (slug: string) => {
-    router.post(`/settings/organizations/${slug}/switch`, {}, {
-        onFinish: () => router.visit(`/${slug}/mail`),
-    });
+    router.post(
+        `/settings/organizations/${slug}/switch`,
+        {},
+        {
+            onFinish: () => router.visit(`/${slug}/mail`),
+        },
+    );
 };
 
 const cycleAppearance = () => {
-    const next = appearance.value === 'light' ? 'dark' : appearance.value === 'dark' ? 'system' : 'light';
+    const next =
+        appearance.value === 'light'
+            ? 'dark'
+            : appearance.value === 'dark'
+              ? 'system'
+              : 'light';
     updateAppearance(next);
 };
 </script>
@@ -92,7 +121,11 @@ const cycleAppearance = () => {
         class="flex h-full w-14 shrink-0 flex-col items-center border-r border-sidebar-border bg-sidebar py-3"
         aria-label="Primary"
     >
-        <Link :href="mailUrl" class="mb-3 rounded-xl transition-transform hover:scale-105 active:scale-95" aria-label="Tandem home">
+        <Link
+            :href="mailUrl"
+            class="mb-3 rounded-xl transition-transform hover:scale-105 active:scale-95"
+            aria-label="Tandem home"
+        >
             <TandemMark :size="30" />
         </Link>
 
@@ -105,7 +138,8 @@ const cycleAppearance = () => {
                             :class="
                                 cn(
                                     'relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                                    item.active && 'bg-sidebar-accent text-sidebar-accent-foreground',
+                                    item.active &&
+                                        'bg-sidebar-accent text-sidebar-accent-foreground',
                                 )
                             "
                             :aria-current="item.active ? 'page' : undefined"
@@ -117,7 +151,9 @@ const cycleAppearance = () => {
                             <component :is="item.icon" class="size-[18px]" />
                         </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="right">{{ item.title }}</TooltipContent>
+                    <TooltipContent side="right">{{
+                        item.title
+                    }}</TooltipContent>
                 </Tooltip>
             </template>
 
@@ -131,7 +167,12 @@ const cycleAppearance = () => {
                         <Search class="size-[18px]" />
                     </button>
                 </TooltipTrigger>
-                <TooltipContent side="right">Search <kbd class="ml-1 rounded border px-1 text-[10px]">⌘K</kbd></TooltipContent>
+                <TooltipContent side="right"
+                    >Search
+                    <kbd class="ml-1 rounded border px-1 text-[10px]"
+                        >⌘K</kbd
+                    ></TooltipContent
+                >
             </Tooltip>
         </div>
 
@@ -161,50 +202,103 @@ const cycleAppearance = () => {
                         class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         @click="cycleAppearance"
                     >
-                        <Sun v-if="appearance === 'light'" class="size-[18px]" />
-                        <Moon v-else-if="appearance === 'dark'" class="size-[18px]" />
+                        <Sun
+                            v-if="appearance === 'light'"
+                            class="size-[18px]"
+                        />
+                        <Moon
+                            v-else-if="appearance === 'dark'"
+                            class="size-[18px]"
+                        />
                         <SunMoon v-else class="size-[18px]" />
                     </button>
                 </TooltipTrigger>
-                <TooltipContent side="right">Appearance: {{ appearance }}</TooltipContent>
+                <TooltipContent side="right"
+                    >Appearance: {{ appearance }}</TooltipContent
+                >
             </Tooltip>
 
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                    <button type="button" class="mt-1 rounded-full ring-offset-sidebar transition hover:ring-2 hover:ring-brand/40 hover:ring-offset-2" aria-label="Account menu">
-                        <UserAvatar :name="user.name" :email="user.email" :src="user.avatar ?? null" :initials="(user.initials as string) ?? null" size="md" />
+                    <button
+                        type="button"
+                        class="mt-1 rounded-full ring-offset-sidebar transition hover:ring-2 hover:ring-brand/40 hover:ring-offset-2"
+                        aria-label="Account menu"
+                    >
+                        <UserAvatar
+                            :name="user.name"
+                            :email="user.email"
+                            :src="user.avatar ?? null"
+                            :initials="(user.initials as string) ?? null"
+                            size="md"
+                        />
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="right" align="end" class="w-64">
                     <DropdownMenuLabel class="flex items-center gap-2">
-                        <UserAvatar :name="user.name" :email="user.email" :src="user.avatar ?? null" size="sm" />
+                        <UserAvatar
+                            :name="user.name"
+                            :email="user.email"
+                            :src="user.avatar ?? null"
+                            size="sm"
+                        />
                         <span class="min-w-0">
-                            <span class="block truncate text-sm font-medium">{{ user.name }}</span>
-                            <span class="block truncate text-xs font-normal text-muted-foreground">{{ user.email }}</span>
+                            <span class="block truncate text-sm font-medium">{{
+                                user.name
+                            }}</span>
+                            <span
+                                class="block truncate text-xs font-normal text-muted-foreground"
+                                >{{ user.email }}</span
+                            >
                         </span>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel class="text-[11px] tracking-wide text-muted-foreground uppercase">Organizations</DropdownMenuLabel>
+                    <DropdownMenuLabel
+                        class="text-[11px] tracking-wide text-muted-foreground uppercase"
+                        >Organizations</DropdownMenuLabel
+                    >
                     <DropdownMenuItem
                         v-for="org in organizations"
                         :key="org.id"
                         class="gap-2"
-                        @click="org.id === organization?.id ? undefined : switchOrganization(org.slug)"
+                        @click="
+                            org.id === organization?.id
+                                ? undefined
+                                : switchOrganization(org.slug)
+                        "
                     >
-                        <span class="flex size-5 items-center justify-center rounded-md bg-brand-soft text-[10px] font-bold text-brand-soft-foreground">{{ org.name.slice(0, 1).toUpperCase() }}</span>
+                        <span
+                            class="flex size-5 items-center justify-center rounded-md bg-brand-soft text-[10px] font-bold text-brand-soft-foreground"
+                            >{{ org.name.slice(0, 1).toUpperCase() }}</span
+                        >
                         <span class="flex-1 truncate">{{ org.name }}</span>
-                        <Zap v-if="org.id === organization?.id" class="size-3.5 text-brand" />
+                        <Zap
+                            v-if="org.id === organization?.id"
+                            class="size-3.5 text-brand"
+                        />
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem as-child>
-                        <Link :href="editProfile()" class="gap-2"><Settings class="size-4" /> Profile & settings</Link>
+                        <Link :href="editProfile()" class="gap-2"
+                            ><Settings class="size-4" /> Profile &
+                            settings</Link
+                        >
                     </DropdownMenuItem>
-                    <DropdownMenuItem class="gap-2" @click="emit('openShortcuts')">
+                    <DropdownMenuItem
+                        class="gap-2"
+                        @click="emit('openShortcuts')"
+                    >
                         <Keyboard class="size-4" /> Keyboard shortcuts
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem as-child>
-                        <Link :href="logout()" method="post" as="button" class="w-full gap-2"><LogOut class="size-4" /> Log out</Link>
+                        <Link
+                            :href="logout()"
+                            method="post"
+                            as="button"
+                            class="w-full gap-2"
+                            ><LogOut class="size-4" /> Log out</Link
+                        >
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

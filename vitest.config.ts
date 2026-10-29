@@ -8,6 +8,8 @@ export default defineConfig({
         globals: true,
     },
     resolve: {
-        alias: { '@': fileURLToPath(new URL('./resources/js', import.meta.url)) },
+        alias: {
+            '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
+        },
     },
 });

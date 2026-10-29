@@ -21,7 +21,9 @@ const page = usePage();
 const user = page.props.auth.user;
 const { isMobile, state } = useSidebar();
 
-const currentOrganization = computed(() => page.props.currentOrganization as Organization | null);
+const currentOrganization = computed(
+    () => page.props.currentOrganization as Organization | null,
+);
 </script>
 
 <template>
@@ -34,7 +36,10 @@ const currentOrganization = computed(() => page.props.currentOrganization as Org
                         class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         data-test="sidebar-menu-button"
                     >
-                        <UserInfo :user="user" :organization="currentOrganization" />
+                        <UserInfo
+                            :user="user"
+                            :organization="currentOrganization"
+                        />
                         <ChevronsUpDown class="ml-auto size-4" />
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>

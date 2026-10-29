@@ -18,7 +18,11 @@ function xsrfToken(): string {
 
 type Body = Record<string, unknown> | FormData | undefined;
 
-async function request<T>(method: string, url: string, body?: Body): Promise<T> {
+async function request<T>(
+    method: string,
+    url: string,
+    body?: Body,
+): Promise<T> {
     const headers: Record<string, string> = {
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -63,12 +67,18 @@ async function request<T>(method: string, url: string, body?: Body): Promise<T> 
 }
 
 export const api = {
-    get: <T>(url: string, params?: Record<string, string | number | undefined>) => {
+    get: <T>(
+        url: string,
+        params?: Record<string, string | number | undefined>,
+    ) => {
         const query = params
             ? '?' +
               Object.entries(params)
                   .filter(([, v]) => v !== undefined && v !== '')
-                  .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+                  .map(
+                      ([k, v]) =>
+                          `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`,
+                  )
                   .join('&')
             : '';
 
@@ -80,7 +90,10 @@ export const api = {
     delete: <T>(url: string, body?: Body) => request<T>('DELETE', url, body),
 };
 
-export function reportError(error: unknown, fallback = 'Something went wrong.'): void {
+export function reportError(
+    error: unknown,
+    fallback = 'Something went wrong.',
+): void {
     if (error instanceof HttpError) {
         const first = Object.values(error.errors)[0]?.[0];
         toast.error(first ?? error.message ?? fallback);

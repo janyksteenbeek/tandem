@@ -4,13 +4,20 @@ import type { UserSummary } from '@/types';
 
 type PresenceMember = UserSummary;
 
-type TypingPayload = { user: UserSummary; mode: 'reply' | 'comment'; at: number };
+type TypingPayload = {
+    user: UserSummary;
+    mode: 'reply' | 'comment';
+    at: number;
+};
 
 /**
  * Presence + typing/collision detection on a conversation. Typing is sent as client
  * whispers so it never touches the server.
  */
-export function usePresence(conversationUuid: Ref<string | null | undefined>, me: Ref<UserSummary>) {
+export function usePresence(
+    conversationUuid: Ref<string | null | undefined>,
+    me: Ref<UserSummary>,
+) {
     const viewers = ref<PresenceMember[]>([]);
     const typing = ref<TypingPayload[]>([]);
     let channelName: string | null = null;
@@ -40,18 +47,30 @@ export function usePresence(conversationUuid: Ref<string | null | undefined>, me
             })
             .leaving((member: PresenceMember) => {
                 viewers.value = viewers.value.filter((m) => m.id !== member.id);
-                typing.value = typing.value.filter((t) => t.user.id !== member.id);
+                typing.value = typing.value.filter(
+                    (t) => t.user.id !== member.id,
+                );
             })
             .listenForWhisper('typing', (payload: TypingPayload) => {
                 if (payload.user.id === me.value.id) {
                     return;
                 }
 
-                typing.value = [...typing.value.filter((t) => t.user.id !== payload.user.id), { ...payload, at: Date.now() }];
+                typing.value = [
+                    ...typing.value.filter(
+                        (t) => t.user.id !== payload.user.id,
+                    ),
+                    { ...payload, at: Date.now() },
+                ];
             })
-            .listenForWhisper('stopped-typing', (payload: { userId: number }) => {
-                typing.value = typing.value.filter((t) => t.user.id !== payload.userId);
-            });
+            .listenForWhisper(
+                'stopped-typing',
+                (payload: { userId: number }) => {
+                    typing.value = typing.value.filter(
+                        (t) => t.user.id !== payload.userId,
+                    );
+                },
+            );
     };
 
     let lastWhisper = 0;
@@ -62,7 +81,9 @@ export function usePresence(conversationUuid: Ref<string | null | undefined>, me
         }
 
         lastWhisper = Date.now();
-        echo().join(channelName).whisper('typing', { user: me.value, mode, at: Date.now() });
+        echo()
+            .join(channelName)
+            .whisper('typing', { user: me.value, mode, at: Date.now() });
     };
 
     const whisperStopped = () => {
@@ -71,7 +92,9 @@ export function usePresence(conversationUuid: Ref<string | null | undefined>, me
         }
 
         lastWhisper = 0;
-        echo().join(channelName).whisper('stopped-typing', { userId: me.value.id });
+        echo()
+            .join(channelName)
+            .whisper('stopped-typing', { userId: me.value.id });
     };
 
     watch(

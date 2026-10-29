@@ -5,11 +5,27 @@ import InboxDot from '@/components/mail/InboxDot.vue';
 import UserAvatar from '@/components/mail/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { chipClass } from '@/lib/mail';
 import { cn } from '@/lib/utils';
-import type { AutomationCatalog, AutomationConditionValue, AutomationLookups, ConditionValueType, OperatorValueShape } from '@/types/automations';
+import type {
+    AutomationCatalog,
+    AutomationConditionValue,
+    AutomationLookups,
+    ConditionValueType,
+    OperatorValueShape,
+} from '@/types/automations';
 
 const props = defineProps<{
     valueType: ConditionValueType;
@@ -22,16 +38,33 @@ const props = defineProps<{
 
 const model = defineModel<AutomationConditionValue>({ default: '' });
 
-type Option = { value: string; label: string; color?: string | null; avatar?: string | null };
+type Option = {
+    value: string;
+    label: string;
+    color?: string | null;
+    avatar?: string | null;
+};
 
 const options = computed<Option[]>(() => {
     switch (props.valueType) {
         case 'inbox':
-            return props.lookups.inboxes.map((inbox) => ({ value: inbox.uuid, label: inbox.name, color: inbox.color }));
+            return props.lookups.inboxes.map((inbox) => ({
+                value: inbox.uuid,
+                label: inbox.name,
+                color: inbox.color,
+            }));
         case 'user':
-            return props.lookups.users.map((user) => ({ value: String(user.id), label: user.name, avatar: user.avatar }));
+            return props.lookups.users.map((user) => ({
+                value: String(user.id),
+                label: user.name,
+                avatar: user.avatar,
+            }));
         case 'tag':
-            return props.lookups.tags.map((tag) => ({ value: tag.slug, label: tag.name, color: tag.color }));
+            return props.lookups.tags.map((tag) => ({
+                value: tag.slug,
+                label: tag.name,
+                color: tag.color,
+            }));
         case 'status':
             return props.catalog.statuses;
         case 'priority':
@@ -49,17 +82,26 @@ const usesPickList = computed(() => {
         return true;
     }
 
-    return props.valueType === 'tag' && ['equals', 'not_equals', 'in', 'not_in'].includes(props.operator);
+    return (
+        props.valueType === 'tag' &&
+        ['equals', 'not_equals', 'in', 'not_in'].includes(props.operator)
+    );
 });
 
 const placeholder = computed(() => {
     switch (props.valueType) {
         case 'email':
-            return props.operator === 'matches_regex' ? '^inv-\\d+@' : props.operator === 'ends_with' ? '@acme.com' : 'jane@acme.com or @acme.com';
+            return props.operator === 'matches_regex'
+                ? '^inv-\\d+@'
+                : props.operator === 'ends_with'
+                  ? '@acme.com'
+                  : 'jane@acme.com or @acme.com';
         case 'tag':
             return 'vip';
         case 'text':
-            return props.operator === 'matches_regex' ? '\\b(invoice|refund)\\b' : 'Type a word or phrase';
+            return props.operator === 'matches_regex'
+                ? '\\b(invoice|refund)\\b'
+                : 'Type a word or phrase';
         default:
             return 'Value';
     }
@@ -78,12 +120,20 @@ const hint = computed(() => {
 });
 
 const single = computed({
-    get: () => (Array.isArray(model.value) ? (model.value[0] ?? '') : (model.value ?? '')),
+    get: () =>
+        Array.isArray(model.value)
+            ? (model.value[0] ?? '')
+            : (model.value ?? ''),
     set: (value: string) => (model.value = value),
 });
 
 const many = computed<string[]>({
-    get: () => (Array.isArray(model.value) ? model.value : model.value ? [model.value] : []),
+    get: () =>
+        Array.isArray(model.value)
+            ? model.value
+            : model.value
+              ? [model.value]
+              : [],
     set: (value: string[]) => (model.value = value),
 });
 
@@ -109,23 +159,35 @@ const removeAt = (index: number) => {
 };
 
 const toggle = (value: string) => {
-    many.value = many.value.includes(value) ? many.value.filter((item) => item !== value) : [...many.value, value];
+    many.value = many.value.includes(value)
+        ? many.value.filter((item) => item !== value)
+        : [...many.value, value];
 };
 
-const labelOf = (value: string) => options.value.find((option) => option.value === value)?.label ?? value;
+const labelOf = (value: string) =>
+    options.value.find((option) => option.value === value)?.label ?? value;
 
 const onDraftKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ',') {
         event.preventDefault();
         addDraft();
-    } else if (event.key === 'Backspace' && draft.value === '' && many.value.length > 0) {
+    } else if (
+        event.key === 'Backspace' &&
+        draft.value === '' &&
+        many.value.length > 0
+    ) {
         removeAt(many.value.length - 1);
     }
 };
 </script>
 
 <template>
-    <div v-if="shape === 'none'" class="flex h-9 items-center text-xs text-muted-foreground italic">No value needed.</div>
+    <div
+        v-if="shape === 'none'"
+        class="flex h-9 items-center text-xs text-muted-foreground italic"
+    >
+        No value needed.
+    </div>
 
     <!-- Multi-value pick list (inboxes, users, tags, statuses, priorities) -->
     <div v-else-if="shape === 'array' && usesPickList" class="min-w-0">
@@ -140,7 +202,11 @@ const onDraftKeydown = (event: KeyboardEvent) => {
                         )
                     "
                 >
-                    <span v-if="many.length === 0" class="px-1 text-muted-foreground">Pick one or more…</span>
+                    <span
+                        v-if="many.length === 0"
+                        class="px-1 text-muted-foreground"
+                        >Pick one or more…</span
+                    >
                     <span
                         v-for="value in many"
                         :key="value"
@@ -148,11 +214,18 @@ const onDraftKeydown = (event: KeyboardEvent) => {
                     >
                         {{ labelOf(value) }}
                     </span>
-                    <ChevronsUpDown class="ml-auto size-3.5 shrink-0 text-muted-foreground" />
+                    <ChevronsUpDown
+                        class="ml-auto size-3.5 shrink-0 text-muted-foreground"
+                    />
                 </button>
             </PopoverTrigger>
             <PopoverContent align="start" class="w-64 p-1">
-                <p v-if="options.length === 0" class="p-3 text-xs text-muted-foreground">Nothing to pick from yet.</p>
+                <p
+                    v-if="options.length === 0"
+                    class="p-3 text-xs text-muted-foreground"
+                >
+                    Nothing to pick from yet.
+                </p>
                 <button
                     v-for="option in options"
                     :key="option.value"
@@ -160,11 +233,30 @@ const onDraftKeydown = (event: KeyboardEvent) => {
                     class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
                     @click="toggle(option.value)"
                 >
-                    <span class="flex size-4 items-center justify-center rounded border" :class="many.includes(option.value) ? 'border-brand bg-brand text-brand-foreground' : 'border-input'">
-                        <Check v-if="many.includes(option.value)" class="size-3" />
+                    <span
+                        class="flex size-4 items-center justify-center rounded border"
+                        :class="
+                            many.includes(option.value)
+                                ? 'border-brand bg-brand text-brand-foreground'
+                                : 'border-input'
+                        "
+                    >
+                        <Check
+                            v-if="many.includes(option.value)"
+                            class="size-3"
+                        />
                     </span>
-                    <UserAvatar v-if="valueType === 'user'" :name="option.label" :src="option.avatar" size="xs" />
-                    <InboxDot v-else-if="option.color !== undefined" :color="option.color" size="sm" />
+                    <UserAvatar
+                        v-if="valueType === 'user'"
+                        :name="option.label"
+                        :src="option.avatar"
+                        size="xs"
+                    />
+                    <InboxDot
+                        v-else-if="option.color !== undefined"
+                        :color="option.color"
+                        size="sm"
+                    />
                     <span class="truncate">{{ option.label }}</span>
                 </button>
             </PopoverContent>
@@ -183,7 +275,12 @@ const onDraftKeydown = (event: KeyboardEvent) => {
                 class="inline-flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 font-mono text-xs text-brand-soft-foreground"
             >
                 {{ value }}
-                <button type="button" class="rounded-full hover:bg-brand/20" :aria-label="`Remove ${value}`" @click="removeAt(index)">
+                <button
+                    type="button"
+                    class="rounded-full hover:bg-brand/20"
+                    :aria-label="`Remove ${value}`"
+                    @click="removeAt(index)"
+                >
                     <X class="size-3" />
                 </button>
             </span>
@@ -191,13 +288,25 @@ const onDraftKeydown = (event: KeyboardEvent) => {
                 v-model="draft"
                 type="text"
                 class="min-w-24 flex-1 bg-transparent px-1 py-0.5 outline-none placeholder:text-muted-foreground"
-                :placeholder="many.length === 0 ? `${placeholder}, …` : 'Add another'"
+                :placeholder="
+                    many.length === 0 ? `${placeholder}, …` : 'Add another'
+                "
                 @keydown="onDraftKeydown"
                 @blur="addDraft"
             />
-            <Button v-if="draft" type="button" variant="ghost" size="icon-xs" aria-label="Add value" @click="addDraft"><Plus /></Button>
+            <Button
+                v-if="draft"
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                aria-label="Add value"
+                @click="addDraft"
+                ><Plus
+            /></Button>
         </div>
-        <p class="mt-1 text-[11px] text-muted-foreground">Press Enter or comma after each value.</p>
+        <p class="mt-1 text-[11px] text-muted-foreground">
+            Press Enter or comma after each value.
+        </p>
     </div>
 
     <!-- Single pick list -->
@@ -207,11 +316,29 @@ const onDraftKeydown = (event: KeyboardEvent) => {
                 <SelectValue placeholder="Choose…" />
             </SelectTrigger>
             <SelectContent>
-                <p v-if="options.length === 0" class="p-3 text-xs text-muted-foreground">Nothing to pick from yet.</p>
-                <SelectItem v-for="option in options" :key="option.value" :value="option.value">
+                <p
+                    v-if="options.length === 0"
+                    class="p-3 text-xs text-muted-foreground"
+                >
+                    Nothing to pick from yet.
+                </p>
+                <SelectItem
+                    v-for="option in options"
+                    :key="option.value"
+                    :value="option.value"
+                >
                     <span class="flex items-center gap-2">
-                        <UserAvatar v-if="valueType === 'user'" :name="option.label" :src="option.avatar" size="xs" />
-                        <span v-else-if="option.color !== undefined" class="inline-block size-2.5 rounded-full bg-(--chip)" :class="chipClass(option.color)" />
+                        <UserAvatar
+                            v-if="valueType === 'user'"
+                            :name="option.label"
+                            :src="option.avatar"
+                            size="xs"
+                        />
+                        <span
+                            v-else-if="option.color !== undefined"
+                            class="inline-block size-2.5 rounded-full bg-(--chip)"
+                            :class="chipClass(option.color)"
+                        />
                         {{ option.label }}
                     </span>
                 </SelectItem>
@@ -229,6 +356,8 @@ const onDraftKeydown = (event: KeyboardEvent) => {
             :class="operator === 'matches_regex' ? 'font-mono text-xs' : ''"
             autocomplete="off"
         />
-        <p v-if="hint" class="mt-1 text-[11px] text-muted-foreground">{{ hint }}</p>
+        <p v-if="hint" class="mt-1 text-[11px] text-muted-foreground">
+            {{ hint }}
+        </p>
     </div>
 </template>

@@ -10,13 +10,28 @@ import { mentionSuggestion } from '@/lib/mentionSuggestion';
 import { cn } from '@/lib/utils';
 import type { UserSummary } from '@/types';
 
-const props = defineProps<{ members: UserSummary[]; inboxName: string; busy?: boolean; autofocus?: boolean }>();
-const emit = defineEmits<{ submit: [body: string, mentions: number[]]; typing: []; cancel: [] }>();
+const props = defineProps<{
+    members: UserSummary[];
+    inboxName: string;
+    busy?: boolean;
+    autofocus?: boolean;
+}>();
+const emit = defineEmits<{
+    submit: [body: string, mentions: number[]];
+    typing: [];
+    cancel: [];
+}>();
 
 const editor = useEditor({
     extensions: [
-        StarterKit.configure({ heading: false, codeBlock: false, horizontalRule: false }),
-        Placeholder.configure({ placeholder: `Add an internal comment… visible only to teammates in ${props.inboxName}. Type @ to mention.` }),
+        StarterKit.configure({
+            heading: false,
+            codeBlock: false,
+            horizontalRule: false,
+        }),
+        Placeholder.configure({
+            placeholder: `Add an internal comment… visible only to teammates in ${props.inboxName}. Type @ to mention.`,
+        }),
         Mention.configure({
             HTMLAttributes: { class: 'mention' },
             renderText: ({ node }) => `@${node.attrs.label ?? node.attrs.id}`,
@@ -24,7 +39,9 @@ const editor = useEditor({
         }),
     ],
     editorProps: {
-        attributes: { class: 'prose-tandem min-h-[3.5rem] max-h-64 overflow-y-auto px-3 py-2 text-sm scrollbar-thin' },
+        attributes: {
+            class: 'prose-tandem min-h-[3.5rem] max-h-64 overflow-y-auto px-3 py-2 text-sm scrollbar-thin',
+        },
         handleKeyDown: (_view, event) => {
             if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
                 submit();
@@ -70,7 +87,8 @@ const submit = () => {
     editor.value.commands.clearContent();
 };
 
-const insertMention = () => editor.value?.chain().focus().insertContent('@').run();
+const insertMention = () =>
+    editor.value?.chain().focus().insertContent('@').run();
 
 defineExpose({ focus: () => editor.value?.commands.focus('end') });
 
@@ -78,15 +96,38 @@ onBeforeUnmount(() => editor.value?.destroy());
 </script>
 
 <template>
-    <div :class="cn('rounded-xl border border-highlight/50 bg-highlight/10 shadow-pane transition focus-within:border-highlight')">
-        <div class="flex items-center gap-1.5 border-b border-highlight/30 px-3 py-1.5 text-[11px] font-medium text-highlight-foreground">
-            <Lock class="size-3" /> Internal comment · never sent to the customer
+    <div
+        :class="
+            cn(
+                'rounded-xl border border-highlight/50 bg-highlight/10 shadow-pane transition focus-within:border-highlight',
+            )
+        "
+    >
+        <div
+            class="flex items-center gap-1.5 border-b border-highlight/30 px-3 py-1.5 text-[11px] font-medium text-highlight-foreground"
+        >
+            <Lock class="size-3" /> Internal comment · never sent to the
+            customer
         </div>
         <EditorContent :editor="editor" />
         <div class="flex items-center gap-1 px-2 pb-2">
-            <Button variant="ghost" size="icon" class="size-7" aria-label="Mention someone" @click="insertMention"><AtSign class="size-3.5" /></Button>
-            <span class="ml-auto text-[11px] text-muted-foreground"><kbd class="rounded border px-1">⌘↵</kbd> to post</span>
-            <Button size="sm" class="h-7 gap-1 bg-highlight text-highlight-foreground hover:bg-highlight/90" :disabled="isEmpty || busy" @click="submit">
+            <Button
+                variant="ghost"
+                size="icon"
+                class="size-7"
+                aria-label="Mention someone"
+                @click="insertMention"
+                ><AtSign class="size-3.5"
+            /></Button>
+            <span class="ml-auto text-[11px] text-muted-foreground"
+                ><kbd class="rounded border px-1">⌘↵</kbd> to post</span
+            >
+            <Button
+                size="sm"
+                class="h-7 gap-1 bg-highlight text-highlight-foreground hover:bg-highlight/90"
+                :disabled="isEmpty || busy"
+                @click="submit"
+            >
                 <Send class="size-3.5" /> Comment
             </Button>
         </div>

@@ -15,7 +15,9 @@ export const CHIP_COLORS = [
 ] as const;
 
 export function chipClass(color: string | null | undefined): string {
-    const safe = CHIP_COLORS.includes((color ?? '') as (typeof CHIP_COLORS)[number])
+    const safe = CHIP_COLORS.includes(
+        (color ?? '') as (typeof CHIP_COLORS)[number],
+    )
         ? color
         : 'slate';
 
@@ -60,7 +62,11 @@ export const PRIORITY_META: Record<
     ConversationPriority,
     { label: string; short: string; className: string }
 > = {
-    none: { label: 'No priority', short: '', className: 'text-muted-foreground' },
+    none: {
+        label: 'No priority',
+        short: '',
+        className: 'text-muted-foreground',
+    },
     low: { label: 'Low', short: 'Low', className: 'text-muted-foreground' },
     normal: { label: 'Normal', short: 'Normal', className: 'text-info' },
     high: { label: 'High', short: 'High', className: 'text-warning' },
@@ -76,7 +82,11 @@ export const VIEW_LABELS: Record<string, string> = {
 };
 
 export function viewLabel(view: string, fallback?: string): string {
-    return VIEW_LABELS[view] ?? fallback ?? view.charAt(0).toUpperCase() + view.slice(1);
+    return (
+        VIEW_LABELS[view] ??
+        fallback ??
+        view.charAt(0).toUpperCase() + view.slice(1)
+    );
 }
 
 export const STATUS_META: Record<string, { label: string; dot: string }> = {
@@ -87,23 +97,64 @@ export const STATUS_META: Record<string, { label: string; dot: string }> = {
 };
 
 export function formatAddressList(list: EmailAddress[]): string {
-    return list.map((a) => (a.name ? `${a.name} <${a.email}>` : a.email)).join(', ');
+    return list
+        .map((a) => (a.name ? `${a.name} <${a.email}>` : a.email))
+        .join(', ');
 }
 
 export const EMPTY_COPY: Record<string, { title: string; body: string }> = {
-    inbox: { title: 'Inbox zero.', body: 'Go touch grass. We will ping you when something lands.' },
-    open: { title: 'Nothing open.', body: 'Every conversation here is handled. Enjoy the quiet.' },
-    assigned: { title: 'Nothing on your plate.', body: 'Pick something up from Unassigned, or enjoy the moment.' },
-    unassigned: { title: 'Everything has an owner.', body: 'Teamwork, evidently.' },
-    pending: { title: 'No one is waiting.', body: 'Pending conversations show up here while you wait on someone else.' },
+    inbox: {
+        title: 'Inbox zero.',
+        body: 'Go touch grass. We will ping you when something lands.',
+    },
+    open: {
+        title: 'Nothing open.',
+        body: 'Every conversation here is handled. Enjoy the quiet.',
+    },
+    assigned: {
+        title: 'Nothing on your plate.',
+        body: 'Pick something up from Unassigned, or enjoy the moment.',
+    },
+    unassigned: {
+        title: 'Everything has an owner.',
+        body: 'Teamwork, evidently.',
+    },
+    pending: {
+        title: 'No one is waiting.',
+        body: 'Pending conversations show up here while you wait on someone else.',
+    },
     snoozed: { title: 'Nothing snoozed.', body: 'Everyone is wide awake.' },
-    closed: { title: 'Nothing closed yet.', body: 'Closed conversations live here for when you need them.' },
+    closed: {
+        title: 'Nothing closed yet.',
+        body: 'Closed conversations live here for when you need them.',
+    },
     drafts: { title: 'No drafts.', body: 'Say it with your chest.' },
-    sent: { title: 'Nothing sent yet.', body: 'Your outgoing mail will show up here.' },
-    archive: { title: 'Archive is empty.', body: 'Archive what you are done with, find it here later.' },
-    spam: { title: 'No spam.', body: 'Suspicious mail lands here so it never clutters your inbox.' },
-    trash: { title: 'Trash is empty.', body: 'Deleted conversations wait here before they are gone for good.' },
-    starred: { title: 'No stars yet.', body: 'Star the conversations that matter and they will gather here.' },
-    all: { title: 'Nothing here yet.', body: 'Connect an account and mail will start flowing in.' },
-    search: { title: 'No matches.', body: 'Try fewer words, or search by a name or email address.' },
+    sent: {
+        title: 'Nothing sent yet.',
+        body: 'Your outgoing mail will show up here.',
+    },
+    archive: {
+        title: 'Archive is empty.',
+        body: 'Archive what you are done with, find it here later.',
+    },
+    spam: {
+        title: 'No spam.',
+        body: 'Suspicious mail lands here so it never clutters your inbox.',
+    },
+    trash: {
+        title: 'Trash is empty.',
+        body: 'Deleted conversations wait here before they are gone for good.',
+    },
+    starred: {
+        title: 'No stars yet.',
+        body: 'Star the conversations that matter and they will gather here.',
+    },
+    all: {
+        title: 'Nothing here yet.',
+        body: 'Connect an account and mail will start flowing in.',
+    },
+    search: {
+        title: 'No matches.',
+        body: 'Try fewer words, or search by a name or email address.',
+    },
 };
