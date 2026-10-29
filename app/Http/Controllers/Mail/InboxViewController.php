@@ -31,7 +31,7 @@ class InboxViewController extends Controller
     /**
      * The three-pane mail screen for one inbox (or every personal inbox when $inbox is "all").
      */
-    public function show(Request $request, string $inbox, string $view = 'inbox', ?Conversation $conversation = null): Response
+    public function show(Request $request, string $currentOrganization, string $inbox, string $view = 'inbox', ?Conversation $conversation = null): Response
     {
         $user = $request->user();
         $organization = $user->currentOrganization;

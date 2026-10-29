@@ -43,3 +43,6 @@ yarn-error.log
 /boost.json
 /opencode.json
 /opencode.jsonc
+tests/e2e/screenshots/
+test-results/
+playwright-report/

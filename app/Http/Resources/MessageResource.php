@@ -51,7 +51,7 @@ class MessageResource extends JsonResource
             'delivery_status' => $this->delivery_status->value,
             'delivery_error' => $this->delivery_error,
             'author' => $this->author ? UserSummaryResource::make($this->author) : null,
-            'attachments' => AttachmentResource::collection($this->attachments->filter(fn (Attachment $a) => ! $a->is_inline || ! $a->content_id)->values()),
+            'attachments' => AttachmentResource::collection($this->attachments->filter(fn (Attachment $a) => ! $a->is_inline || ! $a->content_id)->values())->resolve(),
             'message_id' => $this->message_id_header,
         ];
     }

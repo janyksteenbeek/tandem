@@ -20,6 +20,8 @@ void createInertiaApp({
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
+            case name.startsWith('mail/'):
+                return null;
             case name.startsWith('settings/'):
             case name.startsWith('organizations/'):
                 return [AppLayout, SettingsLayout];

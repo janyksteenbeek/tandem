@@ -189,7 +189,7 @@ test('organization invitations can be accepted', function () {
         ->actingAs($invitedUser)
         ->post(route('invitations.accept', $invitation));
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('mail.home'));
     $response->assertInertiaFlash('toast', ['type' => 'success', 'message' => 'Invitation accepted.']);
 
     expect($invitedUser->fresh()->belongsToOrganization($organization))->toBeTrue();
@@ -213,7 +213,7 @@ test('organization invitations can be declined by the invited user', function ()
         ->actingAs($invitedUser)
         ->delete(route('invitations.decline', $invitation));
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('mail.home'));
 
     $this->assertDatabaseMissing('organization_invitations', [
         'id' => $invitation->id,

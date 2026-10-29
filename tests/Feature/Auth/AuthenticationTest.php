@@ -46,7 +46,7 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('mail.home'));
 });
 
 test('passkey login response redirects to the current organization dashboard', function () {
@@ -60,7 +60,7 @@ test('passkey login response redirects to the current organization dashboard', f
 
     $jsonResponse = app(PasskeyLoginResponse::class)->toResponse($request);
 
-    expect($jsonResponse->getData()->redirect)->toBe(route('dashboard', ['current_organization' => $user->personalOrganization()->slug]));
+    expect($jsonResponse->getData()->redirect)->toBe(route('mail.home', ['current_organization' => $user->personalOrganization()->slug]));
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {
