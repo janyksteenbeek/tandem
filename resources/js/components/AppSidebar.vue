@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
+import { Inbox, Mail, Settings, Users, Workflow } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import OrganizationSwitcher from '@/components/OrganizationSwitcher.vue';
@@ -22,29 +21,26 @@ import type { NavItem } from '@/types';
 const page = usePage();
 
 const dashboardUrl = computed(() =>
-    page.props.currentOrganization ? dashboard(page.props.currentOrganization.slug).url : '/',
+    page.props.currentOrganization
+        ? dashboard(page.props.currentOrganization.slug).url
+        : '/',
 );
 
+const slug = computed(() => page.props.currentOrganization?.slug);
+
 const mainNavItems = computed<NavItem[]>(() => [
-    {
-        title: 'Dashboard',
-        href: dashboardUrl.value,
-        icon: LayoutGrid,
-    },
+    ...(slug.value ? [{ title: 'Mail', href: `/${slug.value}/mail`, icon: Mail }] : []),
+    { title: 'Mail accounts', href: '/settings/mail-accounts', icon: Settings },
+    ...(slug.value
+        ? [
+              { title: 'Inboxes', href: `/settings/organizations/${slug.value}/inboxes`, icon: Inbox },
+              { title: 'Teams', href: `/settings/organizations/${slug.value}/teams`, icon: Users },
+              ...(page.props.canManageOrganization ? [{ title: 'Automations', href: `/${slug.value}/settings/automations`, icon: Workflow }] : []),
+          ]
+        : []),
 ]);
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
+
 </script>
 
 <template>
@@ -53,7 +49,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboardUrl">
+                        <Link :href="slug ? `/${slug}/mail` : dashboardUrl">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
@@ -71,7 +67,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

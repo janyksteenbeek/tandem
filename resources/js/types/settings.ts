@@ -1,6 +1,17 @@
-import type { InboxRole, InboxType, MailProvider, SenderIdentity } from '@/types/mail';
+import type {
+    InboxRole,
+    InboxType,
+    MailProvider,
+    SenderIdentity,
+} from '@/types/mail';
 
-export type MailAccountStatus = 'pending' | 'connected' | 'syncing' | 'error' | 'needs_reauth' | 'disconnected';
+export type MailAccountStatus =
+    | 'pending'
+    | 'connected'
+    | 'syncing'
+    | 'error'
+    | 'needs_reauth'
+    | 'disconnected';
 
 export type ImapConnectionSettings = {
     host: string;
@@ -143,7 +154,14 @@ export type OrganizationSummary = { id: number; name: string; slug: string };
 
 export type BusinessHoursRange = { start: string; end: string };
 
-export type BusinessHoursDay = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+export type BusinessHoursDay =
+    | 'mon'
+    | 'tue'
+    | 'wed'
+    | 'thu'
+    | 'fri'
+    | 'sat'
+    | 'sun';
 
 export type BusinessHours = {
     timezone: string | null;

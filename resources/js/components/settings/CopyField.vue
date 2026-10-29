@@ -32,17 +32,30 @@ async function copy(): Promise<void> {
 
 <template>
     <div :class="cn('min-w-0', props.class)">
-        <p v-if="label" class="mb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{{ label }}</p>
+        <p
+            v-if="label"
+            class="mb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase"
+        >
+            {{ label }}
+        </p>
         <div
             :class="
                 cn(
-                    'flex items-center gap-2 rounded-lg border bg-surface-sunken pl-3 pr-1 font-mono text-foreground',
+                    'flex items-center gap-2 rounded-lg border bg-surface-sunken pr-1 pl-3 font-mono text-foreground',
                     size === 'sm' ? 'h-8 text-xs' : 'h-10 text-sm',
                 )
             "
         >
-            <span class="min-w-0 flex-1 truncate select-all" :title="value">{{ value }}</span>
-            <Button type="button" variant="ghost" :size="size === 'sm' ? 'icon-xs' : 'icon-sm'" :aria-label="`Copy ${label ?? 'value'}`" @click="copy">
+            <span class="min-w-0 flex-1 truncate select-all" :title="value">{{
+                value
+            }}</span>
+            <Button
+                type="button"
+                variant="ghost"
+                :size="size === 'sm' ? 'icon-xs' : 'icon-sm'"
+                :aria-label="`Copy ${label ?? 'value'}`"
+                @click="copy"
+            >
                 <Check v-if="copied" class="text-success" />
                 <Copy v-else />
             </Button>

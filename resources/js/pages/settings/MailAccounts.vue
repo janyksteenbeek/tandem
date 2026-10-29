@@ -33,16 +33,26 @@ const connectOpen = ref(false);
 const connectTarget = ref<{ uuid: string; name: string } | null>(null);
 const connectProvider = ref<'gmail' | 'imap' | null>(null);
 
-function connect(inbox: { uuid: string; name: string } | null = null, provider: 'gmail' | 'imap' | null = null): void {
+function connect(
+    inbox: { uuid: string; name: string } | null = null,
+    provider: 'gmail' | 'imap' | null = null,
+): void {
     connectTarget.value = inbox;
     connectProvider.value = provider;
     connectOpen.value = true;
 }
 
-const unhealthy = computed(() => props.personalAccounts.filter((account) => !account.healthy && account.status !== 'pending').length);
+const unhealthy = computed(
+    () =>
+        props.personalAccounts.filter(
+            (account) => !account.healthy && account.status !== 'pending',
+        ).length,
+);
 
-const channelsOf = (inbox: SharedInboxChannels): MailAccount[] => inbox.accounts.filter((account) => account.provider !== 'forwarding');
-const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] => inbox.accounts.filter((account) => account.provider === 'forwarding');
+const channelsOf = (inbox: SharedInboxChannels): MailAccount[] =>
+    inbox.accounts.filter((account) => account.provider !== 'forwarding');
+const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
+    inbox.accounts.filter((account) => account.provider === 'forwarding');
 </script>
 
 <template>
@@ -63,7 +73,11 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] => inbox.accoun
             "
         >
             <template #actions>
-                <Button class="bg-brand text-brand-foreground shadow-float hover:bg-brand/90" @click="connect()"><Plus /> Connect account</Button>
+                <Button
+                    class="bg-brand text-brand-foreground shadow-float hover:bg-brand/90"
+                    @click="connect()"
+                    ><Plus /> Connect account</Button
+                >
             </template>
 
             <SettingsEmpty
@@ -72,12 +86,21 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] => inbox.accoun
                 title="Your inbox is waiting for you."
                 body="Connect Gmail or any IMAP mailbox and the last 90 days of mail arrive within minutes. Your personal mail stays private to you."
             >
-                <Button variant="outline" @click="connect(null, 'gmail')"><Mail /> Connect Gmail</Button>
-                <Button variant="outline" @click="connect(null, 'imap')"><Server /> Connect IMAP</Button>
+                <Button variant="outline" @click="connect(null, 'gmail')"
+                    ><Mail /> Connect Gmail</Button
+                >
+                <Button variant="outline" @click="connect(null, 'imap')"
+                    ><Server /> Connect IMAP</Button
+                >
             </SettingsEmpty>
 
             <div v-else class="grid gap-3">
-                <MailAccountCard v-for="account in personalAccounts" :key="account.uuid" :account="account" context="personal" />
+                <MailAccountCard
+                    v-for="account in personalAccounts"
+                    :key="account.uuid"
+                    :account="account"
+                    context="personal"
+                />
             </div>
         </SettingsSection>
 
@@ -90,39 +113,89 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] => inbox.accoun
                 v-if="sharedInboxes.length === 0"
                 :icon="Inbox"
                 title="No shared inboxes to manage."
-                :body="organization ? 'Inboxes where you are an admin show up here with their channels and forwarding addresses.' : 'Join or create an organization to set up shared inboxes for your team.'"
+                :body="
+                    organization
+                        ? 'Inboxes where you are an admin show up here with their channels and forwarding addresses.'
+                        : 'Join or create an organization to set up shared inboxes for your team.'
+                "
             >
-                <Button v-if="organization && page.props.canManageOrganization" as-child variant="outline">
-                    <Link :href="inboxesIndex(organization.slug)">Go to Inboxes</Link>
+                <Button
+                    v-if="organization && page.props.canManageOrganization"
+                    as-child
+                    variant="outline"
+                >
+                    <Link :href="inboxesIndex(organization.slug)"
+                        >Go to Inboxes</Link
+                    >
                 </Button>
             </SettingsEmpty>
 
             <div v-else class="space-y-6">
-                <article v-for="inbox in sharedInboxes" :key="inbox.uuid" class="space-y-3 rounded-2xl border bg-surface/60 p-4 sm:p-5">
+                <article
+                    v-for="inbox in sharedInboxes"
+                    :key="inbox.uuid"
+                    class="space-y-3 rounded-2xl border bg-surface/60 p-4 sm:p-5"
+                >
                     <header class="flex flex-wrap items-center gap-3">
                         <InboxDot :color="inbox.color" class="size-3" />
                         <div class="min-w-0 flex-1">
-                            <h3 class="truncate text-base font-semibold">{{ inbox.name }}</h3>
-                            <p class="truncate text-sm text-muted-foreground">{{ inbox.email_address ?? 'No public address yet' }}</p>
+                            <h3 class="truncate text-base font-semibold">
+                                {{ inbox.name }}
+                            </h3>
+                            <p class="truncate text-sm text-muted-foreground">
+                                {{
+                                    inbox.email_address ??
+                                    'No public address yet'
+                                }}
+                            </p>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <Button variant="outline" size="sm" @click="connect(inbox, 'gmail')"><Mail /> Connect Gmail</Button>
-                            <Button variant="outline" size="sm" @click="connect(inbox, 'imap')"><Server /> Connect IMAP</Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                @click="connect(inbox, 'gmail')"
+                                ><Mail /> Connect Gmail</Button
+                            >
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                @click="connect(inbox, 'imap')"
+                                ><Server /> Connect IMAP</Button
+                            >
                         </div>
                     </header>
 
                     <div v-if="channelsOf(inbox).length > 0" class="grid gap-3">
-                        <MailAccountCard v-for="account in channelsOf(inbox)" :key="account.uuid" :account="account" context="shared" />
+                        <MailAccountCard
+                            v-for="account in channelsOf(inbox)"
+                            :key="account.uuid"
+                            :account="account"
+                            context="shared"
+                        />
                     </div>
-                    <p v-else class="rounded-xl border border-dashed bg-card px-4 py-3 text-sm text-muted-foreground">
-                        No mailbox connected directly. Connect one above, or use a forwarding address below if you would rather not share the password.
+                    <p
+                        v-else
+                        class="rounded-xl border border-dashed bg-card px-4 py-3 text-sm text-muted-foreground"
+                    >
+                        No mailbox connected directly. Connect one above, or use
+                        a forwarding address below if you would rather not share
+                        the password.
                     </p>
 
-                    <ForwardingAddresses :inbox="inbox" :accounts="forwardingOf(inbox)" :forwarding-domain="forwardingDomain" />
+                    <ForwardingAddresses
+                        :inbox="inbox"
+                        :accounts="forwardingOf(inbox)"
+                        :forwarding-domain="forwardingDomain"
+                    />
                 </article>
             </div>
         </SettingsSection>
     </div>
 
-    <ConnectAccountDialog v-model:open="connectOpen" :inbox="connectTarget" :google-configured="googleConfigured" :initial-provider="connectProvider" />
+    <ConnectAccountDialog
+        v-model:open="connectOpen"
+        :inbox="connectTarget"
+        :google-configured="googleConfigured"
+        :initial-provider="connectProvider"
+    />
 </template>

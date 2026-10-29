@@ -11,7 +11,13 @@ import SettingsSection from '@/components/settings/SettingsSection.vue';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { index as inboxesIndex } from '@/routes/settings/inboxes';
-import type { InboxRoleOption, InboxSettings, MemberOption, OrganizationSummary, TeamOption } from '@/types';
+import type {
+    InboxRoleOption,
+    InboxSettings,
+    MemberOption,
+    OrganizationSummary,
+    TeamOption,
+} from '@/types';
 
 defineProps<{
     organization: OrganizationSummary;
@@ -25,7 +31,9 @@ defineProps<{
 
 defineOptions({
     layout: (props: { organization: OrganizationSummary }) => ({
-        breadcrumbs: [{ title: 'Inboxes', href: inboxesIndex(props.organization.slug) }],
+        breadcrumbs: [
+            { title: 'Inboxes', href: inboxesIndex(props.organization.slug) },
+        ],
     }),
 });
 
@@ -57,29 +65,62 @@ function access(inbox: InboxSettings): void {
             :description="`Team mailboxes in ${organization.name}. Each one has its own channels, access list and automations.`"
         >
             <template #actions>
-                <Button v-if="canManage" class="bg-brand text-brand-foreground shadow-float hover:bg-brand/90" @click="createOpen = true"><Plus /> New inbox</Button>
+                <Button
+                    v-if="canManage"
+                    class="bg-brand text-brand-foreground shadow-float hover:bg-brand/90"
+                    @click="createOpen = true"
+                    ><Plus /> New inbox</Button
+                >
             </template>
 
             <SettingsEmpty
                 v-if="inboxes.length === 0"
                 :icon="Inbox"
-                :title="canManage ? 'No shared inboxes yet.' : 'Nothing shared with you yet.'"
+                :title="
+                    canManage
+                        ? 'No shared inboxes yet.'
+                        : 'Nothing shared with you yet.'
+                "
                 :body="
                     canManage
                         ? 'Create one for support@, sales@ or anywhere a team answers together. Then connect a channel so mail starts flowing.'
                         : 'Ask an organization admin to give you access to an inbox. It will show up here and in your mail sidebar.'
                 "
             >
-                <Button v-if="canManage" @click="createOpen = true"><Plus /> Create your first inbox</Button>
+                <Button v-if="canManage" @click="createOpen = true"
+                    ><Plus /> Create your first inbox</Button
+                >
             </SettingsEmpty>
 
             <div v-else class="grid gap-4 xl:grid-cols-2">
-                <InboxCard v-for="inbox in inboxes" :key="inbox.uuid" :inbox="inbox" :organization-slug="organization.slug" @edit="edit(inbox)" @access="access(inbox)" />
+                <InboxCard
+                    v-for="inbox in inboxes"
+                    :key="inbox.uuid"
+                    :inbox="inbox"
+                    :organization-slug="organization.slug"
+                    @edit="edit(inbox)"
+                    @access="access(inbox)"
+                />
             </div>
         </SettingsSection>
     </TooltipProvider>
 
-    <InboxDialog v-model:open="createOpen" :organization-slug="organization.slug" :teams="teams" />
-    <InboxEditSheet v-model:open="editOpen" :organization-slug="organization.slug" :inbox="selected" />
-    <InboxAccessDialog v-model:open="accessOpen" :organization-slug="organization.slug" :inbox="selected" :teams="teams" :members="members" :roles="roles" />
+    <InboxDialog
+        v-model:open="createOpen"
+        :organization-slug="organization.slug"
+        :teams="teams"
+    />
+    <InboxEditSheet
+        v-model:open="editOpen"
+        :organization-slug="organization.slug"
+        :inbox="selected"
+    />
+    <InboxAccessDialog
+        v-model:open="accessOpen"
+        :organization-slug="organization.slug"
+        :inbox="selected"
+        :teams="teams"
+        :members="members"
+        :roles="roles"
+    />
 </template>

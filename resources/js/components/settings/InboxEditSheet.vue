@@ -5,11 +5,24 @@ import { ref, watch } from 'vue';
 import ConfirmDialog from '@/components/settings/ConfirmDialog.vue';
 import InboxFields from '@/components/settings/InboxFields.vue';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { destroy as destroyInbox, update as updateInbox } from '@/routes/settings/inboxes';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import {
+    destroy as destroyInbox,
+    update as updateInbox,
+} from '@/routes/settings/inboxes';
 import type { InboxSettings } from '@/types';
 
-const props = defineProps<{ organizationSlug: string; inbox: InboxSettings | null }>();
+const props = defineProps<{
+    organizationSlug: string;
+    inbox: InboxSettings | null;
+}>();
 const open = defineModel<boolean>('open', { default: false });
 
 const form = useForm({
@@ -53,14 +66,17 @@ function destroy(): void {
     }
 
     deleting.value = true;
-    router.delete(destroyInbox.url([props.organizationSlug, props.inbox.uuid]), {
-        preserveScroll: true,
-        onFinish: () => {
-            deleting.value = false;
-            confirmDelete.value = false;
-            open.value = false;
+    router.delete(
+        destroyInbox.url([props.organizationSlug, props.inbox.uuid]),
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                deleting.value = false;
+                confirmDelete.value = false;
+                open.value = false;
+            },
         },
-    });
+    );
 }
 </script>
 
@@ -69,27 +85,57 @@ function destroy(): void {
         <SheetContent class="flex w-full flex-col gap-0 p-0 sm:max-w-md">
             <form class="flex h-full flex-col" @submit.prevent="submit">
                 <SheetHeader class="border-b px-6 py-5">
-                    <SheetTitle class="font-display text-2xl">Edit inbox</SheetTitle>
-                    <SheetDescription>Rename it, change the colour, or update the public address.</SheetDescription>
+                    <SheetTitle class="font-display text-2xl"
+                        >Edit inbox</SheetTitle
+                    >
+                    <SheetDescription
+                        >Rename it, change the colour, or update the public
+                        address.</SheetDescription
+                    >
                 </SheetHeader>
 
-                <div class="flex-1 overflow-y-auto px-6 py-5 scrollbar-thin">
-                    <InboxFields v-model:name="form.name" v-model:email-address="form.email_address" v-model:color="form.color" v-model:description="form.description" :errors="form.errors" id-prefix="edit-inbox" />
+                <div class="scrollbar-thin flex-1 overflow-y-auto px-6 py-5">
+                    <InboxFields
+                        v-model:name="form.name"
+                        v-model:email-address="form.email_address"
+                        v-model:color="form.color"
+                        v-model:description="form.description"
+                        :errors="form.errors"
+                        id-prefix="edit-inbox"
+                    />
 
-                    <div class="mt-8 rounded-xl border border-destructive/30 p-4">
+                    <div
+                        class="mt-8 rounded-xl border border-destructive/30 p-4"
+                    >
                         <p class="text-sm font-semibold">Delete this inbox</p>
                         <p class="mt-0.5 text-xs text-muted-foreground">
-                            Removes the inbox, its channels and {{ inbox?.conversation_count ?? 0 }} conversations from Tandem. Mail at the provider is untouched.
+                            Removes the inbox, its channels and
+                            {{ inbox?.conversation_count ?? 0 }} conversations
+                            from Tandem. Mail at the provider is untouched.
                         </p>
-                        <Button type="button" variant="outline" size="sm" class="mt-3 text-destructive hover:bg-destructive/10 hover:text-destructive" @click="confirmDelete = true">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            class="mt-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            @click="confirmDelete = true"
+                        >
                             <Trash2 /> Delete inbox
                         </Button>
                     </div>
                 </div>
 
-                <SheetFooter class="flex-row justify-end gap-2 border-t px-6 py-4">
-                    <Button type="button" variant="ghost" @click="open = false">Cancel</Button>
-                    <Button type="submit" class="bg-brand text-brand-foreground hover:bg-brand/90" :disabled="form.processing">
+                <SheetFooter
+                    class="flex-row justify-end gap-2 border-t px-6 py-4"
+                >
+                    <Button type="button" variant="ghost" @click="open = false"
+                        >Cancel</Button
+                    >
+                    <Button
+                        type="submit"
+                        class="bg-brand text-brand-foreground hover:bg-brand/90"
+                        :disabled="form.processing"
+                    >
                         <Loader2 v-if="form.processing" class="animate-spin" />
                         Save changes
                     </Button>
