@@ -52,4 +52,9 @@ npm run types:check && npm test
 
 ## License
 
-MIT
+Tandem is released under the Creative Commons Attribution-NonCommercial 4.0 International license. See
+the [LICENSE](LICENSE). A human friendly summary is available
+at [creativecommons.org](https://creativecommons.org/licenses/by-nc/4.0/). An addendum regarding clarification of
+non-commercial use is available at [NON-COMMERCIAL.md](NON-COMMERCIAL.md).
+
+Dependencies may be subject to their own licenses.

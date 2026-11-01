@@ -7,7 +7,7 @@
         "laravel",
         "framework"
     ],
-    "license": "MIT",
+    "license": "CC-BY-NC-4.0",
     "require": {
         "php": "^8.3",
         "ezyang/htmlpurifier": "^4.19",
