@@ -2,6 +2,7 @@
 import { Link, router, usePage } from '@inertiajs/vue3';
 import {
     Bell,
+    Download,
     Inbox,
     Keyboard,
     LogOut,
@@ -10,8 +11,6 @@ import {
     Settings,
     Sun,
     SunMoon,
-    Users,
-    Workflow,
     Zap,
 } from '@lucide/vue';
 import { computed } from 'vue';
@@ -34,6 +33,7 @@ import {
 import { useAppearance } from '@/composables/useAppearance';
 import { useBranding } from '@/composables/useBranding';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { useInstallPrompt } from '@/composables/usePwa';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
@@ -46,43 +46,18 @@ const page = usePage();
 const user = computed(() => page.props.auth.user);
 const organization = computed(() => page.props.currentOrganization);
 const organizations = computed(() => page.props.organizations ?? []);
-const canManage = computed(() => Boolean(page.props.canManageOrganization));
 const { isCurrentOrParentUrl } = useCurrentUrl();
 const { appearance, updateAppearance } = useAppearance();
+const { canInstall, install } = useInstallPrompt();
 
 const mailUrl = computed(() =>
     organization.value ? `/${organization.value.slug}/mail` : '/',
-);
-const workspaceUrl = computed(() =>
-    organization.value
-        ? `/settings/organizations/${organization.value.slug}`
-        : '/settings/organizations',
-);
-const automationsUrl = computed(() =>
-    organization.value
-        ? `/${organization.value.slug}/settings/automations`
-        : '/settings/mail-accounts',
 );
 const orgSettingsUrl = computed(() =>
     organization.value ? `/${organization.value.slug}/settings` : null,
 );
 
-/** Workspace and automations light up their own icon; every other settings page belongs to the cog. */
-const workspaceActive = computed(() =>
-    isCurrentOrParentUrl(workspaceUrl.value),
-);
-const automationsActive = computed(() =>
-    isCurrentOrParentUrl(automationsUrl.value),
-);
-const settingsActive = computed(
-    () =>
-        (isCurrentOrParentUrl('/settings') ||
-            (orgSettingsUrl.value !== null &&
-                isCurrentOrParentUrl(orgSettingsUrl.value))) &&
-        !workspaceActive.value &&
-        !automationsActive.value,
-);
-
+/** Two places to be: your mail, or the settings behind it. Everything else is a shortcut inside one of those. */
 const items = computed(() => [
     {
         title: 'Mail',
@@ -91,24 +66,13 @@ const items = computed(() => [
         active: isCurrentOrParentUrl(mailUrl.value),
     },
     {
-        title: 'Inboxes & teams',
-        href: `${workspaceUrl.value}/inboxes`,
-        icon: Users,
-        active: workspaceActive.value,
-        hidden: !organization.value,
-    },
-    {
-        title: 'Automations',
-        href: automationsUrl.value,
-        icon: Workflow,
-        active: automationsActive.value,
-        hidden: !canManage.value,
-    },
-    {
         title: 'Settings',
         href: '/settings/mail-accounts',
         icon: Settings,
-        active: settingsActive.value,
+        active:
+            isCurrentOrParentUrl('/settings') ||
+            (orgSettingsUrl.value !== null &&
+                isCurrentOrParentUrl(orgSettingsUrl.value)),
     },
 ]);
 
@@ -148,7 +112,7 @@ const cycleAppearance = () => {
 
         <div class="flex flex-col items-center gap-1">
             <template v-for="item in items" :key="item.title">
-                <Tooltip v-if="!item.hidden">
+                <Tooltip>
                     <TooltipTrigger as-child>
                         <Link
                             :href="item.href"
@@ -306,6 +270,13 @@ const cycleAppearance = () => {
                         @click="emit('openShortcuts')"
                     >
                         <Keyboard class="size-4" /> Keyboard shortcuts
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        v-if="canInstall"
+                        class="gap-2"
+                        @click="install"
+                    >
+                        <Download class="size-4" /> Install app
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem as-child>

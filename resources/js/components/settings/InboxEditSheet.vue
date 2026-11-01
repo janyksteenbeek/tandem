@@ -18,9 +18,6 @@ import {
     update as updateInbox,
 } from '@/routes/settings/inboxes';
 import type { InboxSettings } from '@/types';
-import { useBranding } from '@/composables/useBranding';
-
-const branding = useBranding();
 
 const props = defineProps<{
     organizationSlug: string;
@@ -91,9 +88,8 @@ function destroy(): void {
                     <SheetTitle class="font-display text-2xl"
                         >Edit inbox</SheetTitle
                     >
-                    <SheetDescription
-                        >Rename it, change the colour, or update the public
-                        address.</SheetDescription
+                    <SheetDescription class="sr-only"
+                        >Edit inbox details</SheetDescription
                     >
                 </SheetHeader>
 
@@ -112,10 +108,9 @@ function destroy(): void {
                     >
                         <p class="text-sm font-semibold">Delete this inbox</p>
                         <p class="mt-0.5 text-xs text-muted-foreground">
-                            Removes the inbox, its channels and
-                            {{ inbox?.conversation_count ?? 0 }} conversations
-                            from {{ branding.name }}. Mail at the provider is
-                            untouched.
+                            Removes
+                            {{ inbox?.conversation_count ?? 0 }} conversations.
+                            Mail at the provider is untouched.
                         </p>
                         <Button
                             type="button"
@@ -150,7 +145,7 @@ function destroy(): void {
         <ConfirmDialog
             v-model:open="confirmDelete"
             :title="`Delete ${inbox?.name ?? 'this inbox'}?`"
-            :description="`Everyone loses access immediately and the conversations are gone from ${branding.name}. This cannot be undone.`"
+            :description="'This cannot be undone.'"
             confirm-label="Delete inbox"
             destructive
             :busy="deleting"

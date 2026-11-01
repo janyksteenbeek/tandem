@@ -3,7 +3,14 @@ import { Head, router, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import { useMediaQuery } from '@vueuse/core';
 import { Loader2 } from '@lucide/vue';
-import { computed, nextTick, ref, watch } from 'vue';
+import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    watch,
+} from 'vue';
 import BulkBar from '@/components/mail/BulkBar.vue';
 import ComposeDialog from '@/components/mail/ComposeDialog.vue';
 import MailSidebar from '@/components/mail/MailSidebar.vue';
@@ -25,6 +32,7 @@ import { api, reportError } from '@/lib/http';
 import { viewLabel as viewLabelFor } from '@/lib/mail';
 import { cn } from '@/lib/utils';
 import type {
+    ComposePrefill,
     Conversation,
     ConversationFilters,
     ConversationListItem as ListItem,
@@ -64,7 +72,7 @@ const loadingList = ref(false);
 const selected = ref<Set<string>>(new Set());
 const cursorIndex = ref(-1);
 const composeOpen = ref(false);
-const composeTo = ref<string | null>(null);
+const composePrefill = ref<Partial<ComposePrefill> | null>(null);
 const toolbar = ref<InstanceType<typeof ListToolbar> | null>(null);
 const listEl = ref<HTMLElement | null>(null);
 const localShareTargets = ref<ShareTarget[] | null>(props.shareTargets ?? null);
@@ -456,9 +464,30 @@ useKeyboard(() => [
 ]);
 
 const openCompose = (to?: string | null) => {
-    composeTo.value = to ?? null;
+    composePrefill.value = to ? { to: [{ name: null, email: to }] } : null;
     composeOpen.value = true;
 };
+
+/** A mailto: link or a prefilled /compose URL lands here with the fields as flash data. */
+const openPrefilled = (prefill: ComposePrefill | undefined) => {
+    if (!prefill) {
+        return;
+    }
+
+    composePrefill.value = prefill;
+    composeOpen.value = true;
+};
+
+let stopFlashListener: (() => void) | undefined;
+
+onMounted(() => {
+    openPrefilled(page.flash.compose);
+    stopFlashListener = router.on('flash', (event) =>
+        openPrefilled(event.detail.flash.compose),
+    );
+});
+
+onBeforeUnmount(() => stopFlashListener?.());
 
 const showList = computed(() => !isMobile.value || !props.conversation);
 const showPane = computed(() => !isMobile.value || Boolean(props.conversation));
@@ -645,7 +674,7 @@ useShellColumn(() => ({
                 ...(page.props.mailNav?.personal ?? []),
                 ...(page.props.mailNav?.shared ?? []),
             ]"
-            :default-to="composeTo"
+            :prefill="composePrefill"
         />
     </div>
 </template>

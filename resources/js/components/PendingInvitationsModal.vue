@@ -46,9 +46,8 @@ const declineInvitation = (invitation: DashboardInvitation) => {
         <DialogContent data-test="pending-invitations-modal">
             <DialogHeader>
                 <DialogTitle>Pending organization invitations</DialogTitle>
-                <DialogDescription>
-                    Accept or decline the organizations you have been invited to
-                    join.
+                <DialogDescription class="sr-only">
+                    Pending invitations
                 </DialogDescription>
             </DialogHeader>
 
@@ -64,8 +63,7 @@ const declineInvitation = (invitation: DashboardInvitation) => {
                             {{ invitation.organization.name }}
                         </p>
                         <p class="text-sm text-muted-foreground">
-                            {{ invitation.inviterName }} invited you to join
-                            this organization.
+                            Invited by {{ invitation.inviterName }}
                         </p>
                     </div>
 

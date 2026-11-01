@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use App\Models\SsoIdentity;
+use App\Services\Sso\Sso;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -16,9 +18,22 @@ class SecurityController extends Controller
     /**
      * Show the user's security settings page.
      */
-    public function edit(TwoFactorAuthenticationRequest $request): Response
+    public function edit(TwoFactorAuthenticationRequest $request, Sso $sso): Response
     {
         $props = [
+            'canUpdatePassword' => ! $sso->forced(),
+            'ssoIdentities' => $request->user()
+                ->ssoIdentities()
+                ->latest('last_used_at')
+                ->get()
+                ->map(fn (SsoIdentity $identity) => [
+                    'provider' => $identity->provider,
+                    'email' => $identity->email,
+                    'connected_at_diff' => $identity->created_at?->diffForHumans(),
+                    'last_used_at_diff' => $identity->last_used_at?->diffForHumans(),
+                ])
+                ->values()
+                ->all(),
             'canManageTwoFactor' => Features::canManageTwoFactorAuthentication(),
             'canManagePasskeys' => Features::canManagePasskeys(),
             'passkeys' => Features::canManagePasskeys()

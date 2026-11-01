@@ -4,12 +4,10 @@ import { Inbox, Mail, Plus, Server } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import InboxDot from '@/components/mail/InboxDot.vue';
 import ConnectAccountDialog from '@/components/settings/ConnectAccountDialog.vue';
-import ForwardingChannels from '@/components/settings/ForwardingChannels.vue';
 import MailAccountCard from '@/components/settings/MailAccountCard.vue';
 import SettingsEmpty from '@/components/settings/SettingsEmpty.vue';
 import SettingsSection from '@/components/settings/SettingsSection.vue';
 import { Button } from '@/components/ui/button';
-import { usesForwardingAddress } from '@/lib/channels';
 import { index as mailAccountsIndex } from '@/routes/mail/accounts';
 import { index as inboxesIndex } from '@/routes/settings/inboxes';
 import type { MailAccount, MailProvider, SharedInboxChannels } from '@/types';
@@ -43,15 +41,6 @@ const unhealthy = computed(
             (account) => !account.healthy && account.status !== 'pending',
         ).length,
 );
-
-/** Mailboxes connected directly (Gmail, IMAP). */
-const mailboxesOf = (inbox: SharedInboxChannels): MailAccount[] =>
-    inbox.accounts.filter(
-        (account) => !usesForwardingAddress(account.provider),
-    );
-/** Google Group and Forward channels, which receive on a generated address. */
-const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
-    inbox.accounts.filter((account) => usesForwardingAddress(account.provider));
 </script>
 
 <template>
@@ -64,11 +53,9 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
             title="Personal accounts"
             :count="personalAccounts.length"
             :description="
-                personalAccounts.length === 0
-                    ? 'Nothing is syncing because nothing is connected yet.'
-                    : unhealthy > 0
-                      ? `${unhealthy} ${unhealthy === 1 ? 'account needs' : 'accounts need'} attention.`
-                      : 'Everything here is yours alone. Teammates never see it unless you share a conversation.'
+                unhealthy > 0
+                    ? `${unhealthy} ${unhealthy === 1 ? 'account needs' : 'accounts need'} attention.`
+                    : undefined
             "
         >
             <template #actions>
@@ -83,7 +70,7 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
                 v-if="personalAccounts.length === 0"
                 :icon="Mail"
                 title="Your inbox is waiting for you."
-                body="Connect Gmail or any IMAP mailbox and the last 90 days of mail arrive within minutes. Your personal mail stays private to you."
+                body="Connect Gmail or IMAP. Only you can see it."
             >
                 <Button variant="outline" @click="connect(null, 'gmail')"
                     ><Mail /> Connect Gmail</Button
@@ -106,7 +93,6 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
         <SettingsSection
             title="Shared inboxes you manage"
             :count="sharedInboxes.length"
-            description="Channels feed mail into a team inbox. Connect Gmail or IMAP directly, add a Google Group, or forward an existing address."
         >
             <SettingsEmpty
                 v-if="sharedInboxes.length === 0"
@@ -114,8 +100,8 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
                 title="No shared inboxes to manage."
                 :body="
                     organization
-                        ? 'Inboxes where you are an admin show up here with their channels.'
-                        : 'Join or create an organization to set up shared inboxes for your team.'
+                        ? 'Inboxes you admin show up here.'
+                        : 'Join or create an organization first.'
                 "
             >
                 <Button
@@ -156,12 +142,9 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
                         >
                     </header>
 
-                    <div
-                        v-if="mailboxesOf(inbox).length > 0"
-                        class="grid gap-3"
-                    >
+                    <div v-if="inbox.accounts.length > 0" class="grid gap-3">
                         <MailAccountCard
-                            v-for="account in mailboxesOf(inbox)"
+                            v-for="account in inbox.accounts"
                             :key="account.uuid"
                             :account="account"
                             context="shared"
@@ -171,17 +154,10 @@ const forwardingOf = (inbox: SharedInboxChannels): MailAccount[] =>
                         v-else
                         class="rounded-xl border border-dashed bg-card px-4 py-3 text-sm text-muted-foreground"
                     >
-                        No mailbox connected directly. Add Gmail or IMAP above,
-                        or use a Google Group or Forward channel below if you
-                        would rather not share a password.
+                        No channels yet. Connect Gmail or IMAP, or add a Google
+                        Group or Forward channel if you would rather not share a
+                        password.
                     </p>
-
-                    <ForwardingChannels
-                        :inbox="inbox"
-                        :accounts="forwardingOf(inbox)"
-                        :forwarding-domain="forwardingDomain"
-                        @add="(channel) => connect(inbox, channel)"
-                    />
                 </article>
             </div>
         </SettingsSection>

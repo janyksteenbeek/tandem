@@ -11,12 +11,16 @@ import type { Props as ManagePasskeysProps } from '@/components/ManagePasskeys.v
 import ManagePasskeys from '@/components/ManagePasskeys.vue';
 import type { Props as ManageTwoFactorProps } from '@/components/ManageTwoFactor.vue';
 import ManageTwoFactor from '@/components/ManageTwoFactor.vue';
+import type { Props as ManageSsoIdentitiesProps } from '@/components/ManageSsoIdentities.vue';
+import ManageSsoIdentities from '@/components/ManageSsoIdentities.vue';
 
 // oxfmt-ignore
 type Props = {
     passwordRules: string;
+    canUpdatePassword: boolean;
 } & ManagePasskeysProps &
-    ManageTwoFactorProps;
+    ManageTwoFactorProps &
+    ManageSsoIdentitiesProps;
 
 const props = defineProps<Props>();
 </script>
@@ -26,12 +30,8 @@ const props = defineProps<Props>();
 
     <h1 class="sr-only">Security settings</h1>
 
-    <div class="space-y-6">
-        <Heading
-            variant="small"
-            title="Update password"
-            description="Ensure your account is using a long, random password to stay secure"
-        />
+    <div v-if="props.canUpdatePassword" class="space-y-6">
+        <Heading variant="small" title="Update password" />
 
         <Form
             v-bind="SecurityController.update.form()"
@@ -106,4 +106,6 @@ const props = defineProps<Props>();
         :canManagePasskeys="canManagePasskeys"
         :passkeys="passkeys"
     />
+
+    <ManageSsoIdentities :ssoIdentities="ssoIdentities" />
 </template>

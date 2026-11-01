@@ -8,6 +8,7 @@ use App\Events\Conversations\ConversationStatusChanged;
 use App\Events\Conversations\ConversationTagged;
 use App\Events\Mail\MessageIngested;
 use App\Listeners\Automations\RunAutomations;
+use App\Services\Sso\Sso;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Middleware\TrustProxies;
@@ -37,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureTrustedProxies();
         $this->registerAutomationListeners();
+        Sso::registerDrivers();
     }
 
     /**

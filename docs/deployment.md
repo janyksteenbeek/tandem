@@ -26,7 +26,24 @@ TANDEM_FORWARDING_WEBHOOK_SECRET=<random 64 chars>   # same value as the Worker 
 TANDEM_GMAIL_PUBSUB_TOKEN=<random>        # part of the Pub/Sub push URL
 GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_PUBSUB_TOPIC   # optional global fallback; organizations can set their own
 TANDEM_ATTACHMENTS_DISK=s3                # attachments and raw .eml files
+SSO_GOOGLE_ENABLED=true                   # "Continue with Google" on the sign-in screens, see below
+SSO_FORCE=false                           # true: identity providers are the only way in
 ```
+
+## Single sign-on
+
+`config/sso.php` lists the identity providers. Google is built in and reuses `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` unless `SSO_GOOGLE_CLIENT_ID` / `SSO_GOOGLE_CLIENT_SECRET` are set, so one OAuth client can serve Gmail connections and sign-in. Register `https://app.example.com/auth/google/callback` as an authorised redirect URI on that client.
+
+```
+SSO_GOOGLE_ENABLED=true
+SSO_GOOGLE_HOSTED_DOMAINS=example.com,example.org   # optional: only these Google Workspace domains may sign in
+SSO_LINK_EXISTING_ACCOUNTS=true                      # link a first SSO sign-in to the user with the same verified email
+SSO_FORCE=false
+```
+
+A first sign-in through a provider links the identity to the user whose email matches (when the provider reports it verified), or registers a new user when registration is open. Signed-in users connect and disconnect providers under Settings → Security, and can re-authenticate with a provider wherever a password confirmation is asked.
+
+`SSO_FORCE=true` turns the providers into the only way in: password login, registration, password resets and changes, and passkey login are switched off and the sign-in screens only show the provider buttons. Forcing is ignored while no provider is enabled, so you cannot lock everyone out by accident. Make sure every existing user can reach a provider (their email matches, or they connected it beforehand) before turning it on.
 
 ## Branding
 
@@ -37,11 +54,13 @@ BRANDING_NAME="Acme Mail"                # defaults to APP_NAME
 BRANDING_TAGLINE="support, sorted"
 BRANDING_LOGO=https://cdn.example.com/mark.svg          # omit to keep the built-in mark
 BRANDING_LOGO_DARK=https://cdn.example.com/mark-dark.svg
-BRANDING_FAVICON=/favicon.svg
+BRANDING_FAVICON=/tandem/icon.svg
+BRANDING_WORDMARK=/tandem/tandem-mail-wordmark-purple.svg
+BRANDING_OG_IMAGE=/tandem/tandem-mail-og.png
 BRANDING_AUTH_QUOTE="Inbox zero is a team sport."
 BRANDING_AUTH_ATTRIBUTION="someone on the team"
 BRANDING_AUTH_FOOTNOTE=
-BRANDING_COLOR_BRAND="oklch(0.52 0.19 330)"             # any CSS colour; *_DARK variants apply in dark mode
+BRANDING_COLOR_BRAND="#603df3"                           # any CSS colour; *_DARK variants apply in dark mode
 BRANDING_COLOR_BRAND_FOREGROUND=
 BRANDING_COLOR_BRAND_SOFT= BRANDING_COLOR_BRAND_SOFT_FOREGROUND=
 BRANDING_COLOR_HIGHLIGHT= BRANDING_COLOR_HIGHLIGHT_FOREGROUND=

@@ -34,7 +34,7 @@ test('an ingested message is broadcast to the inbox, the thread and the people w
 
     Event::assertDispatched(ConversationUpdated::class, fn (ConversationUpdated $event) => $event->reason === 'message' && $event->conversation->is($reply->conversation));
     Event::assertDispatched(MessageAdded::class, fn (MessageAdded $event) => $event->message->is($reply->message));
-    Event::assertDispatched(UserNotified::class, fn (UserNotified $event) => $event->userId === $follower->id);
+    Event::assertDispatched(UserNotified::class, fn (UserNotified $event) => $event->userId === $follower->id && $event->payload['inbound'] === true);
     Notification::assertSentTo($follower, NewReplyNotification::class);
 
     $channels = (new ConversationUpdated($reply->conversation, 'message'))->broadcastOn();

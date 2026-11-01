@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Mail\AttachmentController;
 use App\Http\Controllers\Mail\CommentController;
+use App\Http\Controllers\Mail\ComposeController;
 use App\Http\Controllers\Mail\ContactController;
 use App\Http\Controllers\Mail\ConversationController;
 use App\Http\Controllers\Mail\DraftAttachmentController;
@@ -20,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 | The mail application
 |--------------------------------------------------------------------------
 */
+
+Route::get('compose', ComposeController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('mail.compose');
 
 Route::prefix('{current_organization}')
     ->middleware(['auth', 'verified', EnsureOrganizationMembership::class])

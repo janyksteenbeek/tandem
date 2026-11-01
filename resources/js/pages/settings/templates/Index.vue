@@ -259,10 +259,6 @@ const categories = computed(() =>
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h1 class="font-display text-3xl leading-none">Templates</h1>
-                <p class="mt-1.5 text-sm text-muted-foreground">
-                    Canned replies with variables. Automations send them; people
-                    can borrow them too.
-                </p>
             </div>
             <Button
                 class="bg-brand text-brand-foreground hover:bg-brand/90"
@@ -275,7 +271,7 @@ const categories = computed(() =>
             v-if="templates.length === 0"
             view="templates"
             title="No templates yet."
-            body="Write one and the out-of-office rule is minutes away. Variables like the contact's first name fill themselves in."
+            body="Reusable replies for people and automations."
             compact
         >
             <Button
@@ -371,9 +367,8 @@ const categories = computed(() =>
                             editing ? 'Edit template' : 'New template'
                         }}</DialogTitle>
                         <DialogDescription
-                            >Write it once. Variables are filled in per
-                            conversation and unknown ones simply
-                            vanish.</DialogDescription
+                            >Variables are filled in per
+                            conversation.</DialogDescription
                         >
                     </DialogHeader>
 
@@ -536,9 +531,7 @@ const categories = computed(() =>
                                     :aria-invalid="bodyError ? true : undefined"
                                 />
                                 <p class="text-xs text-muted-foreground">
-                                    Plain text is fine: blank lines become
-                                    paragraphs. Paste HTML if you want full
-                                    control.
+                                    Plain text or HTML.
                                 </p>
                                 <InputError :message="bodyError" />
                             </div>
@@ -617,9 +610,8 @@ const categories = computed(() =>
                 <DialogHeader>
                     <DialogTitle>Delete “{{ deleting?.name }}”?</DialogTitle>
                     <DialogDescription
-                        >Any automation that replies with this template will
-                        skip the reply until you pick another
-                        one.</DialogDescription
+                        >Automations using it will skip their
+                        reply.</DialogDescription
                     >
                 </DialogHeader>
                 <DialogFooter>

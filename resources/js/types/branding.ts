@@ -3,6 +3,8 @@ export type Branding = {
     tagline: string | null;
     logo: string | null;
     logo_dark: string | null;
+    wordmark: string | null;
+    wordmark_dark: string | null;
     auth: {
         quote: string | null;
         attribution: string | null;

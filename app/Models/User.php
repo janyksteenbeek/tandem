@@ -48,6 +48,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property-read Collection<int, Inbox> $personalInboxes
  * @property-read Collection<int, MailAccount> $mailAccounts
  * @property-read Collection<int, Conversation> $assignedConversations
+ * @property-read Collection<int, SsoIdentity> $ssoIdentities
  */
 #[Fillable(['name', 'email', 'password', 'current_organization_id', 'avatar_path', 'timezone', 'signature_html', 'preferences', 'last_seen_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
@@ -98,6 +99,16 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function directInboxes(): BelongsToMany
     {
         return $this->belongsToMany(Inbox::class, 'inbox_users')->withPivot(['role'])->withTimestamps();
+    }
+
+    /**
+     * Identity provider accounts linked for single sign-on.
+     *
+     * @return HasMany<SsoIdentity, $this>
+     */
+    public function ssoIdentities(): HasMany
+    {
+        return $this->hasMany(SsoIdentity::class);
     }
 
     /**

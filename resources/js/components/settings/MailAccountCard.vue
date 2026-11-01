@@ -8,6 +8,7 @@ import {
     MoreHorizontal,
     PlugZap,
     RefreshCw,
+    Send,
     Settings2,
     Signature,
     Trash2,
@@ -17,6 +18,7 @@ import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import AccountHealthSheet from '@/components/settings/AccountHealthSheet.vue';
 import ConfirmDialog from '@/components/settings/ConfirmDialog.vue';
+import CopyField from '@/components/settings/CopyField.vue';
 import IdentitiesDialog from '@/components/settings/IdentitiesDialog.vue';
 import ImapAccountForm from '@/components/settings/ImapAccountForm.vue';
 import ProviderBadge from '@/components/settings/ProviderBadge.vue';
@@ -45,6 +47,10 @@ import {
     sync as syncRoute,
     test as testRoute,
 } from '@/routes/mail/accounts';
+import {
+    destroy as destroyForwarding,
+    test as testForwarding,
+} from '@/routes/mail/forwarding';
 import { redirect as gmailRedirect } from '@/routes/mail/gmail';
 import type { ConnectionTestResponse, MailAccount } from '@/types';
 import { useBranding } from '@/composables/useBranding';
@@ -64,6 +70,10 @@ const editOpen = ref(false);
 const confirm = ref<'disconnect' | 'remove' | null>(null);
 const confirmBusy = ref(false);
 
+/** Forward and Google Group channels receive on a generated address instead of syncing a mailbox. */
+const isForwarding = computed(() =>
+    usesForwardingAddress(props.account.provider),
+);
 const needsReconnect = computed(
     () =>
         props.account.provider === 'gmail' &&
@@ -85,6 +95,14 @@ const canSync = computed(
 );
 
 const syncedCopy = computed(() => {
+    if (isForwarding.value) {
+        const received = `${props.account.received_count} received`;
+
+        return props.account.last_synced_at
+            ? `${received} · last ${relative(props.account.last_synced_at)}`
+            : `${received} · nothing has arrived yet`;
+    }
+
     if (
         props.account.status === 'syncing' ||
         (props.account.last_sync_started_at && !props.account.last_synced_at)
@@ -129,6 +147,15 @@ async function testConnection(): Promise<void> {
     testing.value = true;
 
     try {
+        if (isForwarding.value) {
+            await api.post(testForwarding.url(props.account.uuid));
+            toast.success(
+                `Test sent to ${props.account.email}. Give it a minute, then look for “${branding.name} forwarding test”.`,
+            );
+
+            return;
+        }
+
         const result = await api.post<ConnectionTestResponse>(
             testRoute.url(props.account.uuid),
         );
@@ -154,6 +181,8 @@ function runConfirm(): void {
 
     if (confirm.value === 'disconnect') {
         router.post(disconnectRoute.url(props.account.uuid), {}, options);
+    } else if (confirm.value === 'remove' && isForwarding.value) {
+        router.delete(destroyForwarding.url(props.account.uuid), options);
     } else if (confirm.value === 'remove') {
         router.delete(removeRoute.url(props.account.uuid), options);
     }
@@ -201,6 +230,17 @@ function runConfirm(): void {
                         <span>in {{ account.inbox.name }}</span>
                     </template>
                 </p>
+                <CopyField
+                    v-if="isForwarding"
+                    :value="account.email"
+                    size="sm"
+                    class="mt-2"
+                    :toast-message="
+                        account.provider === 'google_group'
+                            ? 'Address copied. Add it to the group as a member.'
+                            : 'Address copied. Paste it into your forwarding rule.'
+                    "
+                />
                 <p
                     class="mt-1 text-xs text-muted-foreground"
                     :title="fullTime(account.last_synced_at)"
@@ -236,10 +276,14 @@ function runConfirm(): void {
                     /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" class="w-56">
-                    <DropdownMenuItem @select="healthOpen = true"
+                    <DropdownMenuItem
+                        v-if="!isForwarding"
+                        @select="healthOpen = true"
                         ><Activity /> Health details</DropdownMenuItem
                     >
-                    <DropdownMenuItem @select="identitiesOpen = true"
+                    <DropdownMenuItem
+                        v-if="!isForwarding"
+                        @select="identitiesOpen = true"
                         ><Signature /> Identities &amp;
                         signature</DropdownMenuItem
                     >
@@ -248,17 +292,23 @@ function runConfirm(): void {
                         @select="editOpen = true"
                         ><Settings2 /> Edit connection</DropdownMenuItem
                     >
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator v-if="!isForwarding" />
                     <DropdownMenuItem
-                        v-if="account.status !== 'disconnected'"
+                        v-if="
+                            !isForwarding && account.status !== 'disconnected'
+                        "
                         @select="confirm = 'disconnect'"
                         ><Unplug /> Disconnect</DropdownMenuItem
                     >
                     <DropdownMenuItem
                         class="text-destructive focus:text-destructive"
                         @select="confirm = 'remove'"
-                        ><Trash2 /> Remove from
-                        {{ branding.name }}</DropdownMenuItem
+                        ><Trash2 />
+                        {{
+                            isForwarding
+                                ? 'Remove channel'
+                                : `Remove from ${branding.name}`
+                        }}</DropdownMenuItem
                     >
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -296,7 +346,7 @@ function runConfirm(): void {
                 <a :href="reconnectUrl"><KeyRound /> Reconnect Google</a>
             </Button>
             <Button
-                v-if="!usesForwardingAddress(account.provider)"
+                v-if="!isForwarding"
                 variant="outline"
                 size="sm"
                 :disabled="syncing || !canSync"
@@ -313,10 +363,12 @@ function runConfirm(): void {
                 @click="testConnection"
             >
                 <Loader2 v-if="testing" class="animate-spin" />
+                <Send v-else-if="isForwarding" />
                 <PlugZap v-else />
-                Test connection
+                {{ isForwarding ? 'Send test email' : 'Test connection' }}
             </Button>
             <Button
+                v-if="!isForwarding"
                 variant="ghost"
                 size="sm"
                 class="hidden sm:inline-flex"
@@ -324,6 +376,7 @@ function runConfirm(): void {
                 ><Activity /> Health</Button
             >
             <Button
+                v-if="!isForwarding"
                 variant="ghost"
                 size="sm"
                 class="hidden sm:inline-flex"
@@ -361,16 +414,24 @@ function runConfirm(): void {
             :open="confirm !== null"
             :title="
                 confirm === 'remove'
-                    ? 'Remove this account?'
+                    ? isForwarding
+                        ? 'Remove this channel?'
+                        : 'Remove this account?'
                     : 'Disconnect this account?'
             "
             :description="
                 confirm === 'remove'
-                    ? `${account.email} and its sync state are removed from ${branding.name}. Conversations already received stay where they are. Nothing is deleted at the provider.`
-                    : `Syncing stops and access tokens are revoked. Mail already in ${branding.name} stays readable, and you can reconnect any time.`
+                    ? isForwarding
+                        ? `Mail sent to ${account.email} will bounce from now on.`
+                        : 'Received conversations stay. Nothing is deleted at the provider.'
+                    : 'Syncing stops. You can reconnect any time.'
             "
             :confirm-label="
-                confirm === 'remove' ? 'Remove account' : 'Disconnect'
+                confirm === 'remove'
+                    ? isForwarding
+                        ? 'Remove channel'
+                        : 'Remove account'
+                    : 'Disconnect'
             "
             :destructive="confirm === 'remove'"
             :busy="confirmBusy"

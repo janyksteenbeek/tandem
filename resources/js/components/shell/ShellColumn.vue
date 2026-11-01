@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { useBranding } from '@/composables/useBranding';
+import { useSlots } from 'vue';
 
 /**
  * The shell's second column: a fixed-width aside beside the rail with a header,
- * a scrolling body and a footer. Mail and settings both render into this frame.
+ * a scrolling body and an optional footer. Mail and settings both render into
+ * this frame.
  */
 defineProps<{ label: string }>();
 
-const branding = useBranding();
+const slots = useSlots();
 </script>
 
 <template>
@@ -22,16 +23,10 @@ const branding = useBranding();
         </div>
 
         <div
+            v-if="slots.footer"
             class="flex items-center gap-2 border-t border-sidebar-border px-3 py-2 text-[11px] text-muted-foreground"
         >
-            <slot name="footer">
-                <span class="font-display text-[13px] italic">{{
-                    branding.name
-                }}</span>
-                <span v-if="branding.tagline" class="truncate">
-                    · {{ branding.tagline }}
-                </span>
-            </slot>
+            <slot name="footer" />
         </div>
     </aside>
 </template>

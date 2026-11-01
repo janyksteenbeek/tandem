@@ -247,14 +247,9 @@ function submit(): void {
                             v-if="filteredMembers.length === 0"
                             class="px-3 py-4 text-center text-xs text-muted-foreground"
                         >
-                            Nobody matches. Invite them to the organization
-                            first.
+                            Nobody matches.
                         </li>
                     </ul>
-                    <p class="text-xs text-muted-foreground">
-                        Leads are the go-to people for the team. Assignment
-                        rules and reports treat them the same as members.
-                    </p>
                     <InputError :message="form.errors.members" />
                 </div>
 

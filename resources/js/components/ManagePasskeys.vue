@@ -31,11 +31,7 @@ const handleRegisterSuccess = () => {
 
 <template>
     <div v-if="canManagePasskeys" class="space-y-6">
-        <Heading
-            variant="small"
-            title="Passkeys"
-            description="Manage your passkeys for passwordless sign-in"
-        />
+        <Heading variant="small" title="Passkeys" />
 
         <div class="overflow-hidden rounded-lg border border-border">
             <template v-if="passkeys.length">

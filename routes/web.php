@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\SsoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Organizations\OrganizationInvitationController;
@@ -7,6 +8,9 @@ use App\Http\Middleware\EnsureOrganizationMembership;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+
+Route::get('auth/{provider}/redirect', [SsoController::class, 'redirect'])->name('sso.redirect');
+Route::get('auth/{provider}/callback', [SsoController::class, 'callback'])->name('sso.callback');
 
 Route::prefix('{current_organization}')
     ->middleware(['auth', 'verified', EnsureOrganizationMembership::class])
@@ -19,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('invitations/{invitation}', [OrganizationInvitationController::class, 'decline'])->name('invitations.decline');
 });
 
+require __DIR__.'/pwa.php';
 require __DIR__.'/settings.php';
 require __DIR__.'/mail.php';
 require __DIR__.'/inbox.php';

@@ -44,8 +44,8 @@ function handleOpenChange(value: boolean) {
             >
                 <DialogHeader>
                     <DialogTitle>Create a new organization</DialogTitle>
-                    <DialogDescription>
-                        Create a new organization to collaborate with others.
+                    <DialogDescription class="sr-only">
+                        Create a new organization
                     </DialogDescription>
                 </DialogHeader>
 

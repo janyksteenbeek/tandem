@@ -65,11 +65,7 @@ const leads = (team: TeamSettings) =>
 
     <h1 class="sr-only">Teams</h1>
 
-    <SettingsSection
-        title="Teams"
-        :count="teams.length"
-        :description="`Groups of people in ${organization.name}. Grant a team access to an inbox and everyone in it is covered, including whoever joins next month.`"
-    >
+    <SettingsSection title="Teams" :count="teams.length">
         <template #actions>
             <Button
                 v-if="canManage"
@@ -85,8 +81,8 @@ const leads = (team: TeamSettings) =>
             title="No teams yet."
             :body="
                 canManage
-                    ? 'Start with the way you already work: Support, Sales, Billing. Then hand each team its inboxes instead of adding people one by one.'
-                    : 'Teams appear here once an organization admin creates them.'
+                    ? 'Group people, then give the team inbox access.'
+                    : 'An admin can create teams.'
             "
         >
             <Button v-if="canManage" @click="create"
@@ -217,7 +213,7 @@ const leads = (team: TeamSettings) =>
                             </li>
                         </ul>
                         <p v-else class="text-sm text-muted-foreground">
-                            No inboxes yet. Grant some from the Inboxes page.
+                            No inboxes yet.
                         </p>
                     </div>
                 </div>
@@ -235,7 +231,7 @@ const leads = (team: TeamSettings) =>
     <ConfirmDialog
         :open="removing !== null"
         :title="`Delete ${removing?.name ?? 'this team'}?`"
-        description="People keep their accounts and any direct inbox access. Access they only had through this team goes away."
+        description="Inbox access granted only through this team is removed."
         confirm-label="Delete team"
         destructive
         :busy="removeBusy"

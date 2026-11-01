@@ -106,9 +106,7 @@ const sortedIdentities = computed(() =>
                     >Identities &amp; signature</DialogTitle
                 >
                 <DialogDescription>
-                    Each identity is a “From” line you can pick when writing
-                    from {{ account.email }}. The default one is pre-selected in
-                    the composer.
+                    “From” addresses for {{ account.email }}.
                 </DialogDescription>
             </DialogHeader>
 
@@ -211,8 +209,7 @@ const sortedIdentities = computed(() =>
                             placeholder="support@company.com"
                         />
                         <p class="text-xs text-muted-foreground">
-                            Must be an address this mailbox may send as (an
-                            alias or group).
+                            An alias or group this mailbox can send as.
                         </p>
                         <InputError :message="form.errors.email" />
                     </div>
@@ -251,8 +248,7 @@ const sortedIdentities = computed(() =>
                         >
                             <div v-if="form.signature_html" v-html="preview" />
                             <p v-else class="text-sm text-muted-foreground">
-                                Your signature will appear here. Plain text
-                                works too, we wrap it for you.
+                                Preview
                             </p>
                         </div>
                     </div>

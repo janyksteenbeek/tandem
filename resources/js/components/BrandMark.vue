@@ -1,9 +1,16 @@
 <script setup lang="ts">
+import { computed, useId } from 'vue';
 import { useBranding } from '@/composables/useBranding';
 
-withDefaults(defineProps<{ size?: number }>(), { size: 28 });
+/**
+ * The envelope mark on its own. `size` is the width; the envelope is wider
+ * than tall, so the height follows. A configured logo replaces it.
+ */
+const props = withDefaults(defineProps<{ size?: number }>(), { size: 28 });
 
 const branding = useBranding();
+const uid = useId();
+const height = computed(() => Math.round((props.size * 105.8) / 151.9));
 </script>
 
 <template>
@@ -30,32 +37,61 @@ const branding = useBranding();
     <svg
         v-else
         :width="size"
-        :height="size"
-        viewBox="0 0 32 32"
+        :height="height"
+        viewBox="0 0 151.9 105.8"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        class="shrink-0"
         aria-hidden="true"
     >
-        <rect width="32" height="32" rx="9" class="fill-brand" />
-        <path
-            d="M7.5 11.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-9Z"
-            class="fill-brand-foreground"
-            opacity="0.18"
-        />
-        <path
-            d="M8 11l8 6 8-6"
-            class="stroke-brand-foreground"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-        />
-        <path
-            d="M8 20.5l5.5-4.5M24 20.5l-5.5-4.5"
-            class="stroke-brand-foreground"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            opacity="0.7"
-        />
-        <circle cx="24.5" cy="9.5" r="3" class="fill-highlight" />
+        <defs>
+            <linearGradient
+                :id="`flap-${uid}`"
+                x1="177"
+                y1="105"
+                x2="177"
+                y2="155"
+                gradientUnits="userSpaceOnUse"
+            >
+                <stop stop-color="#B2A1F7" />
+                <stop offset="1" stop-color="#9581F5" />
+            </linearGradient>
+            <linearGradient
+                :id="`body-${uid}`"
+                x1="209"
+                y1="129"
+                x2="190"
+                y2="211"
+                gradientUnits="userSpaceOnUse"
+            >
+                <stop stop-color="#BBAAF8" />
+                <stop offset="1" stop-color="#917CF5" />
+            </linearGradient>
+            <linearGradient
+                :id="`fold-${uid}`"
+                x1="101"
+                y1="155"
+                x2="167"
+                y2="193"
+                gradientUnits="userSpaceOnUse"
+            >
+                <stop stop-color="#603DF3" />
+                <stop offset="1" stop-color="#6643F4" />
+            </linearGradient>
+        </defs>
+        <g transform="translate(-97 -105.2)">
+            <path
+                :fill="`url(#flap-${uid})`"
+                d="M105 117.5C111.2 109.4 120.3 105.2 132 105.2H222C232.5 105.2 240.8 109.3 245 117.5C241.8 118 238.7 119.4 235.6 121.2L186.2 151.2C180.3 154.8 176 155.8 169.2 151.8L114.4 120.2C111 118.3 108.2 117.6 105 117.5Z"
+            />
+            <path
+                :fill="`url(#body-${uid})`"
+                d="M107.1 130.7L167.8 164.3C173.6 167.5 179.8 167.5 185.7 164.1L248.9 129.2V180C248.9 197.2 235.3 211 218.1 211H129C111.4 211 97 196.8 97 179.2V138.2C97 130.6 100.4 127.7 107.1 130.7Z"
+            />
+            <path
+                :fill="`url(#fold-${uid})`"
+                d="M107.1 130.7L167.8 164.3C171 166.1 174.1 166.8 177.3 166.7C170.2 190.5 154.8 211 132 211H129C111.4 211 97 196.8 97 179.2V138.2C97 130.6 100.4 127.7 107.1 130.7Z"
+            />
+        </g>
     </svg>
 </template>

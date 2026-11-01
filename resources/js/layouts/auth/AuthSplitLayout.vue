@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Check } from '@lucide/vue';
-import BrandMark from '@/components/BrandMark.vue';
+import BrandWordmark from '@/components/BrandWordmark.vue';
 import { home } from '@/routes';
 import { useBranding } from '@/composables/useBranding';
 
@@ -56,10 +56,10 @@ defineProps<{
 
             <Link
                 :href="home()"
-                class="relative z-10 inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight"
+                class="relative z-10 inline-flex items-center text-lg"
+                :aria-label="`${branding.name} home`"
             >
-                <BrandMark :size="32" />
-                {{ branding.name }}
+                <BrandWordmark :height="34" on-dark />
             </Link>
 
             <div class="relative z-10 max-w-md">
@@ -109,10 +109,10 @@ defineProps<{
             <div class="w-full max-w-sm animate-rise">
                 <Link
                     :href="home()"
-                    class="mb-8 inline-flex items-center gap-2 font-semibold tracking-tight lg:hidden"
+                    class="mb-8 inline-flex items-center lg:hidden"
+                    :aria-label="`${branding.name} home`"
                 >
-                    <BrandMark :size="28" />
-                    {{ branding.name }}
+                    <BrandWordmark :height="30" />
                 </Link>
 
                 <div v-if="title || description" class="mb-7 space-y-1.5">

@@ -250,12 +250,11 @@ const conditionLabel = (rule: AutomationRuleSummary) => {
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h1 class="font-display text-3xl leading-none">Automations</h1>
-                <p class="mt-1.5 text-sm text-muted-foreground">
-                    Rules run top to bottom whenever something happens in a
-                    shared inbox.
-                    <span v-if="items.length > 0"
-                        >{{ activeCount }} of {{ items.length }} on.</span
-                    >
+                <p
+                    v-if="items.length > 0"
+                    class="mt-1.5 text-sm text-muted-foreground"
+                >
+                    {{ activeCount }} of {{ items.length }} on
                 </p>
             </div>
             <div class="flex items-center gap-2">
@@ -282,15 +281,10 @@ const conditionLabel = (rule: AutomationRuleSummary) => {
                 v-if="items.length === 0"
                 view="automations"
                 title="Nothing runs on its own yet."
-                body="Pick a starter below or build a rule from scratch. Most teams begin with an out-of-office reply."
+                body="Pick a starter or build one from scratch."
                 compact
             />
-            <Heading
-                v-else
-                variant="small"
-                title="Start from a template"
-                description="Prefilled rules you can tweak before saving."
-            />
+            <Heading v-else variant="small" title="Start from a template" />
             <div class="mt-4 grid gap-3 sm:grid-cols-3">
                 <Link
                     v-for="starter in STARTER_RULES"
@@ -505,9 +499,8 @@ const conditionLabel = (rule: AutomationRuleSummary) => {
                 <DialogHeader>
                     <DialogTitle>Delete “{{ deleting?.name }}”?</DialogTitle>
                     <DialogDescription
-                        >The rule stops immediately. Its run history stays
-                        around, and nothing that already happened is
-                        undone.</DialogDescription
+                        >It stops immediately. Run history is
+                        kept.</DialogDescription
                     >
                 </DialogHeader>
                 <DialogFooter>

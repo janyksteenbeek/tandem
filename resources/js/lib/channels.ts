@@ -18,29 +18,25 @@ export const PROVIDER_META: Record<MailProvider, ProviderMeta> = {
         label: 'Gmail',
         icon: GoogleIcon,
         tone: 'chip-slate',
-        tagline:
-            'Sign in with Google. Labels, threads and push notifications come along for free.',
+        tagline: 'Sign in with Google.',
     },
     imap: {
         label: 'IMAP / SMTP',
         icon: Server,
         tone: 'chip-sky',
-        tagline:
-            'Any other mailbox. We poll for new mail every couple of minutes and keep folders in sync.',
+        tagline: 'Any other mailbox.',
     },
     google_group: {
         label: 'Google Group',
         icon: GoogleGroupsIcon,
         tone: 'chip-slate',
-        tagline:
-            'Add a generated address as a member of your group. No passwords, no admin hand-over.',
+        tagline: 'Add a generated address to your group.',
     },
     forwarding: {
         label: 'Forward',
         icon: Forward,
         tone: 'chip-teal',
-        tagline:
-            'Point an existing address, alias or distribution list at a generated one.',
+        tagline: 'Forward an existing address here.',
     },
 };
 
@@ -66,24 +62,22 @@ export function channelIntro(
 ): string {
     switch (channel) {
         case 'google_group':
-            return `${appName} generates a private address and you add it to the group as a member. Google delivers every post to this inbox and your group settings stay exactly as they are.`;
+            return `${appName} generates a private address. Add it to the group as a member.`;
         case 'forwarding':
-            return `${appName} generates a private address. Create a forwarding rule at your current provider, or add the address to a distribution list, and a copy of every message lands here.`;
+            return `${appName} generates a private address. Forward your mail to it.`;
     }
 }
 
 /** What to do with the generated address, shown once it exists. */
 export const CHANNEL_STEPS: Record<ForwardingChannel, string[]> = {
     google_group: [
-        'Open the Google Admin console, go to Directory, then Groups, and pick the group customers write to.',
-        'Under Members choose Add members, paste the address above and add it as a Member.',
-        'In Access settings allow external members and let anyone on the web publish posts, so people outside your organization can email the group.',
-        'Google sends the new member a confirmation. It lands in this inbox, so there is nothing to click.',
+        'In the Google Admin console, open Directory → Groups and pick the group.',
+        'Add the address above as a Member.',
+        'In Access settings, allow external members and let anyone post.',
     ],
     forwarding: [
-        'Copy the address above.',
-        'At your current provider add a forwarding rule that sends a copy of incoming mail there, or add the address to your distribution list.',
-        'Gmail and Outlook first email a confirmation to the new address. It lands in this inbox; open it and confirm.',
-        'Press Send test email and watch it arrive within a minute.',
+        'At your current provider, forward incoming mail to the address above.',
+        'If a confirmation email arrives in this inbox, open it and confirm.',
+        'Press Send test email to check.',
     ],
 };

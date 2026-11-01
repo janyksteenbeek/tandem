@@ -87,11 +87,7 @@ const confirmCancelInvitation = (invitation: OrganizationInvitation) => {
     <div class="flex flex-col space-y-10">
         <!-- Organization Name Section -->
         <div v-if="permissions.canUpdateOrganization" class="space-y-6">
-            <Heading
-                variant="small"
-                title="Organization settings"
-                description="Update your organization name and settings"
-            />
+            <Heading variant="small" title="Organization settings" />
 
             <Form
                 v-bind="update.form(organization.slug)"
@@ -129,15 +125,7 @@ const confirmCancelInvitation = (invitation: OrganizationInvitation) => {
         <!-- Members Section -->
         <div class="space-y-6">
             <div class="flex items-center justify-between">
-                <Heading
-                    variant="small"
-                    title="Organization members"
-                    :description="
-                        permissions.canCreateInvitation
-                            ? 'Manage who belongs to this organization'
-                            : ''
-                    "
-                />
+                <Heading variant="small" title="Organization members" />
 
                 <Button
                     v-if="permissions.canCreateInvitation"
@@ -241,11 +229,7 @@ const confirmCancelInvitation = (invitation: OrganizationInvitation) => {
 
         <!-- Pending Invitations Section -->
         <div v-if="invitations.length > 0" class="space-y-6">
-            <Heading
-                variant="small"
-                title="Pending invitations"
-                description="Invitations that haven't been accepted yet"
-            />
+            <Heading variant="small" title="Pending invitations" />
 
             <div class="space-y-3">
                 <div
@@ -296,22 +280,13 @@ const confirmCancelInvitation = (invitation: OrganizationInvitation) => {
             v-if="permissions.canDeleteOrganization && !organization.isPersonal"
             class="space-y-6"
         >
-            <Heading
-                variant="small"
-                title="Delete organization"
-                description="Permanently delete your organization"
-            />
+            <Heading variant="small" title="Delete organization" />
             <div
                 class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
             >
-                <div
-                    class="relative space-y-0.5 text-red-600 dark:text-red-100"
-                >
-                    <p class="font-medium">Warning</p>
-                    <p class="text-sm">
-                        Please proceed with caution, this cannot be undone.
-                    </p>
-                </div>
+                <p class="text-sm text-red-600 dark:text-red-100">
+                    This cannot be undone.
+                </p>
                 <Button
                     data-test="delete-organization-button"
                     variant="destructive"

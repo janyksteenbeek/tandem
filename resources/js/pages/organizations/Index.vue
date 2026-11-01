@@ -41,11 +41,7 @@ const openLeaveOrganizationDialog = (organization: Organization) => {
 
     <div class="flex flex-col space-y-6">
         <div class="flex items-center justify-between">
-            <Heading
-                variant="small"
-                title="Organizations"
-                description="Manage your organizations and organization memberships"
-            />
+            <Heading variant="small" title="Organizations" />
 
             <CreateOrganizationModal>
                 <Button data-test="organizations-new-organization-button">

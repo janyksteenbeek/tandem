@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><defs>
+    <linearGradient id="flap" x1="177" y1="105" x2="177" y2="155" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B2A1F7"/>
+      <stop offset="1" stop-color="#9581F5"/>
+    </linearGradient>
+    <linearGradient id="body" x1="209" y1="129" x2="190" y2="211" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BBAAF8"/>
+      <stop offset="1" stop-color="#917CF5"/>
+    </linearGradient>
+    <linearGradient id="fold" x1="101" y1="155" x2="167" y2="193" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#603DF3"/>
+      <stop offset="1" stop-color="#6643F4"/>
+    </linearGradient>
+  </defs><defs><linearGradient id="tile" x1="0" y1="0" x2="160" y2="160" gradientUnits="userSpaceOnUse"><stop stop-color="#FBFAFF"/><stop offset="1" stop-color="#ECE7FE"/></linearGradient></defs><g transform="translate(4.00 27.07) scale(1.0007) translate(-97 -105.2)">
+    <path fill="url(#flap)" d="M105 117.5C111.2 109.4 120.3 105.2 132 105.2H222C232.5 105.2 240.8 109.3 245 117.5C241.8 118 238.7 119.4 235.6 121.2L186.2 151.2C180.3 154.8 176 155.8 169.2 151.8L114.4 120.2C111 118.3 108.2 117.6 105 117.5Z"/>
+    <path fill="url(#body)" d="M107.1 130.7L167.8 164.3C173.6 167.5 179.8 167.5 185.7 164.1L248.9 129.2V180C248.9 197.2 235.3 211 218.1 211H129C111.4 211 97 196.8 97 179.2V138.2C97 130.6 100.4 127.7 107.1 130.7Z"/>
+    <path fill="url(#fold)" d="M107.1 130.7L167.8 164.3C171 166.1 174.1 166.8 177.3 166.7C170.2 190.5 154.8 211 132 211H129C111.4 211 97 196.8 97 179.2V138.2C97 130.6 100.4 127.7 107.1 130.7Z"/>
+  </g></svg>

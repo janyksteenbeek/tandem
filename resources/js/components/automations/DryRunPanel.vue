@@ -183,14 +183,12 @@ const formatActual = (value: unknown): string => {
             v-if="!ruleUuid"
             class="rounded-lg border border-dashed p-3 text-xs text-muted-foreground"
         >
-            Save the rule once and you can test it against a real conversation
-            without touching anything.
+            Save the rule to test it.
         </p>
 
         <template v-else>
             <p class="mb-3 text-xs text-muted-foreground">
-                Pick a conversation and see which conditions pass. Nothing is
-                changed, promise.
+                Nothing is changed.
             </p>
 
             <div v-if="!picked" class="relative">

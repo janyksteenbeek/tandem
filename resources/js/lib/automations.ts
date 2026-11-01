@@ -566,7 +566,7 @@ export const STARTER_RULES: StarterRule[] = [
     {
         key: 'out_of_office',
         title: 'Out-of-office responder',
-        blurb: 'Reply automatically outside business hours. One reply per sender per day, never to robots.',
+        blurb: 'Auto-reply outside business hours.',
         build: (catalog, lookups) => ({
             ...emptyRuleForm(catalog),
             name: 'Out of office',
@@ -587,7 +587,7 @@ export const STARTER_RULES: StarterRule[] = [
     {
         key: 'route_invoices',
         title: 'Route invoices to a team',
-        blurb: 'Anything that smells like billing goes to the finance team and gets tagged.',
+        blurb: 'Route billing mail to finance.',
         build: (catalog, lookups) => ({
             ...emptyRuleForm(catalog),
             name: 'Route invoices to finance',
@@ -619,7 +619,7 @@ export const STARTER_RULES: StarterRule[] = [
     {
         key: 'vip_priority',
         title: 'VIP priority',
-        blurb: 'Mail from your most important domains gets tagged and bumped to the top.',
+        blurb: 'Flag mail from key domains.',
         build: (catalog) => ({
             ...emptyRuleForm(catalog),
             name: 'VIP customers',

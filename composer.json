@@ -19,10 +19,9 @@
         "laravel/horizon": "^5.50",
         "laravel/octane": "^2.22",
         "laravel/reverb": "^1.12",
-        "laravel/socialite": "*",
+        "laravel/socialite": "^5.31",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
-        "socialiteproviders/microsoft": "*",
         "symfony/mailer": "^8.1",
         "webklex/php-imap": "^6.2",
         "zbateson/mail-mime-parser": "^4.0"

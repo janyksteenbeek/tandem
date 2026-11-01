@@ -132,7 +132,7 @@ const unhealthy = computed(
                     </li>
                 </ul>
                 <p v-else class="text-sm text-muted-foreground">
-                    Nothing connected, so nothing arrives.
+                    No channels yet.
                     <Link
                         v-if="inbox.can_manage"
                         :href="mailAccountsIndex()"

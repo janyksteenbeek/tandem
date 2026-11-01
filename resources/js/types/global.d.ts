@@ -1,7 +1,7 @@
 import type { Directive } from 'vue';
-import type { Auth } from '@/types/auth';
+import type { Auth, Sso } from '@/types/auth';
 import type { Branding } from '@/types/branding';
-import type { MailNav } from '@/types/mail';
+import type { ComposePrefill, MailNav } from '@/types/mail';
 import type { Organization } from '@/types/organizations';
 import type { CreatedChannel } from '@/types/settings';
 import type { FlashToast } from '@/types/ui';
@@ -25,6 +25,7 @@ declare module '@inertiajs/core' {
             name: string;
             branding: Branding;
             auth: Auth;
+            sso: Sso;
             currentOrganization: Organization | null;
             organizations: Organization[];
             mailNav: MailNav | null;
@@ -34,6 +35,7 @@ declare module '@inertiajs/core' {
         };
         flashDataType: {
             toast?: FlashToast;
+            compose?: ComposePrefill;
             channel?: CreatedChannel;
         };
     }

@@ -152,30 +152,30 @@ function clearOutbound(): void {
 const STEPS = [
     {
         title: 'Create a Google Cloud project',
-        body: 'Any project works. Use one your organization controls, not a personal one.',
+        body: 'Use one your organization controls.',
     },
     {
         title: 'Enable the Gmail API',
-        body: 'APIs & Services → Library → “Gmail API” → Enable. Also enable Cloud Pub/Sub while you are there.',
+        body: 'Enable the Gmail API and Cloud Pub/Sub.',
     },
     {
         title: 'Configure the OAuth consent screen',
-        body: 'Internal is fine for Google Workspace. Add these scopes:',
+        body: 'Add these scopes:',
         scopes: true,
     },
     {
         title: 'Create an OAuth client (Web application)',
-        body: 'Add this redirect URI exactly as shown, then paste the client ID and secret below.',
+        body: 'Add this redirect URI.',
         copy: 'redirect',
     },
     {
         title: 'Create a Pub/Sub topic',
-        body: 'Grant the “Pub/Sub Publisher” role on the topic to gmail-api-push@system.gserviceaccount.com. Paste the full topic name below.',
+        body: 'Grant “Pub/Sub Publisher” to:',
         copy: 'publisher',
     },
     {
         title: 'Add a push subscription',
-        body: 'Delivery type “Push” to this endpoint. The token in the URL is verified on arrival.',
+        body: 'Push delivery to:',
         copy: 'push',
     },
 ] as const;
@@ -197,11 +197,6 @@ const STEPS = [
                 /></span>
                 <div class="min-w-0 flex-1">
                     <h2 class="text-base font-semibold">Google (Gmail)</h2>
-                    <p class="text-sm text-muted-foreground">
-                        Your own OAuth client so people can connect Gmail and
-                        Workspace mailboxes. Push notifications keep sync
-                        near-instant.
-                    </p>
                 </div>
                 <span
                     v-if="googleReady"
@@ -355,10 +350,6 @@ const STEPS = [
                                     Cancel
                                 </button>
                             </p>
-                            <p v-else class="text-xs text-muted-foreground">
-                                Stored encrypted. We only ever show the last
-                                four characters afterwards.
-                            </p>
                         </template>
                         <InputError
                             :message="form.errors.google_oauth_client_secret"
@@ -374,8 +365,7 @@ const STEPS = [
                             class="font-mono text-xs"
                         />
                         <p class="text-xs text-muted-foreground">
-                            Optional, but without it Gmail accounts fall back to
-                            polling every 15 minutes.
+                            Optional. Without it, Gmail polls every 15 minutes.
                         </p>
                         <InputError
                             :message="form.errors.google_pubsub_topic"
@@ -408,10 +398,6 @@ const STEPS = [
                 /></span>
                 <div class="min-w-0 flex-1">
                     <h2 class="text-base font-semibold">Business hours</h2>
-                    <p class="text-sm text-muted-foreground">
-                        Lets automations tell “we are closed, expect us
-                        tomorrow” from “someone is on it”.
-                    </p>
                 </div>
             </header>
             <form class="space-y-6 p-5" @submit.prevent="save('hours')">
@@ -424,10 +410,6 @@ const STEPS = [
                         v-model="form.timezone"
                         :timezones="timezones"
                     />
-                    <p class="text-xs text-muted-foreground">
-                        Used for reports, digests and anything that says
-                        “today”.
-                    </p>
                     <InputError :message="form.errors.timezone" />
                 </div>
                 <BusinessHoursEditor
@@ -462,10 +444,7 @@ const STEPS = [
                 <div class="min-w-0 flex-1">
                     <h2 class="text-base font-semibold">Outbound SMTP</h2>
                     <p class="text-sm text-muted-foreground">
-                        Replies from forwarding-only inboxes (addresses on
-                        {{ forwardingDomain }}) and autoresponders leave through
-                        this server. Gmail and IMAP accounts send through their
-                        own.
+                        For forwarding-only inboxes and autoresponders.
                     </p>
                 </div>
                 <span
@@ -561,9 +540,6 @@ const STEPS = [
                             :placeholder="organization.name"
                             maxlength="120"
                         />
-                        <p class="text-xs text-muted-foreground">
-                            The address stays the inbox's own.
-                        </p>
                         <InputError
                             :message="form.errors['outbound.from_name']"
                         />
@@ -599,7 +575,7 @@ const STEPS = [
     <ConfirmDialog
         v-model:open="confirmClearOutbound"
         title="Clear outbound SMTP?"
-        description="Forwarding-only inboxes fall back to the server-wide mailer. Replies may land in spam if that mailer cannot send as your domain."
+        description="Forwarding-only inboxes fall back to the server-wide mailer."
         confirm-label="Clear settings"
         destructive
         :busy="saving === 'outbound'"

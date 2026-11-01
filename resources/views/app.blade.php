@@ -22,11 +22,11 @@
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
             html {
-                background-color: oklch(1 0 0);
+                background-color: oklch(0.985 0.002 285);
             }
 
             html.dark {
-                background-color: oklch(0.145 0 0);
+                background-color: oklch(0.16 0.006 275);
             }
         </style>
 
@@ -36,7 +36,26 @@
         @endif
 
         <link rel="icon" href="{{ $branding->favicon() }}">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="apple-touch-icon" href="{{ $branding->icons()['apple_touch'] }}">
+        <link rel="manifest" href="{{ route('pwa.manifest', absolute: false) }}">
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="{{ $branding->themeColor() }}">
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="{{ $branding->themeColorDark() }}">
+        <meta name="application-name" content="{{ $branding->shortName() }}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ $branding->name() }}">
+        <meta property="og:title" content="{{ $branding->name() }}">
+        @if ($tagline = config('branding.tagline'))
+            <meta property="og:description" content="{{ $tagline }}">
+        @endif
+        @if ($ogImage = $branding->ogImage())
+            <meta property="og:image" content="{{ $ogImage }}">
+            <meta name="twitter:card" content="summary_large_image">
+            <meta name="twitter:image" content="{{ $ogImage }}">
+        @endif
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="{{ $branding->shortName() }}">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
         @fonts
 

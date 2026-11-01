@@ -104,8 +104,7 @@ function submit(): void {
                         </li>
                     </ul>
                     <p class="text-xs text-muted-foreground">
-                        Teams join as agents: they can read, reply and assign.
-                        Fine-tune roles later.
+                        Teams join as agents.
                     </p>
                 </div>
 

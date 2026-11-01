@@ -63,9 +63,10 @@ test('generating a Forward channel shows the address and set-up steps', async ({
     await page.goto('/settings/mail-accounts');
 
     const inbox = page.locator('article', { hasText: 'Billing' }).first();
-    await inbox.getByRole('button', { name: 'Forward', exact: true }).click();
+    await inbox.getByRole('button', { name: 'Add channel' }).click();
 
     const dialog = page.getByRole('dialog');
+    await dialog.getByTestId('channel-forwarding').click();
     await expect(dialog).toContainText('Add a forward');
     await dialog.getByLabel('Label').fill('Old helpdesk alias');
     await dialog.getByRole('button', { name: 'Generate address' }).click();

@@ -60,8 +60,8 @@ function handleOpenChange(value: boolean) {
             >
                 <DialogHeader>
                     <DialogTitle>Invite a organization member</DialogTitle>
-                    <DialogDescription>
-                        Send an invitation to join this organization.
+                    <DialogDescription class="sr-only">
+                        Invite a member
                     </DialogDescription>
                 </DialogHeader>
 

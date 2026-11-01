@@ -113,10 +113,6 @@ const errorFor = (path: string): string | undefined => props.errors?.[path];
                 v-model="model.timezone!"
                 :timezones="timezones"
             />
-            <p class="text-xs text-muted-foreground">
-                Automations such as “outside business hours” use this clock, not
-                the customer's.
-            </p>
             <p
                 v-if="errorFor('business_hours.timezone')"
                 class="text-xs text-destructive"
@@ -278,10 +274,7 @@ const errorFor = (path: string): string | undefined => props.errors?.[path];
                     /></Button>
                 </li>
             </ul>
-            <p v-else class="text-xs text-muted-foreground">
-                No holidays yet. Whole days you add here count as closed,
-                whatever the weekday says.
-            </p>
+            <p v-else class="text-xs text-muted-foreground">No holidays yet.</p>
             <p
                 v-if="errorFor('business_hours.holidays')"
                 class="text-xs text-destructive"

@@ -3,6 +3,7 @@ import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
+import { registerServiceWorker } from '@/composables/usePwa';
 import { initializeFlashToast } from '@/lib/flashToast';
 import { configureEcho } from '@laravel/echo-vue';
 
@@ -46,7 +47,7 @@ void createInertiaApp({
         });
     },
     progress: {
-        color: '#4B5563',
+        color: '#603df3',
     },
 });
 
@@ -56,4 +57,10 @@ if (isBrowser) {
 
     // This will listen for flash toast data from the server...
     initializeFlashToast();
+
+    // Installable app: offline fallback, update toasts, cache purge on sign-out.
+    // Skipped in dev so the Vite dev server is never served from a cache.
+    if (import.meta.env.PROD) {
+        registerServiceWorker();
+    }
 }

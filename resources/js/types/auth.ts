@@ -27,3 +27,20 @@ export type TwoFactorConfigContent = {
     description: string;
     buttonText: string;
 };
+
+export type SsoProvider = {
+    key: string;
+    name: string;
+};
+
+export type Sso = {
+    forced: boolean;
+    providers: SsoProvider[];
+};
+
+export type SsoIdentity = {
+    provider: string;
+    email: string | null;
+    connected_at_diff: string | null;
+    last_used_at_diff: string | null;
+};

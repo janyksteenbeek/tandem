@@ -3,11 +3,12 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     AlertTriangle,
     ArrowLeft,
+    AtSign,
     Building2,
     FileText,
-    Inbox,
     Keyboard,
-    Mail,
+    LayoutGrid,
+    Mailbox,
     Palette,
     Plug,
     Search,
@@ -34,7 +35,10 @@ import { toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { index as automationsIndex } from '@/routes/automations';
 import { index as mailAccountsIndex } from '@/routes/mail/accounts';
-import { index as organizations } from '@/routes/organizations';
+import {
+    edit as organizationEdit,
+    index as organizations,
+} from '@/routes/organizations';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import { index as inboxesIndex } from '@/routes/settings/inboxes';
@@ -124,6 +128,27 @@ const groups = computed<SettingsGroup[]>(() => {
                     keywords: 'name email avatar account',
                 },
                 {
+                    title: 'Mail accounts',
+                    href: mailAccountsIndex(),
+                    icon: AtSign,
+                    keywords: 'gmail imap smtp connect sync health',
+                    meta: nav.value?.personal.length ?? null,
+                    attention:
+                        personalAttention.value > 0
+                            ? `${plural(personalAttention.value, 'account needs', 'accounts need')} attention`
+                            : null,
+                },
+                {
+                    title: 'Organizations',
+                    href: organizations(),
+                    icon: LayoutGrid,
+                    keywords: 'workspaces switch create invitations',
+                    meta:
+                        organizationCount.value > 1
+                            ? organizationCount.value
+                            : null,
+                },
+                {
                     title: 'Security',
                     href: editSecurity(),
                     icon: ShieldCheck,
@@ -139,49 +164,28 @@ const groups = computed<SettingsGroup[]>(() => {
                 },
             ],
         },
-        {
-            label: 'Mail',
-            items: [
-                {
-                    title: 'Mail accounts',
-                    href: mailAccountsIndex(),
-                    icon: Mail,
-                    keywords: 'gmail imap smtp connect sync health',
-                    meta: nav.value?.personal.length ?? null,
-                    attention:
-                        personalAttention.value > 0
-                            ? `${plural(personalAttention.value, 'account needs', 'accounts need')} attention`
-                            : null,
-                },
-            ],
-        },
     ];
 
+    if (!organization.value) {
+        return result;
+    }
+
+    const slug = organization.value.slug;
+
     const workspace: SettingsGroup = {
-        label: organization.value?.name ?? 'Workspace',
-        initial: organization.value?.name.slice(0, 1).toUpperCase(),
+        label: organization.value.name,
+        initial: organization.value.name.slice(0, 1).toUpperCase(),
         items: [
             {
-                title: 'Organizations',
-                href: organizations(),
+                title: 'Organization',
+                href: organizationEdit(slug),
                 icon: Building2,
-                keywords: 'workspace members invite roles switch',
-                meta:
-                    organizationCount.value > 1
-                        ? organizationCount.value
-                        : null,
+                keywords: 'name members roles invite leave delete',
             },
-        ],
-    };
-
-    if (organization.value) {
-        const slug = organization.value.slug;
-
-        workspace.items.push(
             {
                 title: 'Inboxes',
                 href: inboxesIndex(slug),
-                icon: Inbox,
+                icon: Mailbox,
                 keywords: 'shared inbox forwarding channels access',
                 meta: nav.value?.shared.length ?? null,
                 attention:
@@ -195,30 +199,30 @@ const groups = computed<SettingsGroup[]>(() => {
                 icon: Users,
                 keywords: 'groups people members access',
             },
-        );
+        ],
+    };
 
-        if (canManage.value) {
-            workspace.items.push(
-                {
-                    title: 'Integrations',
-                    href: integrationsEdit(slug),
-                    icon: Plug,
-                    keywords: 'google oauth smtp business hours',
-                },
-                {
-                    title: 'Automations',
-                    href: automationsIndex(slug),
-                    icon: Workflow,
-                    keywords: 'rules tag route assign reply',
-                },
-                {
-                    title: 'Templates',
-                    href: templatesIndex(slug),
-                    icon: FileText,
-                    keywords: 'canned responses snippets replies',
-                },
-            );
-        }
+    if (canManage.value) {
+        workspace.items.push(
+            {
+                title: 'Integrations',
+                href: integrationsEdit(slug),
+                icon: Plug,
+                keywords: 'google oauth smtp business hours',
+            },
+            {
+                title: 'Automations',
+                href: automationsIndex(slug),
+                icon: Workflow,
+                keywords: 'rules tag route assign reply',
+            },
+            {
+                title: 'Templates',
+                href: templatesIndex(slug),
+                icon: FileText,
+                keywords: 'canned responses snippets replies',
+            },
+        );
     }
 
     result.push(workspace);
@@ -392,11 +396,6 @@ useKeyboard(() => [
             >
                 <p class="font-medium text-sidebar-foreground">
                     Nothing called “{{ query.trim() }}”.
-                </p>
-                <p class="mt-0.5">
-                    Looking for a message? Try
-                    <kbd class="rounded border px-1 text-[10px]">⌘K</kbd>
-                    instead.
                 </p>
             </div>
         </nav>

@@ -12,14 +12,14 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useDraft } from '@/composables/useDraft';
-import { reportError } from '@/lib/http';
+import { api, reportError } from '@/lib/http';
 import { cn } from '@/lib/utils';
-import type { Draft, Inbox, NavInbox } from '@/types';
+import type { ComposePrefill, Draft, Inbox, NavInbox } from '@/types';
 
 const props = defineProps<{
     inbox: Inbox | null;
     inboxes: NavInbox[];
-    defaultTo?: string | null;
+    prefill?: Partial<ComposePrefill> | null;
 }>();
 const open = defineModel<boolean>('open', { default: false });
 
@@ -56,8 +56,15 @@ const start = async () => {
             is_shared: false,
         });
 
-        if (props.defaultTo) {
-            created.to = [{ name: null, email: props.defaultTo }];
+        const prefill = Object.fromEntries(
+            Object.entries(props.prefill ?? {}).filter(
+                ([, value]) => value != null && value !== '',
+            ),
+        ) as Partial<ComposePrefill>;
+
+        if (Object.keys(prefill).length > 0) {
+            Object.assign(created, prefill);
+            await api.patch(`/drafts/${created.uuid}`, prefill);
         }
 
         draft.value = created;

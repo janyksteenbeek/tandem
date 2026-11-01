@@ -157,9 +157,6 @@ const stats = computed(() => [
                     >
                         <Building2 class="size-5 text-brand" />
                         <p class="mt-3 font-medium">Organizations</p>
-                        <p class="text-xs text-muted-foreground">
-                            Invite teammates, manage roles, switch workspaces.
-                        </p>
                     </Link>
                     <Link
                         v-if="organization && page.props.canManageOrganization"
@@ -168,9 +165,6 @@ const stats = computed(() => [
                     >
                         <Workflow class="size-5 text-brand" />
                         <p class="mt-3 font-medium">Automations</p>
-                        <p class="text-xs text-muted-foreground">
-                            Rules that tag, route and reply while you sleep.
-                        </p>
                     </Link>
                     <Link
                         :href="profile()"
@@ -178,9 +172,6 @@ const stats = computed(() => [
                     >
                         <Settings class="size-5 text-brand" />
                         <p class="mt-3 font-medium">Settings</p>
-                        <p class="text-xs text-muted-foreground">
-                            Profile, security, appearance.
-                        </p>
                     </Link>
                 </div>
             </section>

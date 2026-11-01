@@ -140,30 +140,12 @@ async function sendTest(): Promise<void> {
                 </DialogTitle>
                 <DialogDescription>
                     <template v-if="provider === null"
-                        >Choose how mail should reach {{ target }}. You can add
-                        more channels later.</template
-                    >
-                    <template v-else-if="provider === 'gmail'"
-                        >Google asks you to approve access, then we start
-                        syncing into {{ target }}.</template
-                    >
-                    <template v-else-if="provider === 'imap'"
-                        >Works with any provider that speaks IMAP and SMTP:
-                        Fastmail, Outlook, your own server. Passwords are
-                        encrypted at rest.</template
+                        >How should mail reach {{ target }}?</template
                     >
                     <template v-else-if="created"
-                        >Finish the set-up on the other side and mail starts
-                        flowing into {{ target }}.</template
+                        >Finish the set-up on the other side.</template
                     >
-                    <template v-else-if="provider === 'google_group'"
-                        >Keep answering from the group address while the whole
-                        team reads along in {{ target }}.</template
-                    >
-                    <template v-else
-                        >Handy when you cannot or would rather not hand over a
-                        mailbox password.</template
-                    >
+                    <template v-else>Mail goes to {{ target }}.</template>
                 </DialogDescription>
             </DialogHeader>
 
@@ -420,11 +402,6 @@ async function sendTest(): Promise<void> {
                     </p>
                     <p v-if="errors.channel" class="text-xs text-destructive">
                         {{ errors.channel }}
-                    </p>
-                    <p class="text-xs text-muted-foreground">
-                        A random, unguessable address on
-                        {{ forwardingDomain ?? 'the forwarding domain' }} is
-                        generated for you. You can add several per inbox.
                     </p>
                 </div>
 

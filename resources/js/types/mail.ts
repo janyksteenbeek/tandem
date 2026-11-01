@@ -130,6 +130,15 @@ export type DraftAttachment = {
 
 export type DraftKind = 'new' | 'reply' | 'reply_all' | 'forward';
 
+/** What the composer opens with when started from a mailto: link or a prefilled URL. */
+export type ComposePrefill = {
+    to: EmailAddress[];
+    cc: EmailAddress[];
+    bcc: EmailAddress[];
+    subject: string | null;
+    html_body: string | null;
+};
+
 export type Draft = {
     uuid: string;
     conversation_uuid: string | null;

@@ -45,8 +45,7 @@ onMounted(async () => {
                 <LockKeyhole class="size-4" />2FA recovery codes
             </CardTitle>
             <CardDescription>
-                Recovery codes let you regain access if you lose your 2FA
-                device. Store them in a secure password manager.
+                Store these in a password manager.
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,10 +110,7 @@ onMounted(async () => {
                         </div>
                     </div>
                     <p class="text-xs text-muted-foreground select-none">
-                        Each recovery code can be used once to access your
-                        account and will be removed after use. If you need more,
-                        click
-                        <span class="font-bold">Regenerate codes</span> above.
+                        Each code works once.
                     </p>
                 </div>
             </div>

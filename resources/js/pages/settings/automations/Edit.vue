@@ -341,22 +341,11 @@ const runReason = (run: AutomationRun): string | null => {
                 <h1 class="truncate font-display text-3xl leading-none">
                     {{ form.name.trim() || title }}
                 </h1>
-                <p class="mt-1.5 text-sm text-muted-foreground">
-                    <template v-if="startedFrom === 'starter'"
-                        >Prefilled from a starter. Change anything, then
-                        save.</template
-                    >
-                    <template v-else-if="startedFrom === 'duplicate'"
-                        >A copy, paused until you say otherwise.</template
-                    >
-                    <template v-else-if="isEdit"
-                        >Changes apply to the next event. Past runs are
-                        untouched.</template
-                    >
-                    <template v-else
-                        >Describe when, check if, and say what should
-                        happen.</template
-                    >
+                <p
+                    v-if="startedFrom === 'duplicate'"
+                    class="mt-1.5 text-sm text-muted-foreground"
+                >
+                    A copy, paused until you turn it on.
                 </p>
             </div>
             <div class="flex items-center gap-2">
@@ -604,18 +593,9 @@ const runReason = (run: AutomationRun): string | null => {
                     <div
                         class="flex items-center justify-between gap-3 rounded-lg bg-surface px-3 py-2"
                     >
-                        <div>
-                            <Label for="rule-active" class="cursor-pointer">{{
-                                form.is_active ? 'Active' : 'Paused'
-                            }}</Label>
-                            <p class="text-xs text-muted-foreground">
-                                {{
-                                    form.is_active
-                                        ? 'Runs on the next event.'
-                                        : 'Saved, but sitting out.'
-                                }}
-                            </p>
-                        </div>
+                        <Label for="rule-active" class="cursor-pointer">{{
+                            form.is_active ? 'Active' : 'Paused'
+                        }}</Label>
                         <Switch
                             id="rule-active"
                             v-model="form.is_active"
@@ -645,10 +625,6 @@ const runReason = (run: AutomationRun): string | null => {
                                 {{ formatMinutes(form.cooldown_minutes) }}</span
                             >
                         </div>
-                        <p class="text-xs text-muted-foreground">
-                            Skip the same conversation if this rule already
-                            matched it within the window.
-                        </p>
                         <InputError :message="errors.cooldown_minutes" />
                     </div>
                 </section>
@@ -946,9 +922,8 @@ const runReason = (run: AutomationRun): string | null => {
                 <DialogHeader>
                     <DialogTitle>Delete “{{ rule?.name }}”?</DialogTitle>
                     <DialogDescription
-                        >The rule stops immediately. Its run history stays
-                        around, and nothing that already happened is
-                        undone.</DialogDescription
+                        >It stops immediately. Run history is
+                        kept.</DialogDescription
                     >
                 </DialogHeader>
                 <DialogFooter>

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Services\Branding;
 use App\Services\Mail\MailNavigation;
+use App\Services\Sso\Sso;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -44,6 +45,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => $branding->name(),
             'branding' => $branding->toArray(),
+            'sso' => fn () => app(Sso::class)->toArray(),
             'auth' => [
                 'user' => $user ? [
                     ...$user->toArray(),

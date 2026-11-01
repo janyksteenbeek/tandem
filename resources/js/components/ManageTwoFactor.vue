@@ -29,20 +29,14 @@ onUnmounted(() => clearTwoFactorAuthData());
 
 <template>
     <div v-if="canManageTwoFactor" class="space-y-6">
-        <Heading
-            variant="small"
-            title="Two-factor authentication"
-            description="Manage your two-factor authentication settings"
-        />
+        <Heading variant="small" title="Two-factor authentication" />
 
         <div
             v-if="!twoFactorEnabled"
             class="flex flex-col items-start justify-start space-y-4"
         >
             <p class="text-sm text-muted-foreground">
-                When you enable two-factor authentication, you will be prompted
-                for a secure pin during login. This pin can be retrieved from a
-                TOTP-supported application on your phone.
+                Ask for a code from an authenticator app when signing in.
             </p>
 
             <div>
@@ -63,12 +57,6 @@ onUnmounted(() => clearTwoFactorAuthData());
         </div>
 
         <div v-else class="flex flex-col items-start justify-start space-y-4">
-            <p class="text-sm text-muted-foreground">
-                You will be prompted for a secure, random pin during login,
-                which you can retrieve from the TOTP-supported application on
-                your phone.
-            </p>
-
             <div class="relative inline">
                 <Form v-bind="disable.form()" #default="{ processing }">
                     <Button

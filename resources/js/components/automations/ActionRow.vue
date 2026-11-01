@@ -495,9 +495,6 @@ const error = (key: string) => props.errors?.[key];
                         >
                     </SelectContent>
                 </Select>
-                <p class="text-xs text-muted-foreground">
-                    Snoozing is a human thing; rules cannot do it.
-                </p>
                 <InputError :message="error('status')" />
             </div>
 
@@ -641,11 +638,7 @@ const error = (key: string) => props.errors?.[key];
                     @update:model-value="(v) => setParam('body', String(v))"
                 />
                 <p class="text-xs text-muted-foreground">
-                    Only your team sees this. Variables like
-                    <code class="font-mono">{{
-                        variableToken('contact.name')
-                    }}</code>
-                    are filled in per conversation.
+                    Only your team sees this.
                 </p>
                 <InputError :message="error('body')" />
             </div>

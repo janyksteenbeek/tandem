@@ -6,12 +6,14 @@ import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue';
 import CommandPalette from '@/components/mail/CommandPalette.vue';
 import KeyboardShortcutsDialog from '@/components/mail/KeyboardShortcutsDialog.vue';
 import AppRail from '@/components/shell/AppRail.vue';
+import OfflineBanner from '@/components/shell/OfflineBanner.vue';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { provideAppShell } from '@/composables/useAppShell';
 import { useKeyboard } from '@/composables/useKeyboard';
+import { playNotificationSound } from '@/lib/notificationSound';
 
 /**
  * The one shell every signed-in page lives in: rail, an optional page-owned
@@ -46,9 +48,17 @@ const compose = () => {
 provide('openCommandPalette', () => (paletteOpen.value = true));
 provide('openShortcuts', () => (shortcutsOpen.value = true));
 
-useEcho(`user.${userId.value}`, '.user.inbox', () => {
-    router.reload({ only: ['mailNav', 'counts'] });
-});
+useEcho<{ inbound?: boolean }>(
+    `user.${userId.value}`,
+    '.user.inbox',
+    (payload) => {
+        if (payload.inbound) {
+            playNotificationSound();
+        }
+
+        router.reload({ only: ['mailNav', 'counts'] });
+    },
+);
 
 useKeyboard(() => [
     {
@@ -110,6 +120,7 @@ onBeforeUnmount(() => stopListening?.());
             </Sheet>
 
             <main class="relative flex min-w-0 flex-1 flex-col">
+                <OfflineBanner />
                 <Button
                     v-if="!column?.hideMobileTrigger"
                     variant="outline"

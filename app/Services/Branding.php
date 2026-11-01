@@ -8,6 +8,10 @@ namespace App\Services;
  */
 class Branding
 {
+    private const DEFAULT_THEME_COLOR = '#603df3';
+
+    private const DEFAULT_THEME_COLOR_DARK = '#9581f5';
+
     /**
      * CSS custom properties that may be overridden per colour scheme.
      *
@@ -29,7 +33,111 @@ class Branding
 
     public function favicon(): string
     {
-        return (string) config('branding.favicon', '/favicon.svg');
+        return (string) config('branding.favicon', '/tandem/icon.svg');
+    }
+
+    /**
+     * Absolute URL of the social card image, or null when none is set.
+     */
+    public function ogImage(): ?string
+    {
+        $image = config('branding.og_image');
+
+        return is_string($image) && $image !== '' ? url($image) : null;
+    }
+
+    /**
+     * The label under the installed app's icon; home screens truncate past
+     * roughly twelve characters, so it is the name unless told otherwise.
+     */
+    public function shortName(): string
+    {
+        return (string) (config('branding.pwa.short_name') ?: $this->name());
+    }
+
+    /**
+     * Colour the OS paints around the installed window. Follows the light
+     * brand colour when that is customised so the two never disagree.
+     */
+    public function themeColor(): string
+    {
+        return $this->sanitize((string) (
+            config('branding.pwa.theme_color')
+            ?: config('branding.colors.light.brand')
+            ?: self::DEFAULT_THEME_COLOR
+        ));
+    }
+
+    public function themeColorDark(): string
+    {
+        return $this->sanitize((string) (
+            config('branding.pwa.theme_color_dark')
+            ?: config('branding.colors.dark.brand')
+            ?: self::DEFAULT_THEME_COLOR_DARK
+        ));
+    }
+
+    public function backgroundColor(): string
+    {
+        return $this->sanitize((string) config('branding.pwa.background_color', '#fafafb'));
+    }
+
+    /**
+     * @return array{icon_192: string, icon_512: string, maskable: string, apple_touch: string}
+     */
+    public function icons(): array
+    {
+        return [
+            'icon_192' => (string) config('branding.pwa.icons.icon_192', '/tandem/icon-192.png'),
+            'icon_512' => (string) config('branding.pwa.icons.icon_512', '/tandem/icon-512.png'),
+            'maskable' => (string) config('branding.pwa.icons.maskable', '/tandem/icon-maskable-512.png'),
+            'apple_touch' => (string) config('branding.pwa.icons.apple_touch', '/tandem/apple-touch-icon.png'),
+        ];
+    }
+
+    /**
+     * The web app manifest. Scope and start URL are the root so one install
+     * covers every organisation; the home route sends the user on from there.
+     *
+     * @return array<string, mixed>
+     */
+    public function manifest(): array
+    {
+        $icons = $this->icons();
+
+        return [
+            'id' => '/',
+            'name' => $this->name(),
+            'short_name' => $this->shortName(),
+            'description' => config('branding.tagline'),
+            'start_url' => '/',
+            'scope' => '/',
+            'display' => 'standalone',
+            'display_override' => ['window-controls-overlay', 'standalone'],
+            'orientation' => 'any',
+            'theme_color' => $this->themeColor(),
+            'background_color' => $this->backgroundColor(),
+            'icons' => [
+                ['src' => $icons['icon_192'], 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => $icons['icon_512'], 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => $icons['maskable'], 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
+            ],
+            'protocol_handlers' => [
+                ['protocol' => 'mailto', 'url' => '/compose?mailto=%s'],
+            ],
+            'shortcuts' => [
+                [
+                    'name' => 'Mail',
+                    'url' => '/',
+                    'icons' => [['src' => $icons['icon_192'], 'sizes' => '192x192', 'type' => 'image/png']],
+                ],
+                [
+                    'name' => 'Settings',
+                    'url' => '/settings',
+                    'icons' => [['src' => $icons['icon_192'], 'sizes' => '192x192', 'type' => 'image/png']],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -38,6 +146,8 @@ class Branding
      *     tagline: string|null,
      *     logo: string|null,
      *     logo_dark: string|null,
+     *     wordmark: string|null,
+     *     wordmark_dark: string|null,
      *     auth: array{quote: string|null, attribution: string|null, perks: list<string>, footnote: string|null}
      * }
      */
@@ -48,6 +158,8 @@ class Branding
             'tagline' => config('branding.tagline'),
             'logo' => config('branding.logo'),
             'logo_dark' => config('branding.logo_dark'),
+            'wordmark' => config('branding.wordmark') ?: null,
+            'wordmark_dark' => config('branding.wordmark_dark') ?: null,
             'auth' => [
                 'quote' => config('branding.auth.quote'),
                 'attribution' => config('branding.auth.attribution'),

@@ -38,7 +38,11 @@ class BroadcastIngestedMessage
             ->unique();
 
         foreach ($recipients as $userId) {
-            UserNotified::dispatch($userId, 'inbox', ['inbox_id' => $conversation->inbox_id, 'conversation_uuid' => $conversation->uuid]);
+            UserNotified::dispatch($userId, 'inbox', [
+                'inbox_id' => $conversation->inbox_id,
+                'conversation_uuid' => $conversation->uuid,
+                'inbound' => $event->message->isInbound(),
+            ]);
         }
 
         if ($event->message->isInbound() && ! $event->isNewConversation) {

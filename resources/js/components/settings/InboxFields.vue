@@ -44,10 +44,6 @@ const description = defineModel<string>('description', { default: '' });
                 type="email"
                 placeholder="support@company.com"
             />
-            <p class="text-xs text-muted-foreground">
-                The address customers know. Connect a channel afterwards so mail
-                actually arrives.
-            </p>
             <InputError :message="errors.email_address" />
         </div>
         <div class="grid gap-1.5">

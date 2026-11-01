@@ -20,6 +20,7 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import { api } from '@/lib/http';
+import { playNotificationSound } from '@/lib/notificationSound';
 import { relative } from '@/lib/time';
 import type { AppNotification } from '@/types';
 
@@ -59,6 +60,7 @@ useEchoNotification<AppNotification['data']>(
     `App.Models.User.${page.props.auth.user.id}`,
     (notification) => {
         unread.value += 1;
+        playNotificationSound();
 
         toast(notification.title, {
             description: notification.body ?? undefined,
@@ -144,10 +146,6 @@ const readAll = async () => {
                 >
                     <Inbox class="size-8 text-muted-foreground/60" />
                     <p class="font-display text-lg">All quiet.</p>
-                    <p class="text-xs text-muted-foreground">
-                        When someone assigns you a conversation or mentions you,
-                        it shows up here.
-                    </p>
                 </div>
                 <button
                     v-for="item in items"

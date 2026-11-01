@@ -51,11 +51,7 @@ function access(inbox: InboxSettings): void {
     <h1 class="sr-only">Inboxes</h1>
 
     <TooltipProvider :delay-duration="200">
-        <SettingsSection
-            title="Shared inboxes"
-            :count="inboxes.length"
-            :description="`Team mailboxes in ${organization.name}. Each one has its own channels, access list and automations.`"
-        >
+        <SettingsSection title="Shared inboxes" :count="inboxes.length">
             <template #actions>
                 <Button
                     v-if="canManage"
@@ -75,8 +71,8 @@ function access(inbox: InboxSettings): void {
                 "
                 :body="
                     canManage
-                        ? 'Create one for support@, sales@ or anywhere a team answers together. Then connect a channel so mail starts flowing.'
-                        : 'Ask an organization admin to give you access to an inbox. It will show up here and in your mail sidebar.'
+                        ? 'For support@, sales@ and other shared addresses.'
+                        : 'Ask an admin for access.'
                 "
             >
                 <Button v-if="canManage" @click="createOpen = true"

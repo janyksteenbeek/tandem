@@ -209,9 +209,6 @@ function submit(): void {
                     required
                     autocomplete="off"
                 />
-                <p class="text-xs text-muted-foreground">
-                    Shown as the sender name on outgoing mail.
-                </p>
                 <InputError :message="form.errors.name" />
             </div>
             <div class="grid gap-2">

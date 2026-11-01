@@ -23,20 +23,13 @@ const passwordInput = useTemplateRef('passwordInput');
 
 <template>
     <div class="space-y-6">
-        <Heading
-            variant="small"
-            title="Delete account"
-            description="Delete your account and all of its resources"
-        />
+        <Heading variant="small" title="Delete account" />
         <div
             class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
         >
-            <div class="relative space-y-0.5 text-red-600 dark:text-red-100">
-                <p class="font-medium">Warning</p>
-                <p class="text-sm">
-                    Please proceed with caution, this cannot be undone.
-                </p>
-            </div>
+            <p class="text-sm text-red-600 dark:text-red-100">
+                This cannot be undone.
+            </p>
             <Dialog>
                 <DialogTrigger as-child>
                     <Button variant="destructive" data-test="delete-user-button"
@@ -60,11 +53,8 @@ const passwordInput = useTemplateRef('passwordInput');
                                 account?</DialogTitle
                             >
                             <DialogDescription>
-                                Once your account is deleted, all of its
-                                resources and data will also be permanently
-                                deleted. Please enter your password to confirm
-                                you would like to permanently delete your
-                                account.
+                                All your data is permanently deleted. Enter your
+                                password to confirm.
                             </DialogDescription>
                         </DialogHeader>
 

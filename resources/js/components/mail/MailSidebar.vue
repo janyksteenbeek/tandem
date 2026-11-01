@@ -181,9 +181,6 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                         <p class="font-medium text-sidebar-foreground">
                             No mail accounts yet.
                         </p>
-                        <p class="mt-0.5">
-                            Connect Gmail or IMAP and this becomes your inbox.
-                        </p>
                         <Link
                             href="/settings/mail-accounts"
                             class="mt-2 inline-flex items-center gap-1 font-medium text-brand hover:underline"

@@ -9,8 +9,7 @@ import { send } from '@/routes/verification';
 defineOptions({
     layout: {
         title: 'Email verification',
-        description:
-            'Please verify your email address by clicking on the link we just emailed to you.',
+        description: 'Click the link we just emailed you.',
     },
 });
 
