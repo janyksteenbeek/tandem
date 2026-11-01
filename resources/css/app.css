@@ -330,6 +330,31 @@
         240ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-rise;
 }
 
+/*
+  Active markers glide to their next spot instead of reappearing there. Only the
+  desktop shell names them: the mobile sheet renders a second copy of the rail
+  and column, and a duplicated name would cancel the whole transition.
+*/
+.app-shell-desktop .vt-rail-active {
+    view-transition-name: rail-active;
+}
+.app-shell-desktop .vt-sidebar-active {
+    view-transition-name: sidebar-active;
+}
+::view-transition-group(rail-active),
+::view-transition-group(sidebar-active) {
+    animation-duration: 260ms;
+    animation-timing-function: cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+::view-transition-old(rail-active),
+::view-transition-old(sidebar-active) {
+    animation: 80ms ease-out both vt-fade-out;
+}
+::view-transition-new(rail-active),
+::view-transition-new(sidebar-active) {
+    animation: 140ms ease-in both vt-fade-in;
+}
+
 @media (max-width: 767px) {
     ::view-transition-old(conversation-pane) {
         animation:
@@ -348,6 +373,38 @@
     ::view-transition-old(*),
     ::view-transition-new(*) {
         animation: none !important;
+    }
+}
+
+/*
+  Shell surfaces. The rail sits a step deeper than the column, and the column
+  carries a faint violet wash at the top that fades out by the first section,
+  so the three vertical bands read as layers rather than one flat grey.
+*/
+@utility shell-rail-surface {
+    background: color-mix(in oklch, var(--sidebar-background) 97%, black);
+}
+@utility shell-column-surface {
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in oklch, var(--brand) 6%, transparent) 0,
+            transparent 14rem
+        ),
+        var(--sidebar-background);
+}
+@utility brand-button-surface {
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--brand) 92%, white),
+        var(--brand) 55%,
+        color-mix(in oklch, var(--brand) 94%, black)
+    );
+    box-shadow:
+        inset 0 1px 0 0 rgb(255 255 255 / 22%),
+        0 1px 2px 0 color-mix(in oklch, var(--brand) 35%, transparent);
+    &:hover {
+        filter: brightness(1.05);
     }
 }
 

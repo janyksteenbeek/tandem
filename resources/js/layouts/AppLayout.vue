@@ -88,7 +88,7 @@ onBeforeUnmount(() => stopListening?.());
 <template>
     <TooltipProvider :delay-duration="200">
         <div class="flex h-dvh w-full overflow-hidden bg-background">
-            <div class="hidden md:flex">
+            <div class="app-shell-desktop hidden md:flex">
                 <AppRail
                     @open-search="paletteOpen = true"
                     @open-shortcuts="shortcutsOpen = true"

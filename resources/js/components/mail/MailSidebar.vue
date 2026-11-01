@@ -119,12 +119,12 @@ const showAllPersonal = computed(() => (nav.value?.personal.length ?? 0) > 1);
  * view rows underneath carry the one brand-tinted active state.
  */
 const rowClass =
-    'group flex h-8 items-center gap-2.5 rounded-lg px-2 text-[13px] text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground';
+    'group flex h-8 items-center gap-2 rounded-lg px-2 text-[13px] text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground';
 const openRowClass = 'font-medium text-sidebar-foreground';
 const viewRowClass =
     'group/view flex h-7 items-center gap-2 rounded-md px-2 text-[12.5px] text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground';
 const activeViewClass =
-    'bg-brand-soft/70 font-medium text-brand-soft-foreground hover:bg-brand-soft hover:text-brand-soft-foreground';
+    'vt-sidebar-active bg-brand-soft/70 font-medium text-brand-soft-foreground ring-1 ring-brand/10 ring-inset hover:bg-brand-soft hover:text-brand-soft-foreground';
 const viewIconClass =
     'size-3.5 shrink-0 text-muted-foreground/80 transition-colors group-hover/view:text-sidebar-foreground';
 const sectionLabelClass =
@@ -150,21 +150,25 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
 <template>
     <ShellColumn label="Mailboxes">
         <template #header>
-            <div class="px-3 pt-4 pb-2">
-                <p
-                    class="truncate text-[13px] font-semibold text-sidebar-foreground"
-                >
-                    {{ organization?.name ?? branding.name }}
-                </p>
-                <p class="truncate text-[11px] text-muted-foreground">
-                    <template v-if="nav && nav.assigned_to_me > 0"
-                        >{{ nav.assigned_to_me }} assigned to you</template
+            <div class="px-4 pt-3 pb-2">
+                <div class="flex h-10 flex-col justify-center">
+                    <p
+                        class="truncate text-[13px] leading-[18px] font-semibold text-sidebar-foreground"
                     >
-                    <template v-else>Nothing waiting on you</template>
-                </p>
+                        {{ organization?.name ?? branding.name }}
+                    </p>
+                    <p
+                        class="truncate text-[11px] leading-[15px] text-muted-foreground"
+                    >
+                        <template v-if="nav && nav.assigned_to_me > 0"
+                            >{{ nav.assigned_to_me }} assigned to you</template
+                        >
+                        <template v-else>Nothing waiting on you</template>
+                    </p>
+                </div>
 
                 <Button
-                    class="mt-3 h-8 w-full justify-start gap-2 rounded-lg bg-brand px-2.5 text-[13px] text-brand-foreground shadow-none hover:bg-brand/90"
+                    class="mt-2 h-8 w-full justify-start gap-2 rounded-lg px-2.5 text-[13px] text-brand-foreground brand-button-surface"
                     @click="emit('compose')"
                 >
                     <PenLine class="size-3.5" />
@@ -186,7 +190,7 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
 
                     <div
                         v-if="nav.personal.length === 0"
-                        class="mx-1 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
+                        class="mx-2 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
                     >
                         <p class="font-medium text-sidebar-foreground">
                             No mail accounts yet.
@@ -219,7 +223,7 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                             >
                         </Link>
                         <Collapse :open="isActive('all')">
-                            <div class="mt-0.5 mb-2 ml-4 space-y-px">
+                            <div class="mt-0.5 mb-2 ml-6 space-y-px">
                                 <Link
                                     v-for="view in views"
                                     :key="view.value"
@@ -280,11 +284,6 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                                     attention</TooltipContent
                                 >
                             </Tooltip>
-                            <span
-                                v-if="inbox.count > 0"
-                                class="text-[11px] font-semibold text-brand tabular-nums"
-                                >{{ inbox.count }}</span
-                            >
                             <ChevronRight
                                 :class="
                                     cn(
@@ -294,9 +293,14 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                                     )
                                 "
                             />
+                            <span
+                                v-if="inbox.count > 0"
+                                class="text-[11px] font-semibold text-brand tabular-nums"
+                                >{{ inbox.count }}</span
+                            >
                         </Link>
                         <Collapse :open="isActive(inbox)">
-                            <div class="mt-0.5 mb-2 ml-4 space-y-px">
+                            <div class="mt-0.5 mb-2 ml-6 space-y-px">
                                 <Link
                                     v-for="view in views"
                                     :key="view.value"
@@ -348,7 +352,7 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
 
                     <div
                         v-if="nav.shared.length === 0"
-                        class="mx-1 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
+                        class="mx-2 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
                     >
                         <p class="font-medium text-sidebar-foreground">
                             No shared inboxes.
@@ -391,7 +395,7 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                             >
                         </Link>
                         <Collapse :open="isActive(inbox)">
-                            <div class="mt-0.5 mb-2 ml-4 space-y-px">
+                            <div class="mt-0.5 mb-2 ml-6 space-y-px">
                                 <Link
                                     v-for="view in primaryViews"
                                     :key="view.value"

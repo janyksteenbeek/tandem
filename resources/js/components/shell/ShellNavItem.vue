@@ -21,7 +21,7 @@ defineProps<{
             cn(
                 'group flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] text-sidebar-foreground/90 transition-colors hover:bg-sidebar-accent',
                 active &&
-                    'bg-brand-soft/60 font-medium text-brand-soft-foreground hover:bg-brand-soft/80',
+                    'vt-sidebar-active bg-brand-soft/60 font-medium text-brand-soft-foreground ring-1 ring-brand/10 ring-inset hover:bg-brand-soft/80',
             )
         "
         :aria-current="active ? 'page' : undefined"

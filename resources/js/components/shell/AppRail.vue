@@ -105,12 +105,12 @@ const cycleAppearance = () => {
 
 <template>
     <nav
-        class="flex h-full w-14 shrink-0 flex-col items-center border-r border-sidebar-border bg-sidebar py-3"
+        class="flex h-full w-14 shrink-0 flex-col items-center border-r border-sidebar-border py-3 shell-rail-surface"
         aria-label="Primary"
     >
         <Link
             :href="mailUrl"
-            class="mb-3 rounded-xl transition-transform hover:scale-105 active:scale-95"
+            class="mb-1 flex size-10 items-center justify-center rounded-xl transition-transform hover:scale-105 active:scale-95"
             :aria-label="`${branding.name} home`"
         >
             <BrandMark :size="26" />
@@ -124,16 +124,16 @@ const cycleAppearance = () => {
                             :href="item.href"
                             :class="
                                 cn(
-                                    'relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-95',
+                                    'relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-95',
                                     item.active &&
-                                        'bg-sidebar-accent text-sidebar-accent-foreground',
+                                        'vt-rail-active bg-foreground/[0.08] text-sidebar-accent-foreground',
                                 )
                             "
                             :aria-current="item.active ? 'page' : undefined"
                         >
                             <span
                                 v-if="item.active"
-                                class="absolute top-1/2 -left-2 h-5 w-[3px] -translate-y-1/2 animate-in rounded-r-full bg-brand duration-200 fade-in slide-in-from-left-1"
+                                class="absolute top-1/2 -left-2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
                             />
                             <component :is="item.icon" class="size-[18px]" />
                         </Link>
@@ -148,7 +148,7 @@ const cycleAppearance = () => {
                 <TooltipTrigger as-child>
                     <button
                         type="button"
-                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-95"
+                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-95"
                         @click="emit('openSearch')"
                     >
                         <Search class="size-[18px]" />
@@ -168,7 +168,7 @@ const cycleAppearance = () => {
                 <template #trigger="{ unread }">
                     <button
                         type="button"
-                        class="relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-95"
+                        class="relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-95"
                         aria-label="Notifications"
                     >
                         <Bell class="size-[18px]" />
@@ -186,7 +186,7 @@ const cycleAppearance = () => {
                 <TooltipTrigger as-child>
                     <button
                         type="button"
-                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-95"
+                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-95"
                         @click="cycleAppearance"
                     >
                         <Sun

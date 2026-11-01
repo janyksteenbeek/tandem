@@ -13,7 +13,7 @@ const slots = useSlots();
 
 <template>
     <aside
-        class="flex h-full w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar"
+        class="flex h-full w-60 shrink-0 flex-col border-r border-sidebar-border shell-column-surface"
         :aria-label="label"
     >
         <slot name="header" />
@@ -24,7 +24,7 @@ const slots = useSlots();
 
         <div
             v-if="slots.footer"
-            class="flex items-center gap-2 border-t border-sidebar-border px-3 py-2 text-[11px] text-muted-foreground"
+            class="flex items-center gap-2 border-t border-sidebar-border px-4 py-2 text-[11px] text-muted-foreground"
         >
             <slot name="footer" />
         </div>

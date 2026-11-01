@@ -292,15 +292,17 @@ useKeyboard(() => [
 <template>
     <ShellColumn label="Settings">
         <template #header>
-            <div class="flex items-start justify-between gap-2 px-3 pt-4 pb-2">
+            <div
+                class="flex h-[52px] items-center justify-between gap-2 px-4 pt-3"
+            >
                 <div class="min-w-0">
                     <p
-                        class="font-display text-[19px] leading-tight text-sidebar-foreground"
+                        class="font-display text-[19px] leading-[22px] text-sidebar-foreground"
                     >
                         Settings
                     </p>
                     <p
-                        class="mt-0.5 truncate text-[11px]"
+                        class="truncate text-[11px] leading-[15px]"
                         :class="
                             status.tone === 'warning'
                                 ? 'font-medium text-warning-foreground dark:text-warning'
@@ -332,7 +334,7 @@ useKeyboard(() => [
                 </Tooltip>
             </div>
 
-            <label class="relative mx-3 mb-2 block">
+            <label class="relative mx-4 mt-2 mb-2 block">
                 <Search
                     class="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
                 />
@@ -400,7 +402,7 @@ useKeyboard(() => [
 
             <div
                 v-if="visibleGroups.length === 0"
-                class="mx-1 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
+                class="mx-2 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
             >
                 <p class="font-medium text-sidebar-foreground">
                     Nothing called “{{ query.trim() }}”.
