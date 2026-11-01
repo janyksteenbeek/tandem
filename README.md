@@ -4,6 +4,14 @@
 
 <p align="center">Calm mail for busy teams.</p>
 
+<p align="center">
+  <a href="https://github.com/janyksteenbeek/tandem/actions/workflows/tests.yml"><img src="https://github.com/janyksteenbeek/tandem/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+  <a href="https://github.com/janyksteenbeek/tandem/actions/workflows/docker.yml"><img src="https://github.com/janyksteenbeek/tandem/actions/workflows/docker.yml/badge.svg" alt="Docker"></a>
+  <a href="https://github.com/janyksteenbeek/tandem/releases"><img src="https://img.shields.io/github/v/release/janyksteenbeek/tandem" alt="GitHub release (latest by date)"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/janyksteenbeek/tandem" alt="License"></a>
+  <a href="https://github.com/janyksteenbeek/tandem/issues"><img src="https://img.shields.io/github/issues/janyksteenbeek/tandem" alt="GitHub issues"></a>
+</p>
+
 ---
 
 Tandem is an email client for people and the teams they work in. Connect your own Gmail or IMAP accounts and use it as your everyday mail app, then run `support@` or `sales@` together in shared inboxes. Free and public source.
