@@ -34,7 +34,7 @@ const emit = defineEmits<{
 
 <template>
     <div
-        class="flex animate-rise items-center gap-1 border-b border-brand/20 bg-brand-soft/60 px-3 py-2 text-xs"
+        class="flex items-center gap-1 border-b border-brand/20 bg-brand-soft/60 px-3 py-2 text-xs"
     >
         <span class="mr-1 font-medium text-brand-soft-foreground"
             >{{ count }} selected</span

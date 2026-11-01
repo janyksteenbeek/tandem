@@ -5,6 +5,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { registerServiceWorker } from '@/composables/usePwa';
 import { initializeFlashToast } from '@/lib/flashToast';
+import { visitOptions } from '@/lib/viewTransitions';
 import { configureEcho } from '@laravel/echo-vue';
 
 configureEcho({
@@ -48,6 +49,9 @@ void createInertiaApp({
     },
     progress: {
         color: '#603df3',
+    },
+    defaults: {
+        visitOptions,
     },
 });
 

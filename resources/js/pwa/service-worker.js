@@ -20,7 +20,7 @@
  * for them to be dropped whenever it lands on a sign-in screen.
  */
 
-/** @typedef {{ version: string, offlineUrl: string, precache: string[] }} PwaConfig */
+/** @typedef {{ version: string, offlineUrl: string, vapidPublicKey: string|null, precache: string[] }} PwaConfig */
 
 /** @type {PwaConfig} */
 const config = __PWA_CONFIG__;
@@ -92,6 +92,80 @@ worker.addEventListener('message', (event) => {
     }
 });
 
+worker.addEventListener('push', (event) => {
+    /** The payload is the notification's own fields, title alongside the options. */
+    /** @type {{ title?: string } & NotificationOptions} */
+    let payload = {};
+
+    try {
+        payload = event.data?.json() ?? {};
+    } catch {
+        payload = { body: event.data?.text() ?? '' };
+    }
+
+    const { title, ...options } = payload;
+
+    event.waitUntil(
+        worker.registration.showNotification(
+            title || 'New notification',
+            options,
+        ),
+    );
+});
+
+worker.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const url = new URL(
+        event.notification.data?.url ?? '/',
+        worker.location.origin,
+    ).href;
+
+    event.waitUntil(
+        (async () => {
+            const clients = await worker.clients.matchAll({
+                type: 'window',
+                includeUncontrolled: true,
+            });
+            const existing = clients.find((client) =>
+                client.url.startsWith(worker.location.origin),
+            );
+
+            if (existing) {
+                await existing.focus();
+                await existing.navigate(url);
+
+                return;
+            }
+
+            await worker.clients.openWindow(url);
+        })(),
+    );
+});
+
+worker.addEventListener('pushsubscriptionchange', (event) => {
+    if (!config.vapidPublicKey) {
+        return;
+    }
+
+    event.waitUntil(
+        worker.registration.pushManager
+            .subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: serverKey(config.vapidPublicKey),
+            })
+            .then(async () => {
+                const clients = await worker.clients.matchAll({
+                    type: 'window',
+                });
+                clients.forEach((client) =>
+                    client.postMessage({ type: 'PUSH_SUBSCRIPTION_CHANGED' }),
+                );
+            })
+            .catch(() => undefined),
+    );
+});
+
 worker.addEventListener('fetch', (event) => {
     const { request } = event;
 
@@ -139,6 +213,19 @@ worker.addEventListener('fetch', (event) => {
         );
     }
 });
+
+/**
+ * @param {string} base64Url
+ * @returns {Uint8Array}
+ */
+function serverKey(base64Url) {
+    const padding = '='.repeat((4 - (base64Url.length % 4)) % 4);
+    const raw = atob(
+        (base64Url + padding).replace(/-/g, '+').replace(/_/g, '/'),
+    );
+
+    return Uint8Array.from(raw, (char) => char.charCodeAt(0));
+}
 
 /**
  * @param {Request} request

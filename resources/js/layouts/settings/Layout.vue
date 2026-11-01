@@ -16,9 +16,12 @@ useShellColumn(() => ({ component: SettingsSidebar }));
 
 /** Account pages keep the compact column from the starter kit; everything else is denser and wants the room. */
 const narrow = computed(() =>
-    ['settings/Profile', 'settings/Security', 'settings/Appearance'].includes(
-        page.component,
-    ),
+    [
+        'settings/Profile',
+        'settings/Security',
+        'settings/Appearance',
+        'settings/Notifications',
+    ].includes(page.component),
 );
 
 const mailUrl = computed(() =>

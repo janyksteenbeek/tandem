@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\HasOrganizations;
 use App\Enums\InboxType;
 use App\Enums\OrganizationRole;
+use App\Enums\PushTopic;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 
 /**
  * @property int $id
@@ -55,7 +57,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasOrganizations, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory, HasOrganizations, HasPushSubscriptions, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     /**
      * Teams (inside organizations) the user belongs to.
@@ -158,6 +160,28 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function preference(string $key, mixed $default = null): mixed
     {
         return data_get($this->preferences, $key, $default);
+    }
+
+    /**
+     * Which kinds of events may reach this person's devices.
+     *
+     * @return array<string, bool>
+     */
+    public function pushPreferences(): array
+    {
+        $saved = (array) $this->preference('push', []);
+        $result = [];
+
+        foreach (PushTopic::cases() as $topic) {
+            $result[$topic->value] = (bool) ($saved[$topic->value] ?? $topic->default());
+        }
+
+        return $result;
+    }
+
+    public function wantsPush(PushTopic $topic): bool
+    {
+        return $this->pushPreferences()[$topic->value];
     }
 
     public function avatarUrl(): ?string

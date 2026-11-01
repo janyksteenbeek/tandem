@@ -2,7 +2,9 @@
 
 namespace App\Notifications\Conversations;
 
+use App\Enums\PushTopic;
 use App\Models\Comment;
+use App\Notifications\Concerns\PushesToDevices;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -11,6 +13,7 @@ use Illuminate\Support\Str;
 
 class NewCommentNotification extends Notification implements ShouldQueue
 {
+    use PushesToDevices;
     use Queueable;
 
     public function __construct(public Comment $comment)
@@ -23,7 +26,7 @@ class NewCommentNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return [...['database', 'broadcast'], ...$this->pushChannels($notifiable, PushTopic::Follows)];
     }
 
     /**

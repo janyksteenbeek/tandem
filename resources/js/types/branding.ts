@@ -7,8 +7,5 @@ export type Branding = {
     wordmark_dark: string | null;
     auth: {
         quote: string | null;
-        attribution: string | null;
-        perks: string[];
-        footnote: string | null;
     };
 };

@@ -70,7 +70,7 @@ const participantsLabel = computed(() => {
     >
         <span
             v-if="active"
-            class="absolute top-2 bottom-2 left-0 w-[3px] rounded-r-full bg-brand"
+            class="absolute top-2 bottom-2 left-0 w-[3px] animate-in rounded-r-full bg-brand duration-200 fade-in"
         />
 
         <div

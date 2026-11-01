@@ -2,8 +2,10 @@
 
 namespace App\Notifications;
 
+use App\Enums\PushTopic;
 use App\Models\AutomationRule;
 use App\Models\Conversation;
+use App\Notifications\Concerns\PushesToDevices;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
@@ -12,6 +14,7 @@ use Illuminate\Notifications\Notification;
  */
 class AutomationNotification extends Notification
 {
+    use PushesToDevices;
     use Queueable;
 
     public function __construct(
@@ -25,7 +28,7 @@ class AutomationNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return [...['database'], ...$this->pushChannels($notifiable, PushTopic::Direct)];
     }
 
     /**

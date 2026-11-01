@@ -9,8 +9,10 @@ import {
     onBeforeUnmount,
     onMounted,
     ref,
+    TransitionGroup,
     watch,
 } from 'vue';
+import Collapse from '@/components/Collapse.vue';
 import BulkBar from '@/components/mail/BulkBar.vue';
 import ComposeDialog from '@/components/mail/ComposeDialog.vue';
 import MailSidebar from '@/components/mail/MailSidebar.vue';
@@ -96,7 +98,11 @@ watch(
     },
 );
 
+/** The row you clicked lights up at once; the real selection follows when the conversation arrives. */
+const pendingUuid = ref<string | null>(null);
+
 const activeUuid = computed(() => props.conversation?.uuid ?? null);
+const highlightedUuid = computed(() => pendingUuid.value ?? activeUuid.value);
 const viewLabel = computed(() =>
     viewLabelFor(
         props.view,
@@ -137,10 +143,18 @@ const queryString = (filters: ConversationFilters) => {
 };
 
 const openConversation = (item: ListItem) => {
+    pendingUuid.value = item.uuid;
+
     router.visit(`${baseUrl.value}/${item.uuid}${queryString(props.filters)}`, {
         only: ['conversation'],
         preserveState: true,
         preserveScroll: true,
+        viewTransition: true,
+        onFinish: () => {
+            if (pendingUuid.value === item.uuid) {
+                pendingUuid.value = null;
+            }
+        },
     });
 
     if (!item.is_read) {
@@ -150,10 +164,13 @@ const openConversation = (item: ListItem) => {
 };
 
 const closeConversation = () => {
+    pendingUuid.value = null;
+
     router.visit(`${baseUrl.value}${queryString(props.filters)}`, {
         only: ['conversation'],
         preserveState: true,
         preserveScroll: true,
+        viewTransition: true,
     });
 };
 
@@ -534,15 +551,16 @@ useShellColumn(() => ({
                     @update="updateFilters"
                     @save-view="saveView"
                 />
-                <BulkBar
-                    v-if="selected.size"
-                    :count="selected.size"
-                    :is-shared="isShared"
-                    :members="members"
-                    :tags="tags"
-                    @clear="selected = new Set()"
-                    @action="bulk"
-                />
+                <Collapse :open="selected.size > 0">
+                    <BulkBar
+                        :count="selected.size"
+                        :is-shared="isShared"
+                        :members="members"
+                        :tags="tags"
+                        @clear="selected = new Set()"
+                        @action="bulk"
+                    />
+                </Collapse>
 
                 <div
                     ref="listEl"
@@ -567,19 +585,35 @@ useShellColumn(() => ({
                         >
                     </EmptyState>
                     <template v-else>
-                        <ConversationListItem
-                            v-for="(item, index) in items"
-                            :key="item.uuid"
-                            :item="item"
-                            :active="item.uuid === activeUuid"
-                            :selected="selected.has(item.uuid)"
-                            :cursor="index === cursorIndex && !activeUuid"
-                            :selection-mode="selected.size > 0"
-                            :show-inbox="inbox.uuid === 'all'"
-                            @open="openConversation"
-                            @toggle="toggleSelect"
-                            @star="starItem"
-                        />
+                        <TransitionGroup
+                            tag="div"
+                            class="relative"
+                            move-class="transition-transform duration-200 ease-out"
+                            enter-active-class="transition duration-200 ease-out"
+                            enter-from-class="-translate-y-1 opacity-0"
+                            leave-active-class="absolute w-full transition duration-150 ease-in"
+                            leave-to-class="translate-x-3 opacity-0"
+                        >
+                            <div
+                                v-for="(item, index) in items"
+                                :key="item.uuid"
+                            >
+                                <ConversationListItem
+                                    :item="item"
+                                    :active="item.uuid === highlightedUuid"
+                                    :selected="selected.has(item.uuid)"
+                                    :cursor="
+                                        index === cursorIndex &&
+                                        !highlightedUuid
+                                    "
+                                    :selection-mode="selected.size > 0"
+                                    :show-inbox="inbox.uuid === 'all'"
+                                    @open="openConversation"
+                                    @toggle="toggleSelect"
+                                    @star="starItem"
+                                />
+                            </div>
+                        </TransitionGroup>
                         <div
                             v-if="nextCursor"
                             class="flex items-center justify-center py-4"
@@ -617,7 +651,7 @@ useShellColumn(() => ({
             <ResizablePanel
                 v-if="showPane"
                 :default-size="64"
-                class="flex min-w-0 flex-col"
+                class="flex min-w-0 flex-col [view-transition-name:conversation-pane]"
             >
                 <ConversationPane
                     v-if="conversation"

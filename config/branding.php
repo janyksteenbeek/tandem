@@ -41,19 +41,12 @@ return [
     | Sign-in screens
     |--------------------------------------------------------------------------
     |
-    | Copy shown on the brand panel next to the login and register forms.
+    | The one line on the brand panel next to the login and register forms.
     |
     */
 
     'auth' => [
         'quote' => env('BRANDING_AUTH_QUOTE', 'Inbox zero is a team sport.'),
-        'attribution' => env('BRANDING_AUTH_ATTRIBUTION', 'someone on the team, probably on a Friday'),
-        'perks' => [
-            'Personal mail and team inboxes, side by side',
-            'Internal comments nobody outside ever sees',
-            'Gmail, IMAP or forwarding. Mail lands in seconds',
-        ],
-        'footnote' => env('BRANDING_AUTH_FOOTNOTE', 'Quiet neutrals, one violet envelope, no blue inbox in sight.'),
     ],
 
     /*

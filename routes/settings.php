@@ -3,7 +3,9 @@
 use App\Http\Controllers\Organizations\OrganizationController;
 use App\Http\Controllers\Organizations\OrganizationInvitationController;
 use App\Http\Controllers\Organizations\OrganizationMemberController;
+use App\Http\Controllers\Settings\NotificationSettingsController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\PushSubscriptionController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Settings\SsoIdentityController;
 use App\Http\Middleware\EnsureOrganizationMembership;
@@ -31,6 +33,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('settings/sso/{provider}', [SsoIdentityController::class, 'destroy'])->name('sso.destroy');
 
     Route::inertia('settings/appearance', 'settings/Appearance')->name('appearance.edit');
+
+    Route::get('settings/notifications', [NotificationSettingsController::class, 'edit'])->name('notification-settings.edit');
+    Route::patch('settings/notifications', [NotificationSettingsController::class, 'update'])->name('notification-settings.update');
+    Route::post('push/subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+    Route::delete('push/subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
 
     Route::get('settings/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
     Route::post('settings/organizations', [OrganizationController::class, 'store'])->name('organizations.store');

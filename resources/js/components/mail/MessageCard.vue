@@ -13,6 +13,7 @@ import {
 import { computed, ref } from 'vue';
 import AttachmentChip from '@/components/mail/AttachmentChip.vue';
 import MessageFrame from '@/components/mail/MessageFrame.vue';
+import Collapse from '@/components/Collapse.vue';
 import UserAvatar from '@/components/mail/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -273,45 +274,52 @@ const deliveryMeta: Record<
             </div>
         </header>
 
-        <div v-if="expanded" class="px-4 pb-4">
-            <div
-                v-if="deliveryMeta[delivery]"
-                :class="
-                    cn(
-                        'mb-3 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs',
-                        deliveryMeta[delivery].className,
-                        delivery === 'failed' &&
-                            'border-destructive/30 bg-destructive/5',
-                    )
-                "
-            >
-                <component :is="deliveryMeta[delivery].icon" class="size-3.5" />
-                {{ deliveryMeta[delivery].label }}
-                <span v-if="message.delivery_error" class="truncate opacity-80"
-                    >· {{ message.delivery_error }}</span
+        <Collapse :open="expanded">
+            <div class="px-4 pb-4">
+                <div
+                    v-if="deliveryMeta[delivery]"
+                    :class="
+                        cn(
+                            'mb-3 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs',
+                            deliveryMeta[delivery].className,
+                            delivery === 'failed' &&
+                                'border-destructive/30 bg-destructive/5',
+                        )
+                    "
                 >
-            </div>
+                    <component
+                        :is="deliveryMeta[delivery].icon"
+                        class="size-3.5"
+                    />
+                    {{ deliveryMeta[delivery].label }}
+                    <span
+                        v-if="message.delivery_error"
+                        class="truncate opacity-80"
+                        >· {{ message.delivery_error }}</span
+                    >
+                </div>
 
-            <MessageFrame
-                :html="message.html_body"
-                :text="message.text_body"
-                :allow-remote-images="remoteImages"
-            />
-
-            <div
-                v-if="attachments.length"
-                class="mt-3 flex flex-wrap gap-2 border-t pt-3"
-            >
-                <AttachmentChip
-                    v-for="attachment in attachments"
-                    :key="attachment.uuid"
-                    :filename="attachment.filename"
-                    :mime-type="attachment.mime_type"
-                    :size="attachment.size_bytes"
-                    :url="attachment.url"
-                    :download-url="attachment.download_url"
+                <MessageFrame
+                    :html="message.html_body"
+                    :text="message.text_body"
+                    :allow-remote-images="remoteImages"
                 />
+
+                <div
+                    v-if="attachments.length"
+                    class="mt-3 flex flex-wrap gap-2 border-t pt-3"
+                >
+                    <AttachmentChip
+                        v-for="attachment in attachments"
+                        :key="attachment.uuid"
+                        :filename="attachment.filename"
+                        :mime-type="attachment.mime_type"
+                        :size="attachment.size_bytes"
+                        :url="attachment.url"
+                        :download-url="attachment.download_url"
+                    />
+                </div>
             </div>
-        </div>
+        </Collapse>
     </article>
 </template>

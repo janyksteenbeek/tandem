@@ -4,6 +4,7 @@ import {
     AlertTriangle,
     ArrowLeft,
     AtSign,
+    Bell,
     Building2,
     FileText,
     Keyboard,
@@ -33,6 +34,7 @@ import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { useKeyboard } from '@/composables/useKeyboard';
 import { toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editNotifications } from '@/routes/notification-settings';
 import { index as automationsIndex } from '@/routes/automations';
 import { index as mailAccountsIndex } from '@/routes/mail/accounts';
 import {
@@ -161,6 +163,12 @@ const groups = computed<SettingsGroup[]>(() => {
                     icon: Palette,
                     keywords: 'theme dark light mode',
                     meta: appearanceLabel.value,
+                },
+                {
+                    title: 'Notifications',
+                    href: editNotifications(),
+                    icon: Bell,
+                    keywords: 'push alerts devices mentions',
                 },
             ],
         },

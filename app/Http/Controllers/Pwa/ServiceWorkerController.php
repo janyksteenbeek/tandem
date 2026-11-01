@@ -25,6 +25,7 @@ class ServiceWorkerController extends Controller
         $config = [
             'version' => $this->version($source),
             'offlineUrl' => route('pwa.offline', absolute: false),
+            'vapidPublicKey' => config('webpush.vapid.public_key'),
             'precache' => array_values(array_unique([
                 route('pwa.offline', absolute: false),
                 route('pwa.manifest', absolute: false),

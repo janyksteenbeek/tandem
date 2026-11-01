@@ -35,7 +35,8 @@ Directly profiting from Tandem by selling the software or its core functionaliti
 - Standalone Services: Providing Tandem's mail and team collaboration functionality as a separate, paid (hosted)
   service independent of other offerings.
 
-----
+---
+
 These guidelines are in place to ensure that Tandem remains freely accessible to all users. If you have questions about
 whether your intended use case falls within the non-commercial guidelines, please reach out for clarification.
 

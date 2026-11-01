@@ -47,7 +47,7 @@ A first sign-in through a provider links the identity to the user whose email ma
 
 ## Branding
 
-Everything the UI says about the product itself comes from `config/branding.php`: name, tagline, logo, favicon, the copy on the sign-in panel and the brand colours. The common values have environment overrides; edit the config file for the rest (for example the perks list).
+Everything the UI says about the product itself comes from `config/branding.php`: name, tagline, logo, favicon, the line on the sign-in panel and the brand colours. The common values have environment overrides; edit the config file for the rest.
 
 ```
 BRANDING_NAME="Acme Mail"                # defaults to APP_NAME
@@ -58,8 +58,6 @@ BRANDING_FAVICON=/tandem/icon.svg
 BRANDING_WORDMARK=/tandem/tandem-mail-wordmark-purple.svg
 BRANDING_OG_IMAGE=/tandem/tandem-mail-og.png
 BRANDING_AUTH_QUOTE="Inbox zero is a team sport."
-BRANDING_AUTH_ATTRIBUTION="someone on the team"
-BRANDING_AUTH_FOOTNOTE=
 BRANDING_COLOR_BRAND="#603df3"                           # any CSS colour; *_DARK variants apply in dark mode
 BRANDING_COLOR_BRAND_FOREGROUND=
 BRANDING_COLOR_BRAND_SOFT= BRANDING_COLOR_BRAND_SOFT_FOREGROUND=
@@ -67,6 +65,17 @@ BRANDING_COLOR_HIGHLIGHT= BRANDING_COLOR_HIGHLIGHT_FOREGROUND=
 ```
 
 There is no public landing page: `/` sends guests to the login form and signed-in users into their mail.
+
+## Push notifications
+
+Device pushes use Web Push with VAPID keys. Generate a pair once per deployment and keep it stable; rotating it silently drops every subscribed device.
+
+```
+php artisan webpush:vapid        # writes VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY to .env
+VAPID_SUBJECT="mailto:ops@example.com"
+```
+
+Without keys the Notifications settings page explains that push is not configured and nothing is sent. People opt in per device under Settings → Notifications; expired subscriptions are removed automatically when a push bounces. On iPhone and iPad pushes only arrive once the app is installed to the home screen.
 
 ## Provider setup
 

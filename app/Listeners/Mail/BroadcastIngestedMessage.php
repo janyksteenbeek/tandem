@@ -8,6 +8,7 @@ use App\Events\Broadcast\UserNotified;
 use App\Events\Mail\MessageIngested;
 use App\Models\User;
 use App\Notifications\Conversations\NewReplyNotification;
+use App\Notifications\Mail\NewSharedMailNotification;
 
 /**
  * Fan an ingested message out to the UI: list updates for every inbox that sees the thread,
@@ -43,6 +44,11 @@ class BroadcastIngestedMessage
                 'conversation_uuid' => $conversation->uuid,
                 'inbound' => $event->message->isInbound(),
             ]);
+        }
+
+        if ($event->message->isInbound() && $event->isNewConversation && $conversation->inbox->isShared()) {
+            $conversation->inbox->users
+                ->each(fn (User $user) => $user->notify(new NewSharedMailNotification($event->message)));
         }
 
         if ($event->message->isInbound() && ! $event->isNewConversation) {

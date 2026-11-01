@@ -148,7 +148,7 @@ class Branding
      *     logo_dark: string|null,
      *     wordmark: string|null,
      *     wordmark_dark: string|null,
-     *     auth: array{quote: string|null, attribution: string|null, perks: list<string>, footnote: string|null}
+     *     auth: array{quote: string|null}
      * }
      */
     public function toArray(): array
@@ -162,9 +162,6 @@ class Branding
             'wordmark_dark' => config('branding.wordmark_dark') ?: null,
             'auth' => [
                 'quote' => config('branding.auth.quote'),
-                'attribution' => config('branding.auth.attribution'),
-                'perks' => array_values(config('branding.auth.perks', [])),
-                'footnote' => config('branding.auth.footnote'),
             ],
         ];
     }

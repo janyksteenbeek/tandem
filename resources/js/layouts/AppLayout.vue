@@ -93,11 +93,12 @@ onBeforeUnmount(() => stopListening?.());
                     @open-search="paletteOpen = true"
                     @open-shortcuts="shortcutsOpen = true"
                 />
-                <component
-                    :is="column.component"
+                <div
                     v-if="column"
-                    v-bind="column.props"
-                />
+                    class="flex [view-transition-name:shell-column]"
+                >
+                    <component :is="column.component" v-bind="column.props" />
+                </div>
             </div>
 
             <Sheet v-model:open="mobileNavOpen">
@@ -119,7 +120,9 @@ onBeforeUnmount(() => stopListening?.());
                 </SheetContent>
             </Sheet>
 
-            <main class="relative flex min-w-0 flex-1 flex-col">
+            <main
+                class="relative flex min-w-0 flex-1 flex-col [view-transition-name:main]"
+            >
                 <OfflineBanner />
                 <Button
                     v-if="!column?.hideMobileTrigger"

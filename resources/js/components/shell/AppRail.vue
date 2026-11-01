@@ -33,6 +33,7 @@ import {
 import { useAppearance } from '@/composables/useAppearance';
 import { useBranding } from '@/composables/useBranding';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { forgetPushSubscription } from '@/composables/usePushNotifications';
 import { useInstallPrompt } from '@/composables/usePwa';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
@@ -86,6 +87,11 @@ const switchOrganization = (slug: string) => {
     );
 };
 
+const signOut = async () => {
+    await forgetPushSubscription();
+    router.post(logout().url);
+};
+
 const cycleAppearance = () => {
     const next =
         appearance.value === 'light'
@@ -107,7 +113,7 @@ const cycleAppearance = () => {
             class="mb-3 rounded-xl transition-transform hover:scale-105 active:scale-95"
             :aria-label="`${branding.name} home`"
         >
-            <BrandMark :size="30" />
+            <BrandMark :size="26" />
         </Link>
 
         <div class="flex flex-col items-center gap-1">
@@ -118,7 +124,7 @@ const cycleAppearance = () => {
                             :href="item.href"
                             :class="
                                 cn(
-                                    'relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                                    'relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-95',
                                     item.active &&
                                         'bg-sidebar-accent text-sidebar-accent-foreground',
                                 )
@@ -127,7 +133,7 @@ const cycleAppearance = () => {
                         >
                             <span
                                 v-if="item.active"
-                                class="absolute top-1/2 -left-2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
+                                class="absolute top-1/2 -left-2 h-5 w-[3px] -translate-y-1/2 animate-in rounded-r-full bg-brand duration-200 fade-in slide-in-from-left-1"
                             />
                             <component :is="item.icon" class="size-[18px]" />
                         </Link>
@@ -142,7 +148,7 @@ const cycleAppearance = () => {
                 <TooltipTrigger as-child>
                     <button
                         type="button"
-                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-95"
                         @click="emit('openSearch')"
                     >
                         <Search class="size-[18px]" />
@@ -162,7 +168,7 @@ const cycleAppearance = () => {
                 <template #trigger="{ unread }">
                     <button
                         type="button"
-                        class="relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        class="relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-95"
                         aria-label="Notifications"
                     >
                         <Bell class="size-[18px]" />
@@ -180,7 +186,7 @@ const cycleAppearance = () => {
                 <TooltipTrigger as-child>
                     <button
                         type="button"
-                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-95"
                         @click="cycleAppearance"
                     >
                         <Sun
@@ -279,14 +285,8 @@ const cycleAppearance = () => {
                         <Download class="size-4" /> Install app
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem as-child>
-                        <Link
-                            :href="logout()"
-                            method="post"
-                            as="button"
-                            class="w-full gap-2"
-                            ><LogOut class="size-4" /> Log out</Link
-                        >
+                    <DropdownMenuItem class="gap-2" @click="signOut">
+                        <LogOut class="size-4" /> Log out
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

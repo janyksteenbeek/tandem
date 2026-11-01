@@ -2,6 +2,7 @@ import { router } from '@inertiajs/vue3';
 import { useMediaQuery, useOnline } from '@vueuse/core';
 import { computed, readonly, ref, shallowRef } from 'vue';
 import { toast } from 'vue-sonner';
+import { syncPushSubscription } from '@/composables/usePushNotifications';
 
 /**
  * Everything the app needs from the browser's installed-app machinery: the
@@ -48,7 +49,11 @@ export function registerServiceWorker(): void {
     window.addEventListener('load', () => {
         navigator.serviceWorker
             .register('/sw.js', { scope: '/' })
-            .then((registration) => watchForUpdates(registration))
+            .then((registration) => {
+                watchForUpdates(registration);
+
+                return syncPushSubscription();
+            })
             .catch(() => undefined);
     });
 

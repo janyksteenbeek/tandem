@@ -21,9 +21,11 @@ import {
     Users,
 } from '@lucide/vue';
 import { computed } from 'vue';
+import Collapse from '@/components/Collapse.vue';
 import InboxDot from '@/components/mail/InboxDot.vue';
 import ShellColumn from '@/components/shell/ShellColumn.vue';
 import { Button } from '@/components/ui/button';
+import { Kbd } from '@/components/ui/kbd';
 import {
     Tooltip,
     TooltipContent,
@@ -111,6 +113,23 @@ const secondaryViews = computed(() =>
 
 const showAllPersonal = computed(() => (nav.value?.personal.length ?? 0) > 1);
 
+/**
+ * Two levels, two treatments. A mailbox row (account, shared inbox) is a
+ * heading that opens: when active it just gets weight, never a fill. The
+ * view rows underneath carry the one brand-tinted active state.
+ */
+const rowClass =
+    'group flex h-8 items-center gap-2.5 rounded-lg px-2 text-[13px] text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground';
+const openRowClass = 'font-medium text-sidebar-foreground';
+const viewRowClass =
+    'group/view flex h-7 items-center gap-2 rounded-md px-2 text-[12.5px] text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground';
+const activeViewClass =
+    'bg-brand-soft/70 font-medium text-brand-soft-foreground hover:bg-brand-soft hover:text-brand-soft-foreground';
+const viewIconClass =
+    'size-3.5 shrink-0 text-muted-foreground/80 transition-colors group-hover/view:text-sidebar-foreground';
+const sectionLabelClass =
+    'text-[10.5px] font-semibold tracking-[0.08em] text-muted-foreground/70 uppercase';
+
 const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
     const params = new URLSearchParams();
 
@@ -131,46 +150,37 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
 <template>
     <ShellColumn label="Mailboxes">
         <template #header>
-            <div class="flex items-center justify-between px-3 pt-4 pb-2">
-                <div class="min-w-0">
-                    <p
-                        class="truncate text-[13px] font-semibold text-sidebar-foreground"
+            <div class="px-3 pt-4 pb-2">
+                <p
+                    class="truncate text-[13px] font-semibold text-sidebar-foreground"
+                >
+                    {{ organization?.name ?? branding.name }}
+                </p>
+                <p class="truncate text-[11px] text-muted-foreground">
+                    <template v-if="nav && nav.assigned_to_me > 0"
+                        >{{ nav.assigned_to_me }} assigned to you</template
                     >
-                        {{ organization?.name ?? branding.name }}
-                    </p>
-                    <p class="truncate text-[11px] text-muted-foreground">
-                        <template v-if="nav && nav.assigned_to_me > 0"
-                            >{{ nav.assigned_to_me }} assigned to you</template
-                        >
-                        <template v-else>Nothing waiting on you</template>
-                    </p>
-                </div>
-                <Tooltip>
-                    <TooltipTrigger as-child>
-                        <Button
-                            size="icon"
-                            class="size-8 rounded-lg bg-brand text-brand-foreground shadow-float hover:bg-brand/90"
-                            @click="emit('compose')"
-                        >
-                            <PenLine class="size-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"
-                        >Compose
-                        <kbd class="ml-1 rounded border px-1 text-[10px]"
-                            >C</kbd
-                        ></TooltipContent
+                    <template v-else>Nothing waiting on you</template>
+                </p>
+
+                <Button
+                    class="mt-3 h-8 w-full justify-start gap-2 rounded-lg bg-brand px-2.5 text-[13px] text-brand-foreground shadow-none hover:bg-brand/90"
+                    @click="emit('compose')"
+                >
+                    <PenLine class="size-3.5" />
+                    <span class="flex-1 text-left">New message</span>
+                    <Kbd
+                        class="h-4 min-w-4 bg-brand-foreground/15 px-1 text-[10px] text-brand-foreground/80"
+                        >C</Kbd
                     >
-                </Tooltip>
+                </Button>
             </div>
         </template>
 
         <nav>
             <template v-if="nav">
                 <section class="mt-2">
-                    <p
-                        class="px-2 pb-1 text-[11px] font-semibold tracking-wide text-muted-foreground/80 uppercase"
-                    >
+                    <p :class="cn('px-2 pb-1.5', sectionLabelClass)">
                         Personal
                     </p>
 
@@ -193,11 +203,7 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                         <Link
                             :href="inboxUrl('all')"
                             :class="
-                                cn(
-                                    'group flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] text-sidebar-foreground/90 transition-colors hover:bg-sidebar-accent',
-                                    isActive('all') &&
-                                        'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
-                                )
+                                cn(rowClass, isActive('all') && openRowClass)
                             "
                         >
                             <Layers
@@ -208,51 +214,52 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                             >
                             <span
                                 v-if="nav.personal_unread > 0"
-                                class="rounded-full px-1.5 text-[11px] font-semibold text-brand"
+                                class="text-[11px] font-semibold text-brand tabular-nums"
                                 >{{ nav.personal_unread }}</span
                             >
                         </Link>
-                        <div
-                            v-if="isActive('all')"
-                            class="mt-0.5 mb-1 ml-3 space-y-0.5 border-l border-sidebar-border pl-2"
-                        >
-                            <Link
-                                v-for="view in views"
-                                :key="view.value"
-                                :href="inboxUrl('all', view.value)"
-                                :class="
-                                    cn(
-                                        'flex items-center gap-2 rounded-md px-2 py-1 text-[12.5px] text-sidebar-foreground/80 hover:bg-sidebar-accent',
-                                        activeView === view.value &&
-                                            'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
-                                    )
-                                "
-                            >
-                                <component
-                                    :is="viewIcons[view.value] ?? Mail"
-                                    class="size-3.5 text-muted-foreground"
-                                />
-                                <span class="flex-1 truncate">{{
-                                    viewLabels[view.value] ?? view.label
-                                }}</span>
-                                <span
-                                    v-if="counts && counts[view.value]"
-                                    class="text-[11px] text-muted-foreground tabular-nums"
-                                    >{{ counts[view.value] }}</span
+                        <Collapse :open="isActive('all')">
+                            <div class="mt-0.5 mb-2 ml-4 space-y-px">
+                                <Link
+                                    v-for="view in views"
+                                    :key="view.value"
+                                    :href="inboxUrl('all', view.value)"
+                                    :class="
+                                        cn(
+                                            viewRowClass,
+                                            activeView === view.value &&
+                                                activeViewClass,
+                                        )
+                                    "
                                 >
-                            </Link>
-                        </div>
+                                    <component
+                                        :is="viewIcons[view.value] ?? Mail"
+                                        :class="
+                                            cn(
+                                                viewIconClass,
+                                                activeView === view.value &&
+                                                    'text-brand',
+                                            )
+                                        "
+                                    />
+                                    <span class="flex-1 truncate">{{
+                                        viewLabels[view.value] ?? view.label
+                                    }}</span>
+                                    <span
+                                        v-if="counts && counts[view.value]"
+                                        class="text-[11px] text-muted-foreground tabular-nums"
+                                        >{{ counts[view.value] }}</span
+                                    >
+                                </Link>
+                            </div>
+                        </Collapse>
                     </template>
 
                     <template v-for="inbox in nav.personal" :key="inbox.uuid">
                         <Link
                             :href="inboxUrl(inbox)"
                             :class="
-                                cn(
-                                    'group flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] text-sidebar-foreground/90 transition-colors hover:bg-sidebar-accent',
-                                    isActive(inbox) &&
-                                        'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
-                                )
+                                cn(rowClass, isActive(inbox) && openRowClass)
                             "
                         >
                             <Mail
@@ -275,58 +282,64 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                             </Tooltip>
                             <span
                                 v-if="inbox.count > 0"
-                                class="rounded-full px-1.5 text-[11px] font-semibold text-brand tabular-nums"
+                                class="text-[11px] font-semibold text-brand tabular-nums"
                                 >{{ inbox.count }}</span
                             >
                             <ChevronRight
-                                v-else
-                                class="size-3.5 text-muted-foreground/0 transition group-hover:text-muted-foreground/60"
-                            />
-                        </Link>
-                        <div
-                            v-if="isActive(inbox)"
-                            class="mt-0.5 mb-1 ml-3 space-y-0.5 border-l border-sidebar-border pl-2"
-                        >
-                            <Link
-                                v-for="view in views"
-                                :key="view.value"
-                                :href="inboxUrl(inbox, view.value)"
                                 :class="
                                     cn(
-                                        'flex items-center gap-2 rounded-md px-2 py-1 text-[12.5px] text-sidebar-foreground/80 hover:bg-sidebar-accent',
-                                        activeView === view.value &&
-                                            'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
+                                        'size-3.5 shrink-0 text-muted-foreground/0 transition group-hover:text-muted-foreground/60',
+                                        isActive(inbox) &&
+                                            'rotate-90 text-muted-foreground/60',
                                     )
                                 "
-                            >
-                                <component
-                                    :is="viewIcons[view.value] ?? Mail"
-                                    class="size-3.5 text-muted-foreground"
-                                />
-                                <span class="flex-1 truncate">{{
-                                    viewLabels[view.value] ?? view.label
-                                }}</span>
-                                <span
-                                    v-if="counts && counts[view.value]"
-                                    class="text-[11px] text-muted-foreground tabular-nums"
-                                    >{{ counts[view.value] }}</span
+                            />
+                        </Link>
+                        <Collapse :open="isActive(inbox)">
+                            <div class="mt-0.5 mb-2 ml-4 space-y-px">
+                                <Link
+                                    v-for="view in views"
+                                    :key="view.value"
+                                    :href="inboxUrl(inbox, view.value)"
+                                    :class="
+                                        cn(
+                                            viewRowClass,
+                                            activeView === view.value &&
+                                                activeViewClass,
+                                        )
+                                    "
                                 >
-                            </Link>
-                        </div>
+                                    <component
+                                        :is="viewIcons[view.value] ?? Mail"
+                                        :class="
+                                            cn(
+                                                viewIconClass,
+                                                activeView === view.value &&
+                                                    'text-brand',
+                                            )
+                                        "
+                                    />
+                                    <span class="flex-1 truncate">{{
+                                        viewLabels[view.value] ?? view.label
+                                    }}</span>
+                                    <span
+                                        v-if="counts && counts[view.value]"
+                                        class="text-[11px] text-muted-foreground tabular-nums"
+                                        >{{ counts[view.value] }}</span
+                                    >
+                                </Link>
+                            </div>
+                        </Collapse>
                     </template>
                 </section>
 
-                <section class="mt-5">
-                    <div class="flex items-center justify-between px-2 pb-1">
-                        <p
-                            class="text-[11px] font-semibold tracking-wide text-muted-foreground/80 uppercase"
-                        >
-                            Shared
-                        </p>
+                <section class="mt-6">
+                    <div class="flex items-center justify-between px-2 pb-1.5">
+                        <p :class="sectionLabelClass">Shared</p>
                         <Link
                             v-if="organization"
                             :href="`/settings/organizations/${organization.slug}/inboxes`"
-                            class="text-muted-foreground/70 hover:text-foreground"
+                            class="-mr-1 rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-foreground"
                             title="Manage shared inboxes"
                         >
                             <Plus class="size-3.5" />
@@ -350,14 +363,14 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                         <Link
                             :href="inboxUrl(inbox)"
                             :class="
-                                cn(
-                                    'group flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] text-sidebar-foreground/90 transition-colors hover:bg-sidebar-accent',
-                                    isActive(inbox) &&
-                                        'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
-                                )
+                                cn(rowClass, isActive(inbox) && openRowClass)
                             "
                         >
-                            <InboxDot :color="inbox.color" />
+                            <span
+                                class="flex size-4 shrink-0 items-center justify-center"
+                            >
+                                <InboxDot :color="inbox.color" size="sm" />
+                            </span>
                             <span class="flex-1 truncate">{{
                                 inbox.name
                             }}</span>
@@ -373,81 +386,99 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                             </Tooltip>
                             <span
                                 v-if="inbox.count > 0"
-                                class="text-[11px] font-medium text-muted-foreground tabular-nums"
+                                class="text-[11px] text-muted-foreground tabular-nums"
                                 >{{ inbox.count }}</span
                             >
                         </Link>
-                        <div
-                            v-if="isActive(inbox)"
-                            class="mt-0.5 mb-1 ml-3 space-y-0.5 border-l border-sidebar-border pl-2"
-                        >
-                            <Link
-                                v-for="view in primaryViews"
-                                :key="view.value"
-                                :href="inboxUrl(inbox, view.value)"
-                                :class="
-                                    cn(
-                                        'flex items-center gap-2 rounded-md px-2 py-1 text-[12.5px] text-sidebar-foreground/80 hover:bg-sidebar-accent',
-                                        activeView === view.value &&
-                                            'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
-                                    )
-                                "
-                            >
-                                <component
-                                    :is="viewIcons[view.value] ?? Mail"
-                                    class="size-3.5 text-muted-foreground"
-                                />
-                                <span class="flex-1 truncate">{{
-                                    viewLabels[view.value] ?? view.label
-                                }}</span>
-                                <span
-                                    v-if="counts && counts[view.value]"
-                                    class="text-[11px] text-muted-foreground tabular-nums"
-                                    >{{ counts[view.value] }}</span
-                                >
-                            </Link>
-                            <Link
-                                v-for="saved in savedViews ?? []"
-                                :key="`saved-${saved.id}`"
-                                :href="savedViewUrl(inbox, saved)"
-                                class="flex items-center gap-2 rounded-md px-2 py-1 text-[12.5px] text-sidebar-foreground/80 hover:bg-sidebar-accent"
-                            >
-                                <Bookmark class="size-3.5 text-brand" />
-                                <span class="flex-1 truncate">{{
-                                    saved.name
-                                }}</span>
-                            </Link>
-                            <details class="group/more">
-                                <summary
-                                    class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[12px] text-muted-foreground select-none hover:bg-sidebar-accent"
-                                >
-                                    <ChevronRight
-                                        class="size-3 transition group-open/more:rotate-90"
-                                    />
-                                    More
-                                </summary>
+                        <Collapse :open="isActive(inbox)">
+                            <div class="mt-0.5 mb-2 ml-4 space-y-px">
                                 <Link
-                                    v-for="view in secondaryViews"
+                                    v-for="view in primaryViews"
                                     :key="view.value"
                                     :href="inboxUrl(inbox, view.value)"
                                     :class="
                                         cn(
-                                            'flex items-center gap-2 rounded-md px-2 py-1 text-[12.5px] text-sidebar-foreground/80 hover:bg-sidebar-accent',
+                                            viewRowClass,
                                             activeView === view.value &&
-                                                'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
+                                                activeViewClass,
                                         )
                                     "
                                 >
                                     <component
                                         :is="viewIcons[view.value] ?? Mail"
-                                        class="size-3.5 text-muted-foreground"
+                                        :class="
+                                            cn(
+                                                viewIconClass,
+                                                activeView === view.value &&
+                                                    'text-brand',
+                                            )
+                                        "
                                     />
                                     <span class="flex-1 truncate">{{
                                         viewLabels[view.value] ?? view.label
                                     }}</span>
+                                    <span
+                                        v-if="counts && counts[view.value]"
+                                        class="text-[11px] text-muted-foreground tabular-nums"
+                                        >{{ counts[view.value] }}</span
+                                    >
                                 </Link>
-                            </details>
-                        </div>
+                                <Link
+                                    v-for="saved in savedViews ?? []"
+                                    :key="`saved-${saved.id}`"
+                                    :href="savedViewUrl(inbox, saved)"
+                                    :class="viewRowClass"
+                                >
+                                    <Bookmark
+                                        class="size-3.5 shrink-0 text-brand"
+                                    />
+                                    <span class="flex-1 truncate">{{
+                                        saved.name
+                                    }}</span>
+                                </Link>
+                                <details class="group/more">
+                                    <summary
+                                        :class="
+                                            cn(
+                                                viewRowClass,
+                                                'cursor-pointer list-none text-muted-foreground select-none',
+                                            )
+                                        "
+                                    >
+                                        <ChevronRight
+                                            class="size-3 transition group-open/more:rotate-90"
+                                        />
+                                        More
+                                    </summary>
+                                    <Link
+                                        v-for="view in secondaryViews"
+                                        :key="view.value"
+                                        :href="inboxUrl(inbox, view.value)"
+                                        :class="
+                                            cn(
+                                                viewRowClass,
+                                                activeView === view.value &&
+                                                    activeViewClass,
+                                            )
+                                        "
+                                    >
+                                        <component
+                                            :is="viewIcons[view.value] ?? Mail"
+                                            :class="
+                                                cn(
+                                                    viewIconClass,
+                                                    activeView === view.value &&
+                                                        'text-brand',
+                                                )
+                                            "
+                                        />
+                                        <span class="flex-1 truncate">{{
+                                            viewLabels[view.value] ?? view.label
+                                        }}</span>
+                                    </Link>
+                                </details>
+                            </div>
+                        </Collapse>
                     </template>
                 </section>
             </template>

@@ -13,6 +13,7 @@
         "ezyang/htmlpurifier": "^4.19",
         "google/apiclient": "^2.18",
         "inertiajs/inertia-laravel": "^3.0",
+        "laravel-notification-channels/webpush": "^13.0",
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",

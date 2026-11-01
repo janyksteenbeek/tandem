@@ -6,7 +6,7 @@ test('branding from config is shared with every page', function () {
     config()->set('branding.name', 'Acme Mail');
     config()->set('branding.tagline', 'mail, but calmer');
     config()->set('branding.logo', 'https://cdn.example.com/logo.svg');
-    config()->set('branding.auth.perks', ['One thing']);
+    config()->set('branding.auth.quote', 'One thing.');
 
     $this->get(route('login'))->assertInertia(fn ($page) => $page
         ->where('name', 'Acme Mail')
@@ -15,7 +15,7 @@ test('branding from config is shared with every page', function () {
         ->where('branding.logo', 'https://cdn.example.com/logo.svg')
         ->where('branding.wordmark', '/tandem/tandem-mail-wordmark-purple.svg')
         ->where('branding.wordmark_dark', '/tandem/tandem-mail-wordmark-light.svg')
-        ->where('branding.auth.perks', ['One thing'])
+        ->where('branding.auth.quote', 'One thing.')
     );
 });
 
