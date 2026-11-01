@@ -15,6 +15,9 @@ import {
     test as testForwarding,
 } from '@/routes/mail/forwarding';
 import type { ForwardingChannel, MailAccount } from '@/types';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 defineProps<{
     inbox: { uuid: string; name: string };
@@ -34,7 +37,7 @@ async function sendTest(account: MailAccount): Promise<void> {
     try {
         await api.post(testForwarding.url(account.uuid));
         toast.success(
-            `Test sent to ${account.email}. Give it a minute, then look for “Tandem forwarding test”.`,
+            `Test sent to ${account.email}. Give it a minute, then look for “${branding.name} forwarding test”.`,
         );
     } catch (error) {
         reportError(error, 'The test message could not be sent.');

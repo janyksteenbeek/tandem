@@ -58,7 +58,7 @@ class SymfonyEmailBuilder
             $headers->addTextHeader($name, $value);
         }
 
-        $headers->addTextHeader('X-Mailer', 'Tandem');
+        $headers->addTextHeader('X-Mailer', config('branding.name'));
 
         foreach ($message->attachments as $attachment) {
             $this->attach($email, $attachment);

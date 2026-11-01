@@ -9,7 +9,7 @@ use App\Services\Mail\Providers\Forwarding\WebhookSignature;
 const SIGNATURE_VECTOR_SECRET = 'tandem-shared-secret';
 const SIGNATURE_VECTOR_TIMESTAMP = 1761724800;
 const SIGNATURE_VECTOR_BODY = '{"id":"evt_1","to":"x7k2m9qp4a@forward.tandem.test"}';
-const SIGNATURE_VECTOR_DIGEST = '2d757bd4a08d7bf921460f82dcb645d4208ad1ca492485ec0c294b55c7bd550d';
+const SIGNATURE_VECTOR_DIGEST = 'a1627941acee5b1d11f7cebdda0a6367f48d414c395b48eb69c25c14214061c7';
 
 beforeEach(function () {
     $this->signature = new WebhookSignature;

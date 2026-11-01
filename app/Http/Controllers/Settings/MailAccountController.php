@@ -133,7 +133,7 @@ class MailAccountController extends Controller
         $account->forceFill(['status' => MailAccountStatus::Disconnected])->save();
         $this->audit->record('mail_account.disconnected', $account->organization, $request->user(), $account, ['email' => $account->email_address]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Account disconnected. Mail stays available in Tandem.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Account disconnected. Mail stays available in :app.', ['app' => config('branding.name')])]);
 
         return back();
     }

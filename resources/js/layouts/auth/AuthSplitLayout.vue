@@ -1,19 +1,16 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Check } from '@lucide/vue';
-import TandemMark from '@/components/mail/TandemMark.vue';
+import BrandMark from '@/components/BrandMark.vue';
 import { home } from '@/routes';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 defineProps<{
     title?: string;
     description?: string;
 }>();
-
-const perks = [
-    'Personal mail and team inboxes, side by side',
-    'Internal comments nobody outside ever sees',
-    'Gmail, IMAP or forwarding. Mail lands in seconds',
-];
 </script>
 
 <template>
@@ -61,21 +58,30 @@ const perks = [
                 :href="home()"
                 class="relative z-10 inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight"
             >
-                <TandemMark :size="32" />
-                Tandem
+                <BrandMark :size="32" />
+                {{ branding.name }}
             </Link>
 
             <div class="relative z-10 max-w-md">
-                <p class="font-display text-5xl leading-[1.05] tracking-tight">
-                    “Inbox zero is a team sport.”
+                <p
+                    v-if="branding.auth.quote"
+                    class="font-display text-5xl leading-[1.05] tracking-tight"
+                >
+                    “{{ branding.auth.quote }}”
                 </p>
-                <p class="mt-4 text-sm text-brand-foreground/70">
-                    — someone at Tandem, probably on a Friday
+                <p
+                    v-if="branding.auth.attribution"
+                    class="mt-4 text-sm text-brand-foreground/70"
+                >
+                    — {{ branding.auth.attribution }}
                 </p>
 
-                <ul class="mt-10 space-y-3 text-sm">
+                <ul
+                    v-if="branding.auth.perks.length"
+                    class="mt-10 space-y-3 text-sm"
+                >
                     <li
-                        v-for="perk in perks"
+                        v-for="perk in branding.auth.perks"
                         :key="perk"
                         class="flex items-start gap-2.5"
                     >
@@ -88,8 +94,11 @@ const perks = [
                 </ul>
             </div>
 
-            <p class="relative z-10 text-xs text-brand-foreground/60">
-                Warm paper, plum accents, no blue inbox in sight.
+            <p
+                v-if="branding.auth.footnote"
+                class="relative z-10 text-xs text-brand-foreground/60"
+            >
+                {{ branding.auth.footnote }}
             </p>
         </aside>
 
@@ -102,8 +111,8 @@ const perks = [
                     :href="home()"
                     class="mb-8 inline-flex items-center gap-2 font-semibold tracking-tight lg:hidden"
                 >
-                    <TandemMark :size="28" />
-                    Tandem
+                    <BrandMark :size="28" />
+                    {{ branding.name }}
                 </Link>
 
                 <div v-if="title || description" class="mb-7 space-y-1.5">

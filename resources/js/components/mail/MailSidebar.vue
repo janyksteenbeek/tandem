@@ -31,6 +31,9 @@ import {
 import { VIEW_LABELS as viewLabels } from '@/lib/mail';
 import { cn } from '@/lib/utils';
 import type { MailNav, NavInbox, SavedView, ViewOption } from '@/types';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 const props = defineProps<{
     activeInboxUuid?: string | null;
@@ -134,7 +137,7 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                 <p
                     class="truncate text-[13px] font-semibold text-sidebar-foreground"
                 >
-                    {{ organization?.name ?? 'Tandem' }}
+                    {{ organization?.name ?? branding.name }}
                 </p>
                 <p class="truncate text-[11px] text-muted-foreground">
                     <template v-if="nav && nav.assigned_to_me > 0"
@@ -456,8 +459,12 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
         <div
             class="border-t border-sidebar-border px-3 py-2 text-[11px] text-muted-foreground"
         >
-            <span class="font-display text-[13px] italic">Tandem</span> · calm
-            mail for busy teams
+            <span class="font-display text-[13px] italic">{{
+                branding.name
+            }}</span>
+            <template v-if="branding.tagline">
+                · {{ branding.tagline }}</template
+            >
         </div>
     </aside>
 </template>

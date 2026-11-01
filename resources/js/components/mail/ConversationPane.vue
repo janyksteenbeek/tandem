@@ -68,6 +68,9 @@ import type {
     Tag,
     UserSummary,
 } from '@/types';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 const props = defineProps<{
     conversation: Conversation;
@@ -488,7 +491,7 @@ const viewSource = (message: Message) => {
 const destroy = async () => {
     if (
         !window.confirm(
-            'Delete this conversation permanently from Tandem? This does not delete it at your mail provider.',
+            `Delete this conversation permanently from ${branding.name}? This does not delete it at your mail provider.`,
         )
     ) {
         return;
@@ -803,9 +806,7 @@ const go = (url: string) => router.visit(url);
                                 class="gap-2"
                                 @click="contextOpen = !contextOpen"
                                 ><PanelRight class="size-4" />
-                                {{
-                                    contextOpen ? 'Hide' : 'Show'
-                                }}
+                                {{ contextOpen ? 'Hide' : 'Show' }}
                                 context</DropdownMenuItem
                             >
                             <DropdownMenuItem

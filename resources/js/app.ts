@@ -10,14 +10,18 @@ configureEcho({
     broadcaster: 'reverb',
 });
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const initialPage = JSON.parse(
+    document.getElementById('app')?.dataset.page ?? '{}',
+) as { props?: { branding?: { name?: string } } };
+const appName =
+    initialPage.props?.branding?.name ||
+    import.meta.env.VITE_APP_NAME ||
+    'Laravel';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            case name === 'Welcome':
-                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('mail/'):

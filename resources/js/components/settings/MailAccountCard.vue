@@ -47,6 +47,9 @@ import {
 } from '@/routes/mail/accounts';
 import { redirect as gmailRedirect } from '@/routes/mail/gmail';
 import type { ConnectionTestResponse, MailAccount } from '@/types';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 const props = defineProps<{
     account: MailAccount;
@@ -254,7 +257,8 @@ function runConfirm(): void {
                     <DropdownMenuItem
                         class="text-destructive focus:text-destructive"
                         @select="confirm = 'remove'"
-                        ><Trash2 /> Remove from Tandem</DropdownMenuItem
+                        ><Trash2 /> Remove from
+                        {{ branding.name }}</DropdownMenuItem
                     >
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -362,8 +366,8 @@ function runConfirm(): void {
             "
             :description="
                 confirm === 'remove'
-                    ? `${account.email} and its sync state are removed from Tandem. Conversations already received stay where they are. Nothing is deleted at the provider.`
-                    : `Syncing stops and access tokens are revoked. Mail already in Tandem stays readable, and you can reconnect any time.`
+                    ? `${account.email} and its sync state are removed from ${branding.name}. Conversations already received stay where they are. Nothing is deleted at the provider.`
+                    : `Syncing stops and access tokens are revoked. Mail already in ${branding.name} stays readable, and you can reconnect any time.`
             "
             :confirm-label="
                 confirm === 'remove' ? 'Remove account' : 'Disconnect'

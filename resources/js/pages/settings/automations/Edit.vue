@@ -793,9 +793,7 @@ const runReason = (run: AutomationRun): string | null => {
                                     >
                                         <p class="text-muted-foreground">
                                             Trigger:
-                                            {{
-                                                run.trigger.replace(/_/g, ' ')
-                                            }}
+                                            {{ run.trigger.replace(/_/g, ' ') }}
                                             · {{ fullTime(run.created_at) }}
                                         </p>
                                         <div

@@ -60,7 +60,7 @@ class GmailClientFactory
         [$clientId, $clientSecret] = $this->oauthCredentials($organization);
 
         $client = new GoogleClient;
-        $client->setApplicationName(config('app.name', 'Tandem'));
+        $client->setApplicationName(config('branding.name', config('app.name')));
         $client->setClientId((string) $clientId);
         $client->setClientSecret((string) $clientSecret);
         $client->setScopes(config('tandem.gmail.scopes', []));

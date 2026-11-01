@@ -50,7 +50,7 @@ const unhealthy = computed(
         ).length,
 );
 
-/** Mailboxes Tandem connects to directly (Gmail, IMAP). */
+/** Mailboxes connected directly (Gmail, IMAP). */
 const mailboxesOf = (inbox: SharedInboxChannels): MailAccount[] =>
     inbox.accounts.filter(
         (account) => !usesForwardingAddress(account.provider),

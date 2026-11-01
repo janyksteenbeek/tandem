@@ -14,6 +14,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { ShareTarget } from '@/types';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 const props = defineProps<{
     targets: ShareTarget[];
@@ -59,7 +62,7 @@ const explain = computed(() =>
                             ? 'your mailbox at the provider'
                             : 'the connected mailbox'
                     }}. This only changes who can see the conversation inside
-                    Tandem.
+                    {{ branding.name }}.
                 </DialogDescription>
             </DialogHeader>
 

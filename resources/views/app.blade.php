@@ -30,15 +30,19 @@
             }
         </style>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        @php($branding = app(\App\Services\Branding::class))
+        @if (($brandCss = $branding->css()) !== '')
+            <style>{!! $brandCss !!}</style>
+        @endif
+
+        <link rel="icon" href="{{ $branding->favicon() }}">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         @fonts
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ $branding->name() }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

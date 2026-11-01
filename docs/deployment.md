@@ -27,6 +27,27 @@ GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_PUBSUB_TOPIC   # optional globa
 TANDEM_ATTACHMENTS_DISK=s3                # attachments and raw .eml files
 ```
 
+## Branding
+
+Everything the UI says about the product itself comes from `config/branding.php`: name, tagline, logo, favicon, the copy on the sign-in panel and the brand colours. The common values have environment overrides; edit the config file for the rest (for example the perks list).
+
+```
+BRANDING_NAME="Acme Mail"                # defaults to APP_NAME
+BRANDING_TAGLINE="support, sorted"
+BRANDING_LOGO=https://cdn.example.com/mark.svg          # omit to keep the built-in mark
+BRANDING_LOGO_DARK=https://cdn.example.com/mark-dark.svg
+BRANDING_FAVICON=/favicon.svg
+BRANDING_AUTH_QUOTE="Inbox zero is a team sport."
+BRANDING_AUTH_ATTRIBUTION="someone on the team"
+BRANDING_AUTH_FOOTNOTE=
+BRANDING_COLOR_BRAND="oklch(0.52 0.19 330)"             # any CSS colour; *_DARK variants apply in dark mode
+BRANDING_COLOR_BRAND_FOREGROUND=
+BRANDING_COLOR_BRAND_SOFT= BRANDING_COLOR_BRAND_SOFT_FOREGROUND=
+BRANDING_COLOR_HIGHLIGHT= BRANDING_COLOR_HIGHLIGHT_FOREGROUND=
+```
+
+There is no public landing page: `/` sends guests to the login form and signed-in users into their mail.
+
 ## Provider setup
 
 - Gmail: `docs/providers/gmail.md` (OAuth client per organization in Settings → Integrations, Pub/Sub topic and push subscription to `/webhooks/gmail/push/{TANDEM_GMAIL_PUBSUB_TOKEN}`).

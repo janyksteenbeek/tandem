@@ -1,5 +1,6 @@
 import type { Directive } from 'vue';
 import type { Auth } from '@/types/auth';
+import type { Branding } from '@/types/branding';
 import type { MailNav } from '@/types/mail';
 import type { Organization } from '@/types/organizations';
 import type { CreatedChannel } from '@/types/settings';
@@ -22,6 +23,7 @@ declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: {
             name: string;
+            branding: Branding;
             auth: Auth;
             sidebarOpen: boolean;
             currentOrganization: Organization | null;

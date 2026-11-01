@@ -5,3 +5,4 @@ export * from './ui';
 export * from './mail';
 export * from './settings';
 export * from './automations';
+export * from './branding';

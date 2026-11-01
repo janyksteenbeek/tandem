@@ -60,12 +60,17 @@ export function usesForwardingAddress(
 }
 
 /** Why the user would pick this channel, shown above the generate button. */
-export const CHANNEL_INTRO: Record<ForwardingChannel, string> = {
-    google_group:
-        'Tandem generates a private address and you add it to the group as a member. Google delivers every post to this inbox and your group settings stay exactly as they are.',
-    forwarding:
-        'Tandem generates a private address. Create a forwarding rule at your current provider, or add the address to a distribution list, and a copy of every message lands here.',
-};
+export function channelIntro(
+    channel: ForwardingChannel,
+    appName: string,
+): string {
+    switch (channel) {
+        case 'google_group':
+            return `${appName} generates a private address and you add it to the group as a member. Google delivers every post to this inbox and your group settings stay exactly as they are.`;
+        case 'forwarding':
+            return `${appName} generates a private address. Create a forwarding rule at your current provider, or add the address to a distribution list, and a copy of every message lands here.`;
+    }
+}
 
 /** What to do with the generated address, shown once it exists. */
 export const CHANNEL_STEPS: Record<ForwardingChannel, string[]> = {

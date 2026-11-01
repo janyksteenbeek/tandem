@@ -186,7 +186,7 @@ const STEPS = [
     },
     {
         title: 'Add a push subscription',
-        body: 'Delivery type “Push” to this endpoint. Tandem verifies the token in the URL.',
+        body: 'Delivery type “Push” to this endpoint. The token in the URL is verified on arrival.',
         copy: 'push',
     },
 ] as const;

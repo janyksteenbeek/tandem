@@ -15,7 +15,7 @@ import {
     Zap,
 } from '@lucide/vue';
 import { computed } from 'vue';
-import TandemMark from '@/components/mail/TandemMark.vue';
+import BrandMark from '@/components/BrandMark.vue';
 import NotificationsPopover from '@/components/mail/NotificationsPopover.vue';
 import UserAvatar from '@/components/mail/UserAvatar.vue';
 import {
@@ -36,6 +36,9 @@ import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 const emit = defineEmits<{ openSearch: []; openShortcuts: [] }>();
 
@@ -124,9 +127,9 @@ const cycleAppearance = () => {
         <Link
             :href="mailUrl"
             class="mb-3 rounded-xl transition-transform hover:scale-105 active:scale-95"
-            aria-label="Tandem home"
+            :aria-label="`${branding.name} home`"
         >
-            <TandemMark :size="30" />
+            <BrandMark :size="30" />
         </Link>
 
         <div class="flex flex-col items-center gap-1">

@@ -74,16 +74,18 @@ class ForwardingAddressController extends Controller
         $mailer->send($account, new OutgoingMessage(
             from: new Address((string) config('mail.from.address'), (string) config('mail.from.name')),
             to: [new Address($account->email_address)],
-            subject: 'Tandem forwarding test',
+            subject: sprintf('%s forwarding test', config('branding.name')),
             htmlBody: sprintf(
-                '<p>This is a test message from Tandem.</p><p>If you can read this inside the <strong>%s</strong> inbox, forwarding to <code>%s</code> works.</p><p>Sent by %s at %s.</p>',
+                '<p>This is a test message from %s.</p><p>If you can read this inside the <strong>%s</strong> inbox, forwarding to <code>%s</code> works.</p><p>Sent by %s at %s.</p>',
+                e(config('branding.name')),
                 e($inboxName),
                 e($account->email_address),
                 e($user->name),
                 e($sentAt->toDayDateTimeString()),
             ),
             textBody: sprintf(
-                "This is a test message from Tandem.\n\nIf you can read this inside the \"%s\" inbox, forwarding to %s works.\n\nSent by %s at %s.",
+                "This is a test message from %s.\n\nIf you can read this inside the \"%s\" inbox, forwarding to %s works.\n\nSent by %s at %s.",
+                config('branding.name'),
                 $inboxName,
                 $account->email_address,
                 $user->name,

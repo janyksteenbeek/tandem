@@ -24,8 +24,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-    CHANNEL_INTRO,
     CHANNEL_STEPS,
+    channelIntro,
     FORWARDING_CHANNELS,
     PROVIDER_META,
     usesForwardingAddress,
@@ -39,6 +39,9 @@ import {
 import { redirect as gmailRedirect } from '@/routes/mail/gmail';
 import { edit as integrationsEdit } from '@/routes/settings/integrations';
 import type { CreatedChannel, MailProvider } from '@/types';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 const props = defineProps<{
     inbox?: { uuid: string; name: string } | null;
@@ -116,7 +119,7 @@ async function sendTest(): Promise<void> {
     try {
         await api.post(testForwarding.url(created.value.uuid));
         toast.success(
-            `Test sent to ${created.value.email}. Give it a minute, then look for “Tandem forwarding test”.`,
+            `Test sent to ${created.value.email}. Give it a minute, then look for “${branding.name} forwarding test”.`,
         );
     } catch (error) {
         reportError(error, 'The test message could not be sent.');
@@ -208,7 +211,7 @@ async function sendTest(): Promise<void> {
                     <li
                         v-for="(step, index) in [
                             'You are sent to Google and pick the account to connect.',
-                            'Google shows the permissions Tandem needs: read, label and send mail on your behalf.',
+                            `Google shows the permissions ${branding.name} needs: read, label and send mail on your behalf.`,
                             'You land back here and the first sync starts. The last 90 days arrive within minutes.',
                         ]"
                         :key="index"
@@ -230,7 +233,8 @@ async function sendTest(): Promise<void> {
                     />
                     <span
                         >Tokens are stored encrypted. Disconnecting revokes them
-                        at Google, and your mail stays readable in Tandem.</span
+                        at Google, and your mail stays readable in
+                        {{ branding.name }}.</span
                     >
                 </div>
 
@@ -390,7 +394,7 @@ async function sendTest(): Promise<void> {
                             class="size-4"
                     /></span>
                     <p class="text-foreground/80">
-                        {{ CHANNEL_INTRO[forwardingChannel] }}
+                        {{ channelIntro(forwardingChannel, branding.name) }}
                     </p>
                 </div>
 

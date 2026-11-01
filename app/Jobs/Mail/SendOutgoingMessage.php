@@ -94,7 +94,7 @@ class SendOutgoingMessage implements ShouldBeUnique, ShouldQueue
 
             MessageSent::dispatch($message->fresh());
         } catch (AuthenticationRequiredException $e) {
-            $this->failPermanently($message, $e, 'The mail account needs to be reconnected before Tandem can send from it.');
+            $this->failPermanently($message, $e, sprintf('The mail account needs to be reconnected before %s can send from it.', config('branding.name')));
         } catch (RateLimitedException $e) {
             $message->forceFill(['delivery_status' => DeliveryStatus::Queued, 'delivery_error' => $e->getMessage()])->save();
             $this->release($e->retryAfterSeconds);

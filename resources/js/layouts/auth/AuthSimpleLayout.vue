@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import BrandMark from '@/components/BrandMark.vue';
 import { home } from '@/routes';
+import { useBranding } from '@/composables/useBranding';
 
 defineProps<{
     title?: string;
@@ -23,9 +24,7 @@ defineProps<{
                         <div
                             class="mb-1 flex h-9 w-9 items-center justify-center rounded-md"
                         >
-                            <AppLogoIcon
-                                class="size-9 fill-current text-[var(--foreground)] dark:text-white"
-                            />
+                            <BrandMark :size="36" />
                         </div>
                         <span class="sr-only">{{ title }}</span>
                     </Link>

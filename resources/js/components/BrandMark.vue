@@ -1,9 +1,34 @@
 <script setup lang="ts">
+import { useBranding } from '@/composables/useBranding';
+
 withDefaults(defineProps<{ size?: number }>(), { size: 28 });
+
+const branding = useBranding();
 </script>
 
 <template>
+    <template v-if="branding.logo">
+        <img
+            :src="branding.logo"
+            :width="size"
+            :height="size"
+            :alt="branding.name"
+            :class="{ 'dark:hidden': branding.logo_dark }"
+            class="shrink-0 rounded-lg object-contain"
+            :style="{ width: `${size}px`, height: `${size}px` }"
+        />
+        <img
+            v-if="branding.logo_dark"
+            :src="branding.logo_dark"
+            :width="size"
+            :height="size"
+            :alt="branding.name"
+            class="hidden shrink-0 rounded-lg object-contain dark:block"
+            :style="{ width: `${size}px`, height: `${size}px` }"
+        />
+    </template>
     <svg
+        v-else
         :width="size"
         :height="size"
         viewBox="0 0 32 32"

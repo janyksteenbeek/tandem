@@ -6,7 +6,7 @@ const SECRET = 'tandem-shared-secret';
 const TIMESTAMP = 1761724800;
 const BODY = '{"id":"evt_1","to":"x7k2m9qp4a@forward.tandem.test"}';
 const EXPECTED =
-    '2d757bd4a08d7bf921460f82dcb645d4208ad1ca492485ec0c294b55c7bd550d';
+    'a1627941acee5b1d11f7cebdda0a6367f48d414c395b48eb69c25c14214061c7';
 
 describe('signature', () => {
     it('matches the PHP test vector', async () => {

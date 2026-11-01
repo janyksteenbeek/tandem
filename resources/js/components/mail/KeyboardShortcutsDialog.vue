@@ -6,6 +6,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 const open = defineModel<boolean>('open', { default: false });
 
@@ -54,8 +57,8 @@ const groups = [
                     >Keyboard shortcuts</DialogTitle
                 >
                 <DialogDescription
-                    >Keep your hands on the keys. Tandem is built to be driven
-                    without a mouse.</DialogDescription
+                    >Keep your hands on the keys. {{ branding.name }} is built
+                    to be driven without a mouse.</DialogDescription
                 >
             </DialogHeader>
             <div class="grid gap-6 sm:grid-cols-2">

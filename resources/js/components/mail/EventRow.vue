@@ -18,10 +18,13 @@ import {
 import { computed } from 'vue';
 import { fullTime } from '@/lib/time';
 import type { ConversationEvent } from '@/types';
+import { useBranding } from '@/composables/useBranding';
+
+const branding = useBranding();
 
 const props = defineProps<{ event: ConversationEvent }>();
 
-const actor = computed(() => props.event.actor?.name ?? 'Tandem');
+const actor = computed(() => props.event.actor?.name ?? branding.name);
 const p = computed(() => props.event.payload as Record<string, any>);
 
 const describe = computed((): { icon: unknown; text: string } => {

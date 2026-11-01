@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import BrandMark from '@/components/BrandMark.vue';
 import {
     Card,
     CardContent,
@@ -9,6 +9,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { home } from '@/routes';
+import { useBranding } from '@/composables/useBranding';
 
 defineProps<{
     title?: string;
@@ -26,9 +27,7 @@ defineProps<{
                 class="flex items-center gap-2 self-center font-medium"
             >
                 <div class="flex h-9 w-9 items-center justify-center">
-                    <AppLogoIcon
-                        class="size-9 fill-current text-black dark:text-white"
-                    />
+                    <BrandMark :size="36" />
                 </div>
             </Link>
 
