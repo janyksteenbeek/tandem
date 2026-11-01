@@ -46,3 +46,7 @@ yarn-error.log
 tests/e2e/screenshots/
 test-results/
 playwright-report/
+
+**/caddy
+frankenphp
+frankenphp-worker.php

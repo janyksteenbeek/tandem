@@ -26,8 +26,8 @@ Stored on the `mail_accounts` row.
 
 Application config (`config/tandem.php`, `imap` section):
 
-| Key                 | Env                            | Default | Meaning                                               |
-| ------------------- | ------------------------------ | ------- | ----------------------------------------------------- |
+| Key                 | Env                             | Default | Meaning                                               |
+| ------------------- | ------------------------------- | ------- | ----------------------------------------------------- |
 | `poll_minutes`      | `TANDEM_IMAP_POLL_MINUTES`      | `2`     | How often `mail:imap:poll` queues an incremental sync |
 | `initial_sync_days` | `TANDEM_IMAP_INITIAL_SYNC_DAYS` | `90`    | Window of history fetched on first sync               |
 | `batch_size`        | `TANDEM_IMAP_BATCH_SIZE`        | `100`   | Messages fetched per folder per job run               |

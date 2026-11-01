@@ -10,7 +10,7 @@ Tandem is a calm, fast email client for people and the teams they work in. Conne
 
 ## Stack
 
-Laravel 13 · PHP 8.4 · MySQL · Redis · Horizon · Reverb · Inertia v3 · Vue 3 + TypeScript · shadcn-vue · Tailwind CSS 4 · Pest · Vitest · Playwright.
+Laravel 13 · PHP 8.4 · Octane on FrankenPHP · MySQL · Redis · Horizon · Reverb · Inertia v3 with SSR · Vue 3 + TypeScript · shadcn-vue · Tailwind CSS 4 · Pest · Vitest · Playwright.
 
 ## Local development
 
@@ -29,6 +29,8 @@ php artisan schedule:work             # watch renewal, IMAP polling, reconciliat
 Demo login: `demo@tandem.test` / `password` (organization _Northwind Labs_). The seeder pushes hand-written MIME through the real ingestion pipeline, so what you see is exactly how synced mail behaves.
 
 Optional long-running process for instant IMAP delivery: `php artisan mail:imap:idle`.
+
+The whole stack also runs in containers: `docker compose up --build` starts web (Octane), SSR, Horizon, scheduler, Reverb, MariaDB and Redis from the same image. See `docs/deployment.md`.
 
 ## Tests and checks
 

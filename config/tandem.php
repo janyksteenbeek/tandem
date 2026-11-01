@@ -58,6 +58,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Trusted proxies
+    |--------------------------------------------------------------------------
+    |
+    | Proxies whose X-Forwarded-* headers may be trusted: a comma separated list
+    | of IPs/CIDRs, or "*" when the app only receives traffic through a load
+    | balancer or Docker ingress that terminates TLS.
+    |
+    */
+
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Outbound
     |--------------------------------------------------------------------------
     |

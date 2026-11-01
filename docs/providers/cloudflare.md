@@ -46,16 +46,16 @@ mailer (`FallbackMailer`), never through Cloudflare.
 
 Components:
 
-| Piece              | Location                                                                                                                                               |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Worker             | `cloudflare/email-worker/`                                                                                                                             |
-| Signature scheme   | `app/Services/Mail/Providers/Forwarding/WebhookSignature.php`, `cloudflare/email-worker/src/signature.js`                                              |
-| Webhook            | `app/Http/Middleware/VerifyCloudflareWorkerSignature.php`, `app/Http/Controllers/Webhooks/CloudflareInboundController.php`                             |
-| Ingestion          | `app/Jobs/Mail/IngestForwardedEmail.php`                                                                                                               |
-| Address generation | `app/Services/Mail/Providers/Forwarding/ForwardingAddressGenerator.php`                                                                                |
+| Piece              | Location                                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Worker             | `cloudflare/email-worker/`                                                                                                                              |
+| Signature scheme   | `app/Services/Mail/Providers/Forwarding/WebhookSignature.php`, `cloudflare/email-worker/src/signature.js`                                               |
+| Webhook            | `app/Http/Middleware/VerifyCloudflareWorkerSignature.php`, `app/Http/Controllers/Webhooks/CloudflareInboundController.php`                              |
+| Ingestion          | `app/Jobs/Mail/IngestForwardedEmail.php`                                                                                                                |
+| Address generation | `app/Services/Mail/Providers/Forwarding/ForwardingAddressGenerator.php`                                                                                 |
 | Provider adapter   | `app/Services/Mail/Providers/Forwarding/ForwardingProvider.php` (push-only, registered for both `forwarding` and `google_group` in `config/tandem.php`) |
-| Management         | `app/Http/Controllers/Mail/ForwardingAddressController.php`, routes `mail.forwarding.*`                                                                |
-| Dev tooling        | `php artisan mail:forwarding:simulate`                                                                                                                 |
+| Management         | `app/Http/Controllers/Mail/ForwardingAddressController.php`, routes `mail.forwarding.*`                                                                 |
+| Dev tooling        | `php artisan mail:forwarding:simulate`                                                                                                                  |
 
 ## Tandem configuration
 
@@ -103,12 +103,12 @@ Worker; Tandem decides which inbox (if any) it belongs to.
 
 Variables and secrets:
 
-| Name                   | Where                 | Purpose                                    |
-| ---------------------- | --------------------- | ------------------------------------------ |
+| Name                    | Where                 | Purpose                                    |
+| ----------------------- | --------------------- | ------------------------------------------ |
 | `TANDEM_INGEST_URL`     | `[vars]`              | Webhook URL                                |
-| `TANDEM_WEBHOOK_SECRET` | `wrangler secret put` | HMAC secret shared with Tandem              |
-| `MAX_BYTES`            | `[vars]`              | Reject oversize messages before upload     |
-| `FALLBACK_FORWARD_TO`  | `[vars]`, optional    | Verified address that also receives a copy |
+| `TANDEM_WEBHOOK_SECRET` | `wrangler secret put` | HMAC secret shared with Tandem             |
+| `MAX_BYTES`             | `[vars]`              | Reject oversize messages before upload     |
+| `FALLBACK_FORWARD_TO`   | `[vars]`, optional    | Verified address that also receives a copy |
 
 Use `npx wrangler tail` to follow live logs while testing.
 
@@ -174,8 +174,8 @@ Forwarding chains can bounce mail around indefinitely. `IngestForwardedEmail` dr
 
 | Rule                                                                                                                                                                                             | Reason code                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
-| The Worker counted more than 3 hops (`X-Tandem-Hops` headers)                                                                                                                                     | `too_many_hops`                        |
-| The message carries an `X-Tandem-Message` header (our own outbound mail bouncing back)                                                                                                            | `own_outbound_message`                 |
+| The Worker counted more than 3 hops (`X-Tandem-Hops` headers)                                                                                                                                    | `too_many_hops`                        |
+| The message carries an `X-Tandem-Message` header (our own outbound mail bouncing back)                                                                                                           | `own_outbound_message`                 |
 | `From` is a forwarding address belonging to the same organization                                                                                                                                | `from_forwarding_address`              |
 | The message is auto-submitted (`Auto-Submitted`, `Precedence: bulk/list/auto_reply`, `List-Id`, `X-Autoreply`, ...) **and** every recipient is a forwarding address, i.e. no human was addressed | `auto_submitted_to_forwarding_address` |
 | The forwarding account was deleted between receipt and processing                                                                                                                                | `account_missing`                      |
@@ -188,16 +188,16 @@ Tandem's own outbound mail always carries `X-Tandem-Message: <uuid>`, and test e
 
 ## Retry and failure semantics
 
-| Stage                           | Behaviour                                                                                                                                                                                             |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Worker cannot reach Tandem / 5xx | 3 attempts with 0.5s, 1s backoff, then `setReject("Tandem temporarily unavailable, please retry")`. The sending MTA queues and retries for hours or days; nothing is lost.                             |
-| Worker gets `401`               | Misconfigured secret. The message is rejected with the same retry message so it is redelivered once the secret is fixed.                                                                              |
-| Worker gets `413`               | `setReject("Message too large")`: the sender receives a bounce.                                                                                                                                       |
-| Webhook duplicate `id`          | `200 {"status":"duplicate"}`; nothing dispatched. Cloudflare may redeliver after a timeout; `WebhookReceipt` guarantees exactly-once processing.                                                      |
-| Unknown or disconnected address | `202 {"status":"unknown_recipient"}`: never 4xx/5xx, so Cloudflare does not retry mail for addresses we deleted. Logged at info level.                                                                |
-| Accepted                        | `202 {"status":"queued"}`; the `.eml` is in `storage/app/inbound/` and `IngestForwardedEmail` is queued on `mail-inbound`.                                                                            |
-| Job failure                     | Receipt status `failed` with `payload.error`; the job retries 5 times (30s, 2m, 10m, 30m). After the last attempt the `.eml` stays on disk for manual recovery and the account's `last_error` is set. |
-| Job success                     | Account `last_synced_at`/`status=connected`, `sync_state.received_count` incremented, receipt `processed`, temp file deleted.                                                                         |
+| Stage                            | Behaviour                                                                                                                                                                                             |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Worker cannot reach Tandem / 5xx | 3 attempts with 0.5s, 1s backoff, then `setReject("Tandem temporarily unavailable, please retry")`. The sending MTA queues and retries for hours or days; nothing is lost.                            |
+| Worker gets `401`                | Misconfigured secret. The message is rejected with the same retry message so it is redelivered once the secret is fixed.                                                                              |
+| Worker gets `413`                | `setReject("Message too large")`: the sender receives a bounce.                                                                                                                                       |
+| Webhook duplicate `id`           | `200 {"status":"duplicate"}`; nothing dispatched. Cloudflare may redeliver after a timeout; `WebhookReceipt` guarantees exactly-once processing.                                                      |
+| Unknown or disconnected address  | `202 {"status":"unknown_recipient"}`: never 4xx/5xx, so Cloudflare does not retry mail for addresses we deleted. Logged at info level.                                                                |
+| Accepted                         | `202 {"status":"queued"}`; the `.eml` is in `storage/app/inbound/` and `IngestForwardedEmail` is queued on `mail-inbound`.                                                                            |
+| Job failure                      | Receipt status `failed` with `payload.error`; the job retries 5 times (30s, 2m, 10m, 30m). After the last attempt the `.eml` stays on disk for manual recovery and the account's `last_error` is set. |
+| Job success                      | Account `last_synced_at`/`status=connected`, `sync_state.received_count` incremented, receipt `processed`, temp file deleted.                                                                         |
 
 Idempotency inside the job: the ingestor dedupes on `provider_message_id = fwd:sha1(Message-ID)`
 (falling back to the raw bytes) and on the `Message-ID` header, so a retried job never creates a

@@ -4,7 +4,8 @@
 
 | Process              | Command                                        | Notes                                                                                                                                             |
 | -------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Web                  | PHP-FPM / Octane serving `public/`             | `APP_URL` must be the public HTTPS origin (OAuth redirect and webhooks derive from it).                                                           |
+| Web                  | `php artisan octane:start --server=frankenphp` | Octane on FrankenPHP (port 8000). `APP_URL` must be the public HTTPS origin (OAuth redirect and webhooks derive from it). Set `TRUSTED_PROXIES`.  |
+| SSR                  | `php artisan inertia:start-ssr`                | Node 22 renders the first page load (port 13714). The web process reaches it through `INERTIA_SSR_URL`; failures fall back to client rendering.   |
 | Queues               | `php artisan horizon`                          | Supervisor consumes `mail-inbound, mail-outbound, mail-sync, broadcasts, notifications, automations, default`. Timeout is 300s for initial syncs. |
 | Scheduler            | `php artisan schedule:run` every minute (cron) | Gmail watch renewal (hourly), Gmail reconcile (15 min), IMAP poll (1 min), snooze wake-ups (1 min), business-hours triggers (1 min).              |
 | Realtime             | `php artisan reverb:start`                     | Put behind TLS (`REVERB_SCHEME=https`), expose the port to browsers.                                                                              |
@@ -66,8 +67,39 @@ There is no public landing page: `/` sends guests to the login form and signed-i
 
 ```bash
 composer install --no-dev --optimize-autoloader
-npm ci && npm run build
+npm ci && npm run build:ssr          # client bundle + bootstrap/ssr
 php artisan migrate --force
-php artisan config:cache && php artisan route:cache && php artisan view:cache
-php artisan horizon:terminate   # after each deploy so workers reload code
+php artisan optimize                 # config, routes, views, events
+php artisan octane:reload            # workers pick up the new code
+php artisan horizon:terminate        # queue workers restart under Supervisor
+php artisan inertia:stop-ssr --graceful
 ```
+
+## Docker
+
+`Dockerfile` builds one image for every role; the role is the container command. The CI workflow
+`.github/workflows/docker.yml` publishes it to GitHub Container Registry as `ghcr.io/<owner>/<repo>`
+tagged with the branch, the commit SHA, `latest` on `main` and the version for `v*` tags.
+
+| Role      | Command                                                             |
+| --------- | ------------------------------------------------------------------- |
+| web       | default: `php artisan octane:start --server=frankenphp --port=8000` |
+| ssr       | `php artisan inertia:start-ssr`                                     |
+| horizon   | `php artisan horizon`                                               |
+| scheduler | `php artisan schedule:work`                                         |
+| reverb    | `php artisan reverb:start --host=0.0.0.0 --port=8080`               |
+
+`compose.yaml` wires these up with MariaDB and Redis and is the reference for any orchestrator:
+every role shares the `.env`, `DB_HOST`/`REDIS_HOST` point at the services, `INERTIA_SSR_URL`
+points at the `ssr` service, and `storage/app` is a shared volume when attachments stay on the
+local disk (use `TANDEM_ATTACHMENTS_DISK=s3` to avoid that).
+
+The entrypoint runs `php artisan optimize` on every start (environment is only known then) and
+`php artisan migrate --force` when `TANDEM_RUN_MIGRATIONS=true`; only the web container sets it.
+The image runs as `www-data`, exposes port 8000 and reports health on `/up`.
+
+Base images are build arguments so a hardened mirror can be swapped in without touching the
+Dockerfile. For Aikido Images set the repository variables `PHP_IMAGE` and `NODE_IMAGE` to the
+paths shown under AutoFix → Containers → Aikido Images (`docker.aikido.io/<token>/dunglas/frankenphp:1-php8.4-bookworm`
+and `docker.aikido.io/<token>/node:22-bookworm-slim`); the workflow falls back to the upstream
+images when the variables are empty.

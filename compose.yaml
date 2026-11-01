@@ -1,0 +1,101 @@
+# Production-shaped stack: one image, one container per role.
+# Local use: cp .env.example .env, set APP_KEY, then `docker compose up --build`.
+
+x-app: &app
+    image: ${TANDEM_IMAGE:-tandem:local}
+    build:
+        context: .
+        args:
+            PHP_IMAGE: ${PHP_IMAGE:-dunglas/frankenphp:1-php8.4-bookworm}
+            NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+    env_file: .env
+    environment:
+        DB_HOST: mariadb
+        REDIS_HOST: redis
+        INERTIA_SSR_URL: http://ssr:13714
+    volumes:
+        # Attachments and raw .eml files on the local disk must be shared by every role.
+        - storage:/app/storage/app
+    depends_on:
+        mariadb:
+            condition: service_healthy
+        redis:
+            condition: service_healthy
+    restart: unless-stopped
+
+services:
+    app:
+        <<: *app
+        environment:
+            DB_HOST: mariadb
+            REDIS_HOST: redis
+            INERTIA_SSR_URL: http://ssr:13714
+            TANDEM_RUN_MIGRATIONS: 'true'
+        ports:
+            - '${APP_PORT:-8000}:8000'
+
+    ssr:
+        <<: *app
+        command: ['php', 'artisan', 'inertia:start-ssr']
+        healthcheck:
+            test: ['CMD', 'php', 'artisan', 'inertia:check-ssr']
+            interval: 30s
+            timeout: 5s
+            start_period: 20s
+
+    horizon:
+        <<: *app
+        command: ['php', 'artisan', 'horizon']
+        healthcheck:
+            test: ['CMD', 'php', 'artisan', 'horizon:status']
+            interval: 30s
+            timeout: 10s
+            start_period: 20s
+
+    scheduler:
+        <<: *app
+        command: ['php', 'artisan', 'schedule:work']
+        healthcheck:
+            disable: true
+
+    reverb:
+        <<: *app
+        command:
+            ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
+        ports:
+            - '${REVERB_SERVER_PORT:-8080}:8080'
+        healthcheck:
+            disable: true
+
+    mariadb:
+        image: mariadb:11
+        environment:
+            MARIADB_DATABASE: ${DB_DATABASE:-tandem}
+            MARIADB_USER: ${DB_USERNAME:-tandem}
+            MARIADB_PASSWORD: ${DB_PASSWORD:-tandem}
+            MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+        volumes:
+            - mariadb:/var/lib/mysql
+        healthcheck:
+            test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        restart: unless-stopped
+
+    redis:
+        image: redis:7-alpine
+        command: ['redis-server', '--appendonly', 'yes']
+        volumes:
+            - redis:/data
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        restart: unless-stopped
+
+volumes:
+    storage:
+    mariadb:
+    redis:

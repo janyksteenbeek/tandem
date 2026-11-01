@@ -47,12 +47,12 @@ The full operator guide lives in [`docs/providers/cloudflare.md`](../../docs/pro
 
 ## Configuration
 
-| Name                   | Type   | Description                                                                |
-| ---------------------- | ------ | -------------------------------------------------------------------------- |
-| `TANDEM_INGEST_URL`     | var    | Absolute URL of the Tandem webhook.                                         |
-| `TANDEM_WEBHOOK_SECRET` | secret | Shared HMAC secret. Same value as `TANDEM_FORWARDING_WEBHOOK_SECRET`.       |
-| `MAX_BYTES`            | var    | Reject messages above this size before upload (default 26214400 = 25 MiB). |
-| `FALLBACK_FORWARD_TO`  | var    | Optional verified destination address that also receives a copy.           |
+| Name                    | Type   | Description                                                                |
+| ----------------------- | ------ | -------------------------------------------------------------------------- |
+| `TANDEM_INGEST_URL`     | var    | Absolute URL of the Tandem webhook.                                        |
+| `TANDEM_WEBHOOK_SECRET` | secret | Shared HMAC secret. Same value as `TANDEM_FORWARDING_WEBHOOK_SECRET`.      |
+| `MAX_BYTES`             | var    | Reject messages above this size before upload (default 26214400 = 25 MiB). |
+| `FALLBACK_FORWARD_TO`   | var    | Optional verified destination address that also receives a copy.           |
 
 ## Behaviour
 

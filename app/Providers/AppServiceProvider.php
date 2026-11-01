@@ -10,6 +10,7 @@ use App\Events\Mail\MessageIngested;
 use App\Listeners\Automations\RunAutomations;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,27 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureTrustedProxies();
         $this->registerAutomationListeners();
+    }
+
+    /**
+     * Behind a load balancer or Docker ingress the X-Forwarded-* headers decide the scheme and
+     * client IP (OAuth redirects, webhook signatures, rate limits). Accepts "*" or a list of IPs/CIDRs.
+     */
+    protected function configureTrustedProxies(): void
+    {
+        $proxies = config('tandem.trusted_proxies');
+
+        if (! is_string($proxies) || trim($proxies) === '') {
+            return;
+        }
+
+        $proxies = trim($proxies);
+
+        TrustProxies::at(in_array($proxies, ['*', '**'], true)
+            ? $proxies
+            : array_values(array_filter(array_map('trim', explode(',', $proxies)))));
     }
 
     /**
