@@ -92,23 +92,6 @@ const props = defineProps<{
     catalog: AutomationCatalog;
 }>();
 
-defineOptions({
-    layout: (props: {
-        organization: { slug: string };
-        rule: AutomationRuleDetail | null;
-    }) => ({
-        breadcrumbs: [
-            { title: 'Automations', href: index(props.organization.slug) },
-            {
-                title: props.rule ? props.rule.name : 'New rule',
-                href: props.rule
-                    ? `/${props.organization.slug}/settings/automations/${props.rule.uuid}/edit`
-                    : create(props.organization.slug),
-            },
-        ],
-    }),
-});
-
 const page = usePage();
 const slug = computed(() => props.organization.slug);
 const lookups = computed<AutomationLookups>(() => ({

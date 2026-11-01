@@ -22,6 +22,7 @@ import {
 } from '@lucide/vue';
 import { computed } from 'vue';
 import InboxDot from '@/components/mail/InboxDot.vue';
+import ShellColumn from '@/components/shell/ShellColumn.vue';
 import { Button } from '@/components/ui/button';
 import {
     Tooltip,
@@ -128,44 +129,43 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
 </script>
 
 <template>
-    <aside
-        class="flex h-full w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar"
-        aria-label="Mailboxes"
-    >
-        <div class="flex items-center justify-between px-3 pt-4 pb-2">
-            <div class="min-w-0">
-                <p
-                    class="truncate text-[13px] font-semibold text-sidebar-foreground"
-                >
-                    {{ organization?.name ?? branding.name }}
-                </p>
-                <p class="truncate text-[11px] text-muted-foreground">
-                    <template v-if="nav && nav.assigned_to_me > 0"
-                        >{{ nav.assigned_to_me }} assigned to you</template
+    <ShellColumn label="Mailboxes">
+        <template #header>
+            <div class="flex items-center justify-between px-3 pt-4 pb-2">
+                <div class="min-w-0">
+                    <p
+                        class="truncate text-[13px] font-semibold text-sidebar-foreground"
                     >
-                    <template v-else>Nothing waiting on you</template>
-                </p>
+                        {{ organization?.name ?? branding.name }}
+                    </p>
+                    <p class="truncate text-[11px] text-muted-foreground">
+                        <template v-if="nav && nav.assigned_to_me > 0"
+                            >{{ nav.assigned_to_me }} assigned to you</template
+                        >
+                        <template v-else>Nothing waiting on you</template>
+                    </p>
+                </div>
+                <Tooltip>
+                    <TooltipTrigger as-child>
+                        <Button
+                            size="icon"
+                            class="size-8 rounded-lg bg-brand text-brand-foreground shadow-float hover:bg-brand/90"
+                            @click="emit('compose')"
+                        >
+                            <PenLine class="size-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom"
+                        >Compose
+                        <kbd class="ml-1 rounded border px-1 text-[10px]"
+                            >C</kbd
+                        ></TooltipContent
+                    >
+                </Tooltip>
             </div>
-            <Tooltip>
-                <TooltipTrigger as-child>
-                    <Button
-                        size="icon"
-                        class="size-8 rounded-lg bg-brand text-brand-foreground shadow-float hover:bg-brand/90"
-                        @click="emit('compose')"
-                    >
-                        <PenLine class="size-4" />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom"
-                    >Compose
-                    <kbd class="ml-1 rounded border px-1 text-[10px]"
-                        >C</kbd
-                    ></TooltipContent
-                >
-            </Tooltip>
-        </div>
+        </template>
 
-        <nav class="scrollbar-thin flex-1 overflow-y-auto px-2 pb-4">
+        <nav>
             <template v-if="nav">
                 <section class="mt-2">
                     <p
@@ -455,16 +455,5 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                 </section>
             </template>
         </nav>
-
-        <div
-            class="border-t border-sidebar-border px-3 py-2 text-[11px] text-muted-foreground"
-        >
-            <span class="font-display text-[13px] italic">{{
-                branding.name
-            }}</span>
-            <template v-if="branding.tagline">
-                · {{ branding.tagline }}</template
-            >
-        </div>
-    </aside>
+    </ShellColumn>
 </template>

@@ -65,14 +65,6 @@ const props = defineProps<{
     catalog: AutomationCatalog;
 }>();
 
-defineOptions({
-    layout: (props: { organization: { slug: string } }) => ({
-        breadcrumbs: [
-            { title: 'Automations', href: index(props.organization.slug) },
-        ],
-    }),
-});
-
 const page = usePage();
 const slug = computed(() => props.organization.slug);
 const items = ref<AutomationRuleSummary[]>([...props.rules]);

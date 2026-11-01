@@ -23,14 +23,6 @@ const props = defineProps<{
     canManage: boolean;
 }>();
 
-defineOptions({
-    layout: (props: { organization: OrganizationSummary }) => ({
-        breadcrumbs: [
-            { title: 'Teams', href: teamsIndex(props.organization.slug) },
-        ],
-    }),
-});
-
 const dialogOpen = ref(false);
 const editing = ref<TeamSettings | null>(null);
 const removing = ref<TeamSettings | null>(null);

@@ -19,17 +19,6 @@ type Props = {
     ManageTwoFactorProps;
 
 const props = defineProps<Props>();
-
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Security settings',
-                href: edit(),
-            },
-        ],
-    },
-});
 </script>
 
 <template>

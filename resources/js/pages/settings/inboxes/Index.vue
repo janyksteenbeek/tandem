@@ -29,14 +29,6 @@ defineProps<{
     forwardingDomain: string;
 }>();
 
-defineOptions({
-    layout: (props: { organization: OrganizationSummary }) => ({
-        breadcrumbs: [
-            { title: 'Inboxes', href: inboxesIndex(props.organization.slug) },
-        ],
-    }),
-});
-
 const createOpen = ref(false);
 const editOpen = ref(false);
 const accessOpen = ref(false);

@@ -32,11 +32,11 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useAppearance } from '@/composables/useAppearance';
+import { useBranding } from '@/composables/useBranding';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
-import { useBranding } from '@/composables/useBranding';
 
 const branding = useBranding();
 
@@ -53,16 +53,34 @@ const { appearance, updateAppearance } = useAppearance();
 const mailUrl = computed(() =>
     organization.value ? `/${organization.value.slug}/mail` : '/',
 );
-const settingsUrl = computed(() => '/settings/mail-accounts');
+const workspaceUrl = computed(() =>
+    organization.value
+        ? `/settings/organizations/${organization.value.slug}`
+        : '/settings/organizations',
+);
 const automationsUrl = computed(() =>
     organization.value
         ? `/${organization.value.slug}/settings/automations`
         : '/settings/mail-accounts',
 );
-const teamsUrl = computed(() =>
-    organization.value
-        ? `/settings/organizations/${organization.value.slug}/inboxes`
-        : '/settings/organizations',
+const orgSettingsUrl = computed(() =>
+    organization.value ? `/${organization.value.slug}/settings` : null,
+);
+
+/** Workspace and automations light up their own icon; every other settings page belongs to the cog. */
+const workspaceActive = computed(() =>
+    isCurrentOrParentUrl(workspaceUrl.value),
+);
+const automationsActive = computed(() =>
+    isCurrentOrParentUrl(automationsUrl.value),
+);
+const settingsActive = computed(
+    () =>
+        (isCurrentOrParentUrl('/settings') ||
+            (orgSettingsUrl.value !== null &&
+                isCurrentOrParentUrl(orgSettingsUrl.value))) &&
+        !workspaceActive.value &&
+        !automationsActive.value,
 );
 
 const items = computed(() => [
@@ -74,27 +92,23 @@ const items = computed(() => [
     },
     {
         title: 'Inboxes & teams',
-        href: teamsUrl.value,
+        href: `${workspaceUrl.value}/inboxes`,
         icon: Users,
-        active: isCurrentOrParentUrl(
-            `/settings/organizations/${organization.value?.slug}`,
-        ),
+        active: workspaceActive.value,
         hidden: !organization.value,
     },
     {
         title: 'Automations',
         href: automationsUrl.value,
         icon: Workflow,
-        active: isCurrentOrParentUrl(automationsUrl.value),
+        active: automationsActive.value,
         hidden: !canManage.value,
     },
     {
         title: 'Settings',
-        href: settingsUrl.value,
+        href: '/settings/mail-accounts',
         icon: Settings,
-        active:
-            isCurrentOrParentUrl('/settings') &&
-            !isCurrentOrParentUrl('/settings/organizations'),
+        active: settingsActive.value,
     },
 ]);
 

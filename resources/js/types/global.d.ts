@@ -25,7 +25,6 @@ declare module '@inertiajs/core' {
             name: string;
             branding: Branding;
             auth: Auth;
-            sidebarOpen: boolean;
             currentOrganization: Organization | null;
             organizations: Organization[];
             mailNav: MailNav | null;

@@ -12,17 +12,6 @@ import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Profile settings',
-                href: edit(),
-            },
-        ],
-    },
-});
-
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 </script>

@@ -46,21 +46,6 @@ type Props = {
 
 const props = defineProps<Props>();
 
-defineOptions({
-    layout: (props: { organization: Organization }) => ({
-        breadcrumbs: [
-            {
-                title: 'Organizations',
-                href: index(),
-            },
-            {
-                title: props.organization.name,
-                href: edit(props.organization.slug),
-            },
-        ],
-    }),
-});
-
 const { getInitials } = useInitials();
 
 const inviteDialogOpen = ref(false);

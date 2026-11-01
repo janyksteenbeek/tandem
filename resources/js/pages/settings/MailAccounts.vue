@@ -21,12 +21,6 @@ const props = defineProps<{
     googleConfigured: boolean;
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [{ title: 'Mail accounts', href: mailAccountsIndex() }],
-    },
-});
-
 const page = usePage();
 const organization = computed(() => page.props.currentOrganization);
 

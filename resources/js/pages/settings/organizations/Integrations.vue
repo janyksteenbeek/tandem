@@ -45,17 +45,6 @@ const props = defineProps<{
     timezones: string[];
 }>();
 
-defineOptions({
-    layout: (props: { organization: IntegrationOrganization }) => ({
-        breadcrumbs: [
-            {
-                title: 'Integrations',
-                href: integrationsEdit(props.organization.slug),
-            },
-        ],
-    }),
-});
-
 const DAY_KEYS: BusinessHoursDay[] = [
     'mon',
     'tue',

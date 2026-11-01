@@ -64,14 +64,6 @@ const props = defineProps<{
     variables: TemplateVariable[];
 }>();
 
-defineOptions({
-    layout: (props: { organization: { slug: string } }) => ({
-        breadcrumbs: [
-            { title: 'Templates', href: index(props.organization.slug) },
-        ],
-    }),
-});
-
 const slug = computed(() => props.organization.slug);
 const ALL = '__all__';
 

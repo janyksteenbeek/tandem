@@ -32,17 +32,6 @@ const openLeaveOrganizationDialog = (organization: Organization) => {
     organizationLeaving.value = organization;
     leaveOrganizationDialogOpen.value = true;
 };
-
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Organizations',
-                href: index(),
-            },
-        ],
-    },
-});
 </script>
 
 <template>

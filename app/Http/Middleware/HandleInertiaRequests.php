@@ -55,7 +55,6 @@ class HandleInertiaRequests extends Middleware
             'mailNav' => fn () => $user ? app(MailNavigation::class)->for($user, $user->currentOrganization) : null,
             'unreadNotifications' => fn () => $user ? $user->unreadNotifications()->count() : 0,
             'canManageOrganization' => fn () => $user && $user->currentOrganization ? $user->can('manage', $user->currentOrganization) : false,
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'currentOrganization' => fn () => $user?->currentOrganization ? $user->toUserOrganization($user->currentOrganization) : null,
             'organizations' => fn () => $user?->toUserOrganizations(includeCurrent: true) ?? [],
         ];

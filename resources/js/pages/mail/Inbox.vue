@@ -6,6 +6,7 @@ import { Loader2 } from '@lucide/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import BulkBar from '@/components/mail/BulkBar.vue';
 import ComposeDialog from '@/components/mail/ComposeDialog.vue';
+import MailSidebar from '@/components/mail/MailSidebar.vue';
 import ConversationListItem from '@/components/mail/ConversationListItem.vue';
 import ConversationPane from '@/components/mail/ConversationPane.vue';
 import EmptyState from '@/components/mail/EmptyState.vue';
@@ -18,8 +19,8 @@ import {
     ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import { useConversationActions } from '@/composables/useConversationActions';
+import { useShellColumn } from '@/composables/useAppShell';
 import { useKeyboard } from '@/composables/useKeyboard';
-import MailLayout from '@/layouts/MailLayout.vue';
 import { api, reportError } from '@/lib/http';
 import { viewLabel as viewLabelFor } from '@/lib/mail';
 import { cn } from '@/lib/utils';
@@ -442,6 +443,7 @@ useKeyboard(() => [
     },
     { keys: 'g t', description: 'Sent', handler: () => goView('sent') },
     { keys: 'g d', description: 'Drafts', handler: () => goView('drafts') },
+    { keys: 'c', description: 'Compose', handler: () => openCompose() },
     {
         keys: 'escape',
         description: 'Clear selection',
@@ -460,20 +462,26 @@ const openCompose = (to?: string | null) => {
 
 const showList = computed(() => !isMobile.value || !props.conversation);
 const showPane = computed(() => !isMobile.value || Boolean(props.conversation));
+
+useShellColumn(() => ({
+    component: MailSidebar,
+    props: {
+        activeInboxUuid: props.inbox.uuid,
+        activeView: props.view,
+        views: props.views,
+        counts: props.counts,
+        savedViews: props.savedViews,
+        onCompose: () => openCompose(),
+    },
+    hideMobileTrigger: isMobile.value && Boolean(props.conversation),
+    compose: () => openCompose(),
+}));
 </script>
 
 <template>
     <Head :title="`${title} · ${viewLabel}`" />
 
-    <MailLayout
-        :active-inbox-uuid="inbox.uuid"
-        :active-view="view"
-        :views="views"
-        :counts="counts"
-        :saved-views="savedViews"
-        :hide-nav-button="isMobile && Boolean(conversation)"
-        @compose="openCompose()"
-    >
+    <div class="flex h-full min-h-0 flex-col">
         <ResizablePanelGroup
             direction="horizontal"
             class="h-full"
@@ -639,5 +647,5 @@ const showPane = computed(() => !isMobile.value || Boolean(props.conversation));
             ]"
             :default-to="composeTo"
         />
-    </MailLayout>
+    </div>
 </template>

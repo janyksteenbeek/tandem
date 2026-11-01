@@ -10,13 +10,18 @@ configureEcho({
     broadcaster: 'reverb',
 });
 
-const initialPage = JSON.parse(
-    document.getElementById('app')?.dataset.page ?? '{}',
+// The same entry renders on the Inertia SSR server, where there is no DOM.
+const isBrowser = typeof document !== 'undefined';
+
+const initialPage = (
+    isBrowser
+        ? JSON.parse(document.getElementById('app')?.dataset.page ?? '{}')
+        : {}
 ) as { props?: { branding?: { name?: string } } };
 const appName =
     initialPage.props?.branding?.name ||
     import.meta.env.VITE_APP_NAME ||
-    'Laravel';
+    'Tandem';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -24,8 +29,6 @@ void createInertiaApp({
         switch (true) {
             case name.startsWith('auth/'):
                 return AuthLayout;
-            case name.startsWith('mail/'):
-                return null;
             case name.startsWith('settings/'):
             case name.startsWith('organizations/'):
                 return [AppLayout, SettingsLayout];
@@ -47,8 +50,10 @@ void createInertiaApp({
     },
 });
 
-// This will set light / dark mode on page load...
-initializeTheme();
+if (isBrowser) {
+    // This will set light / dark mode on page load...
+    initializeTheme();
 
-// This will listen for flash toast data from the server...
-initializeFlashToast();
+    // This will listen for flash toast data from the server...
+    initializeFlashToast();
+}
