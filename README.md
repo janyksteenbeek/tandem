@@ -6,7 +6,7 @@
 
 ---
 
-Tandem is an email client for people and the teams they work in. Connect your own Gmail or IMAP accounts and use it as your everyday mail app, then run `support@` or `sales@` together in shared inboxes.
+Tandem is an email client for people and the teams they work in. Connect your own Gmail or IMAP accounts and use it as your everyday mail app, then run `support@` or `sales@` together in shared inboxes. Free and public source.
 
 - **Personal mail** — multiple accounts, identities, threading, snooze, search, keyboard navigation.
 - **Team inboxes** — assignments, Open / Waiting / Later / Done, tags, internal comments with mentions, presence.
@@ -58,3 +58,8 @@ at [creativecommons.org](https://creativecommons.org/licenses/by-nc/4.0/). An ad
 non-commercial use is available at [NON-COMMERCIAL.md](NON-COMMERCIAL.md).
 
 Dependencies may be subject to their own licenses.
+
+## Security
+
+If you discover any security-related issues, please email [tandem@janyk.dev](mailto:tandem@janyk.dev) instead of using
+the issue tracker. All security vulnerabilities will be promptly addressed.
