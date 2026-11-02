@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\OrganizationInvitation;
+use App\Models\User;
 use App\Services\Branding;
 use App\Services\Mail\MailNavigation;
 use App\Services\Sso\Sso;
@@ -60,7 +62,36 @@ class HandleInertiaRequests extends Middleware
             'canManageOrganization' => fn () => $user && $user->currentOrganization ? $user->can('manage', $user->currentOrganization) : false,
             'currentOrganization' => fn () => $user?->currentOrganization ? $user->toUserOrganization($user->currentOrganization) : null,
             'organizations' => fn () => $user?->toUserOrganizations(includeCurrent: true) ?? [],
+            'pendingInvitations' => fn () => $user ? $this->pendingInvitations($user) : [],
         ];
+    }
+
+    /**
+     * Unanswered, unexpired invitations addressed to the user's email, so the
+     * shell can offer them wherever the user lands.
+     *
+     * @return list<array{code: string, inviterName: string, organization: array{name: string, slug: string}}>
+     */
+    private function pendingInvitations(User $user): array
+    {
+        return OrganizationInvitation::query()
+            ->with(['inviter', 'organization'])
+            ->whereRaw('LOWER(email) = ?', [strtolower($user->email)])
+            ->whereNull('accepted_at')
+            ->where(fn ($query) => $query
+                ->whereNull('expires_at')
+                ->orWhere('expires_at', '>=', now()))
+            ->latest()
+            ->get()
+            ->map(fn (OrganizationInvitation $invitation) => [
+                'code' => $invitation->code,
+                'inviterName' => $invitation->inviter->name,
+                'organization' => [
+                    'name' => $invitation->organization->name,
+                    'slug' => $invitation->organization->slug,
+                ],
+            ])
+            ->all();
     }
 
     /**

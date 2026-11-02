@@ -5,6 +5,7 @@ import { Menu } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue';
 import CommandPalette from '@/components/mail/CommandPalette.vue';
 import KeyboardShortcutsDialog from '@/components/mail/KeyboardShortcutsDialog.vue';
+import PendingInvitationsModal from '@/components/PendingInvitationsModal.vue';
 import AppRail from '@/components/shell/AppRail.vue';
 import OfflineBanner from '@/components/shell/OfflineBanner.vue';
 import { Button } from '@/components/ui/button';
@@ -139,6 +140,10 @@ onBeforeUnmount(() => stopListening?.());
 
             <CommandPalette v-model:open="paletteOpen" @compose="compose" />
             <KeyboardShortcutsDialog v-model:open="shortcutsOpen" />
+            <PendingInvitationsModal
+                v-if="page.props.pendingInvitations.length > 0"
+                :invitations="page.props.pendingInvitations"
+            />
             <Toaster position="bottom-right" rich-colors close-button />
         </div>
     </TooltipProvider>

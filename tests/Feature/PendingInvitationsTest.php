@@ -6,26 +6,15 @@ use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
-test('guests are redirected to the login page', function () {
+test('the old dashboard url redirects to mail', function () {
     $user = User::factory()->create();
-    $organization = $user->currentOrganization;
 
-    $response = $this->get(route('dashboard'));
-    $response->assertRedirect(route('login'));
+    $this->actingAs($user)
+        ->get('/'.$user->currentOrganization->slug.'/dashboard')
+        ->assertRedirect(route('mail.home', ['current_organization' => $user->currentOrganization->slug]));
 });
 
-test('authenticated users can visit the dashboard', function () {
-    $user = User::factory()->create();
-    $organization = $user->currentOrganization;
-
-    $response = $this
-        ->actingAs($user)
-        ->get(route('dashboard'));
-
-    $response->assertOk();
-});
-
-test('dashboard includes pending invitations for the authenticated user', function () {
+test('shared props include pending invitations for the authenticated user', function () {
     $owner = User::factory()->create(['name' => 'Taylor Otwell']);
     $invitedUser = User::factory()->create(['email' => 'invited@example.com']);
     $organization = Organization::factory()->create(['name' => 'Laravel Organization']);
@@ -40,11 +29,10 @@ test('dashboard includes pending invitations for the authenticated user', functi
 
     $response = $this
         ->actingAs($invitedUser)
-        ->get(route('dashboard'));
+        ->get(route('profile.edit'));
 
     $response->assertOk();
     $response->assertInertia(fn (Assert $page) => $page
-        ->component('Dashboard')
         ->has('pendingInvitations', 1)
         ->where('pendingInvitations.0.code', $invitation->code)
         ->where('pendingInvitations.0.inviterName', 'Taylor Otwell')
@@ -54,7 +42,7 @@ test('dashboard includes pending invitations for the authenticated user', functi
     );
 });
 
-test('dashboard does not include accepted invitations', function () {
+test('shared props do not include accepted invitations', function () {
     $owner = User::factory()->create();
     $invitedUser = User::factory()->create(['email' => 'invited@example.com']);
     $organization = Organization::factory()->create();
@@ -69,16 +57,15 @@ test('dashboard does not include accepted invitations', function () {
 
     $response = $this
         ->actingAs($invitedUser)
-        ->get(route('dashboard'));
+        ->get(route('profile.edit'));
 
     $response->assertOk();
     $response->assertInertia(fn (Assert $page) => $page
-        ->component('Dashboard')
         ->has('pendingInvitations', 0),
     );
 });
 
-test('dashboard excludes expired invitations without deleting them', function () {
+test('shared props exclude expired invitations without deleting them', function () {
     $owner = User::factory()->create();
     $invitedUser = User::factory()->create(['email' => 'invited@example.com']);
     $organization = Organization::factory()->create();
@@ -93,11 +80,10 @@ test('dashboard excludes expired invitations without deleting them', function ()
 
     $response = $this
         ->actingAs($invitedUser)
-        ->get(route('dashboard'));
+        ->get(route('profile.edit'));
 
     $response->assertOk();
     $response->assertInertia(fn (Assert $page) => $page
-        ->component('Dashboard')
         ->has('pendingInvitations', 0),
     );
 
@@ -106,7 +92,7 @@ test('dashboard excludes expired invitations without deleting them', function ()
     ]);
 });
 
-test('dashboard does not include or delete other users invitations', function () {
+test('shared props do not include or delete other users invitations', function () {
     $owner = User::factory()->create();
     $invitedUser = User::factory()->create(['email' => 'invited@example.com']);
     $organization = Organization::factory()->create();
@@ -121,11 +107,10 @@ test('dashboard does not include or delete other users invitations', function ()
 
     $response = $this
         ->actingAs($invitedUser)
-        ->get(route('dashboard'));
+        ->get(route('profile.edit'));
 
     $response->assertOk();
     $response->assertInertia(fn (Assert $page) => $page
-        ->component('Dashboard')
         ->has('pendingInvitations', 0),
     );
 

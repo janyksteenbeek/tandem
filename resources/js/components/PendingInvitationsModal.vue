@@ -10,10 +10,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import type { DashboardInvitation } from '@/types';
+import type { PendingInvitation } from '@/types';
 
 type Props = {
-    invitations: DashboardInvitation[];
+    invitations: PendingInvitation[];
 };
 
 const props = defineProps<Props>();
@@ -21,14 +21,14 @@ const props = defineProps<Props>();
 const open = ref(true);
 const processingCode = ref<string | null>(null);
 
-const acceptInvitation = (invitation: DashboardInvitation) => {
+const acceptInvitation = (invitation: PendingInvitation) => {
     router.visit(OrganizationInvitationController.accept(invitation), {
         onStart: () => (processingCode.value = invitation.code),
         onFinish: () => (processingCode.value = null),
     });
 };
 
-const declineInvitation = (invitation: DashboardInvitation) => {
+const declineInvitation = (invitation: PendingInvitation) => {
     router.visit(OrganizationInvitationController.decline(invitation), {
         onStart: () => (processingCode.value = invitation.code),
         onFinish: () => (processingCode.value = null),

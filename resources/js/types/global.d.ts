@@ -2,7 +2,10 @@ import type { Directive } from 'vue';
 import type { Auth, Sso } from '@/types/auth';
 import type { Branding } from '@/types/branding';
 import type { ComposePrefill, MailNav } from '@/types/mail';
-import type { Organization } from '@/types/organizations';
+import type {
+    Organization,
+    PendingInvitation,
+} from '@/types/organizations';
 import type { CreatedChannel } from '@/types/settings';
 import type { FlashToast, ReverbConnection } from '@/types/ui';
 
@@ -32,6 +35,7 @@ declare module '@inertiajs/core' {
             mailNav: MailNav | null;
             unreadNotifications: number;
             canManageOrganization: boolean;
+            pendingInvitations: PendingInvitation[];
             [key: string]: unknown;
         };
         flashDataType: {

@@ -47,7 +47,7 @@ test('invitation email for existing users uses login route', function () {
     $mail = (new OrganizationInvitationNotification($invitation))->toMail($invitedUser);
 
     expect($mail->actionUrl)->toBe(route('login', ['invitation' => $invitation->code]));
-    $this->assertStringContainsString('dashboard', implode(' ', $mail->introLines));
+    $this->assertStringContainsString('accept or decline', implode(' ', $mail->introLines));
 });
 
 test('invitation email for unknown users uses login route', function () {

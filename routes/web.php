@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Auth\SsoController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Organizations\OrganizationInvitationController;
 use App\Http\Middleware\EnsureOrganizationMembership;
@@ -15,7 +14,8 @@ Route::get('auth/{provider}/callback', [SsoController::class, 'callback'])->name
 Route::prefix('{current_organization}')
     ->middleware(['auth', 'verified', EnsureOrganizationMembership::class])
     ->group(function () {
-        Route::get('dashboard', DashboardController::class)->name('dashboard');
+        // The dashboard is gone; old links and bookmarks land in mail instead.
+        Route::get('dashboard', fn () => to_route('mail.home'));
     });
 
 Route::middleware(['auth'])->group(function () {

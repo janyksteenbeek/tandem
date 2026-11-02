@@ -49,7 +49,7 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('mail.home'));
 });
 
-test('passkey login response redirects to the current organization dashboard', function () {
+test('passkey login response redirects to the current organization mail', function () {
     $user = User::factory()->create();
 
     $request = Request::create(route('login', absolute: false), 'GET', server: [
