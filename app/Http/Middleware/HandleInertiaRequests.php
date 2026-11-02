@@ -46,6 +46,7 @@ class HandleInertiaRequests extends Middleware
             'name' => $branding->name(),
             'branding' => $branding->toArray(),
             'sso' => fn () => app(Sso::class)->toArray(),
+            'reverb' => $this->reverb(),
             'auth' => [
                 'user' => $user ? [
                     ...$user->toArray(),
@@ -59,6 +60,35 @@ class HandleInertiaRequests extends Middleware
             'canManageOrganization' => fn () => $user && $user->currentOrganization ? $user->can('manage', $user->currentOrganization) : false,
             'currentOrganization' => fn () => $user?->currentOrganization ? $user->toUserOrganization($user->currentOrganization) : null,
             'organizations' => fn () => $user?->toUserOrganizations(includeCurrent: true) ?? [],
+        ];
+    }
+
+    /**
+     * Reverb connection details for the browser. The app key is public by
+     * design; the secret never leaves the server. Null when broadcasting is
+     * not done through Reverb.
+     *
+     * @return array{key: string, host: string|null, port: int, scheme: string}|null
+     */
+    private function reverb(): ?array
+    {
+        if (config('broadcasting.default') !== 'reverb') {
+            return null;
+        }
+
+        $key = config('broadcasting.connections.reverb.key');
+
+        if (! is_string($key) || $key === '') {
+            return null;
+        }
+
+        $browser = (array) config('broadcasting.connections.reverb.browser', []);
+
+        return [
+            'key' => $key,
+            'host' => filled($browser['host'] ?? null) ? (string) $browser['host'] : null,
+            'port' => (int) ($browser['port'] ?? 443),
+            'scheme' => ($browser['scheme'] ?? 'https') === 'http' ? 'http' : 'https',
         ];
     }
 }

@@ -18,7 +18,7 @@ APP_URL=https://app.example.com
 DB_CONNECTION=mysql …
 REDIS_HOST=…
 QUEUE_CONNECTION=redis  CACHE_STORE=redis  SESSION_DRIVER=redis
-BROADCAST_CONNECTION=reverb  REVERB_APP_ID/KEY/SECRET/HOST/PORT/SCHEME + VITE_REVERB_*
+BROADCAST_CONNECTION=reverb  REVERB_APP_ID/KEY/SECRET/HOST/PORT/SCHEME   # + REVERB_PUBLIC_HOST/PORT/SCHEME when the browser reaches Reverb on another address
 MAIL_MAILER=smtp …                       # application mail (invites, password resets)
 TANDEM_OUTBOUND_MAILER=smtp               # replies from forwarding-only inboxes when the organization has no SMTP configured
 TANDEM_FORWARDING_DOMAIN=forward.example.com
@@ -113,7 +113,10 @@ certificate, gateway listener and DNS steps.
 
 ## Docker
 
-`Dockerfile` builds one image for every role; the role is the container command. The CI workflow
+`Dockerfile` builds one image for every role; the role is the container command. The image is
+host-agnostic: the browser gets Reverb's key and address from the server with the first page
+(`REVERB_PUBLIC_*`, falling back to `REVERB_*`, and to the page's own hostname when the host is
+empty), so nothing about the target host is compiled into the bundle. The CI workflow
 `.github/workflows/docker.yml` publishes it to GitHub Container Registry as `ghcr.io/<owner>/<repo>`
 tagged with the branch, the commit SHA, `latest` on `main` and the version for `v*` tags.
 

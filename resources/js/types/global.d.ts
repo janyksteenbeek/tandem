@@ -4,7 +4,7 @@ import type { Branding } from '@/types/branding';
 import type { ComposePrefill, MailNav } from '@/types/mail';
 import type { Organization } from '@/types/organizations';
 import type { CreatedChannel } from '@/types/settings';
-import type { FlashToast } from '@/types/ui';
+import type { FlashToast, ReverbConnection } from '@/types/ui';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -26,6 +26,7 @@ declare module '@inertiajs/core' {
             branding: Branding;
             auth: Auth;
             sso: Sso;
+            reverb: ReverbConnection | null;
             currentOrganization: Organization | null;
             organizations: Organization[];
             mailNav: MailNav | null;

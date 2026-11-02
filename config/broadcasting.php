@@ -41,6 +41,18 @@ return [
                 'scheme' => env('REVERB_SCHEME', 'https'),
                 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
             ],
+            /*
+            | Address the browser connects to, shared with the frontend at runtime
+            | so one image serves every host. Defaults to the server-side address
+            | above; set the PUBLIC variables when Reverb is reached internally by
+            | the app but through an ingress by the browser. An empty host makes
+            | the browser use the page's own hostname.
+            */
+            'browser' => [
+                'host' => env('REVERB_PUBLIC_HOST', env('REVERB_HOST')),
+                'port' => env('REVERB_PUBLIC_PORT', env('REVERB_PORT', 443)),
+                'scheme' => env('REVERB_PUBLIC_SCHEME', env('REVERB_SCHEME', 'https')),
+            ],
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
             ],

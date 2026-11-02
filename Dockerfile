@@ -48,16 +48,6 @@ RUN --mount=type=cache,target=/root/.npm \
 
 COPY . .
 
-# Reverb's public address is compiled into the browser bundle; pass it for the target host.
-ARG VITE_REVERB_APP_KEY=
-ARG VITE_REVERB_HOST=
-ARG VITE_REVERB_PORT=443
-ARG VITE_REVERB_SCHEME=https
-ENV VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY} \
-    VITE_REVERB_HOST=${VITE_REVERB_HOST} \
-    VITE_REVERB_PORT=${VITE_REVERB_PORT} \
-    VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME}
-
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative --no-scripts \
     && php artisan package:discover --ansi \
     && npm run build:ssr \

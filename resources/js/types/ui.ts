@@ -5,3 +5,10 @@ export type FlashToast = {
     type: 'success' | 'info' | 'warning' | 'error';
     message: string;
 };
+
+export type ReverbConnection = {
+    key: string;
+    host: string | null;
+    port: number;
+    scheme: 'http' | 'https';
+};
