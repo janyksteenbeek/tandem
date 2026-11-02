@@ -25,7 +25,7 @@ TANDEM_FORWARDING_DOMAIN=forward.example.com
 TANDEM_FORWARDING_WEBHOOK_SECRET=<random 64 chars>   # same value as the Worker secret
 TANDEM_GMAIL_PUBSUB_TOKEN=<random>        # part of the Pub/Sub push URL
 GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_PUBSUB_TOPIC   # optional global fallback; organizations can set their own
-TANDEM_ATTACHMENTS_DISK=s3                # attachments and raw .eml files
+TANDEM_ATTACHMENTS_DISK=s3                # attachments and raw .eml files; needs AWS_ACCESS_KEY_ID/SECRET, AWS_DEFAULT_REGION, AWS_BUCKET (+ AWS_ENDPOINT, AWS_USE_PATH_STYLE_ENDPOINT=true for MinIO/R2)
 SSO_GOOGLE_ENABLED=true                   # "Continue with Google" on the sign-in screens, see below
 SSO_FORCE=false                           # true: identity providers are the only way in
 ```
