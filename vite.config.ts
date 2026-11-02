@@ -32,6 +32,11 @@ export default defineConfig({
             formVariants: true,
         }),
     ]),
+    ssr: {
+        // The SSR bundle runs in a container without node_modules (the Dockerfile removes them
+        // after the build), so every dependency has to be inlined into bootstrap/ssr/app.js.
+        noExternal: true,
+    },
     server: {
         watch: {
             ignored: [

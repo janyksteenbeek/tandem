@@ -130,6 +130,9 @@ every role shares the `.env`, `DB_HOST`/`REDIS_HOST` point at the services, `INE
 points at the `ssr` service, and `storage/app` is a shared volume when attachments stay on the
 local disk (use `TANDEM_ATTACHMENTS_DISK=s3` to avoid that).
 
+The image carries no `node_modules`: `vite.config.ts` sets `ssr.noExternal` so `bootstrap/ssr/app.js` inlines
+every dependency and the `ssr` role only needs the Node binary.
+
 The entrypoint runs `php artisan optimize` on every start (environment is only known then) and
 `php artisan migrate --force` when `TANDEM_RUN_MIGRATIONS=true`; only the web container sets it.
 The image runs as `www-data`, exposes port 8000 and reports health on `/up`. The FrankenPHP binary's
