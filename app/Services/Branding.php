@@ -31,6 +31,25 @@ class Branding
         return (string) config('branding.name', config('app.name'));
     }
 
+    /**
+     * The one-liner under the name, or null when it is cleared.
+     */
+    public function tagline(): ?string
+    {
+        $tagline = config('branding.tagline');
+
+        return is_string($tagline) && $tagline !== '' ? $tagline : null;
+    }
+
+    /**
+     * Absolute URL of the square PNG at the top of system emails. Mail
+     * clients do not render SVG, so this is the PWA icon rather than the mark.
+     */
+    public function mailLogo(): string
+    {
+        return url($this->icons()['icon_192']);
+    }
+
     public function favicon(): string
     {
         return (string) config('branding.favicon', '/tandem/icon.svg');
