@@ -115,4 +115,23 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Markdown Mail Settings
+    |--------------------------------------------------------------------------
+    |
+    | Every system email (invitations, password resets, verification) renders
+    | through the "tandem" theme in resources/views/vendor/mail, which takes
+    | its name, logo and tagline from config/branding.php.
+    |
+    */
+
+    'markdown' => [
+        'theme' => 'tandem',
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+    ],
+
 ];
