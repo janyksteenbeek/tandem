@@ -48,6 +48,7 @@ export default defineConfig({
             'vendor/**',
             'node_modules/**',
             'public/**',
+            'deploy/**',
             'bootstrap/ssr/**',
             'tailwind.config.js',
             'resources/js/actions/**',
@@ -69,6 +70,8 @@ export default defineConfig({
         htmlWhitespaceSensitivity: 'css',
         ignorePatterns: [
             '.github/**',
+            // Kubernetes manifests keep the cluster's two-space style.
+            'deploy/**',
             'composer.json',
             'resources/js/components/ui/*',
             'resources/views/mail/*',

@@ -103,6 +103,14 @@ php artisan horizon:terminate        # queue workers restart under Supervisor
 php artisan inertia:stop-ssr --graceful
 ```
 
+## Kubernetes
+
+`deploy/kubernetes/` holds Kustomize manifests for the Portivio cluster (web, ssr, horizon,
+scheduler and reverb from one image, MariaDB through the operator, Valkey, Object Storage for
+attachments, a Gateway API route and a cert-manager certificate). `deploy/kubernetes/README.md` walks
+through building the image for the host, secrets and the first apply; `cluster/` holds the one-off
+certificate, gateway listener and DNS steps.
+
 ## Docker
 
 `Dockerfile` builds one image for every role; the role is the container command. The CI workflow
@@ -124,7 +132,11 @@ local disk (use `TANDEM_ATTACHMENTS_DISK=s3` to avoid that).
 
 The entrypoint runs `php artisan optimize` on every start (environment is only known then) and
 `php artisan migrate --force` when `TANDEM_RUN_MIGRATIONS=true`; only the web container sets it.
-The image runs as `www-data`, exposes port 8000 and reports health on `/up`.
+The image runs as `www-data`, exposes port 8000 and reports health on `/up`. The FrankenPHP binary's
+file capability (`CAP_NET_BIND_SERVICE`) is stripped in the image because a non-root process cannot exec
+a capability-bearing binary on hosts that forbid privilege escalation (`no-new-privileges`,
+`allowPrivilegeEscalation: false`); the symptom is `exec: /usr/local/bin/frankenphp: Operation not permitted`
+in the web container's log. Keep the app on an unprivileged port (8000) and terminate TLS in front of it.
 
 Base images are build arguments so a hardened mirror can be swapped in without touching the
 Dockerfile. For Aikido Images set the repository variables `PHP_IMAGE` and `NODE_IMAGE` to the

@@ -48,6 +48,16 @@ RUN --mount=type=cache,target=/root/.npm \
 
 COPY . .
 
+# Reverb's public address is compiled into the browser bundle; pass it for the target host.
+ARG VITE_REVERB_APP_KEY=
+ARG VITE_REVERB_HOST=
+ARG VITE_REVERB_PORT=443
+ARG VITE_REVERB_SCHEME=https
+ENV VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY} \
+    VITE_REVERB_HOST=${VITE_REVERB_HOST} \
+    VITE_REVERB_PORT=${VITE_REVERB_PORT} \
+    VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME}
+
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative --no-scripts \
     && php artisan package:discover --ansi \
     && npm run build:ssr \
@@ -72,6 +82,12 @@ RUN mkdir -p storage/caddy/config storage/caddy/data \
         storage/framework/cache/data storage/framework/sessions storage/framework/views \
         storage/logs storage/app/private storage/app/public bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
+
+# The base image gives the FrankenPHP binary CAP_NET_BIND_SERVICE as a file capability. Running
+# as www-data on a host that forbids privilege escalation (Docker no-new-privileges, Kubernetes
+# allowPrivilegeEscalation=false) the kernel then refuses to exec it: "Operation not permitted".
+# The server listens on 8000, so the capability is not needed.
+RUN setcap -r /usr/local/bin/frankenphp
 
 USER www-data
 

@@ -66,6 +66,10 @@ jobs:
           build-args: |
             PHP_IMAGE=${{ vars.PHP_IMAGE || 'dunglas/frankenphp:1-php8.4-bookworm' }}
             NODE_IMAGE=${{ vars.NODE_IMAGE || 'node:22-bookworm-slim' }}
+            VITE_REVERB_APP_KEY=${{ vars.VITE_REVERB_APP_KEY }}
+            VITE_REVERB_HOST=${{ vars.VITE_REVERB_HOST }}
+            VITE_REVERB_PORT=${{ vars.VITE_REVERB_PORT || '443' }}
+            VITE_REVERB_SCHEME=${{ vars.VITE_REVERB_SCHEME || 'https' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
