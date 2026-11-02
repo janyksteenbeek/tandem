@@ -42,3 +42,20 @@ test('an ingested message is broadcast to the inbox, the thread and the people w
     expect(collect($channels)->map(fn ($channel) => $channel->name)->all())
         ->toContain('private-inbox.'.$account->inbox_id, 'private-conversation.'.$reply->conversation->uuid);
 });
+
+test('the message broadcast stays well under the reverb payload limit', function () {
+    Storage::fake('local');
+
+    $account = MailAccount::factory()->create(['email_address' => 'support@acme.test']);
+    $ingested = app(MessageIngestor::class)->ingest($account, app(MimeMessageParser::class)->parse(file_get_contents(base_path('tests/Fixtures/mail/simple.eml'))));
+    $ingested->message->update(['html_body' => '<p>'.str_repeat('a very long message body ', 2000).'</p>']);
+
+    $payload = (new MessageAdded($ingested->message->fresh()))->broadcastWith();
+
+    expect($payload['message'])
+        ->toHaveKeys(['uuid', 'conversation_uuid', 'direction', 'snippet', 'sent_at'])
+        ->not->toHaveKey('html_body')
+        ->and($payload['message']['uuid'])->toBe($ingested->message->uuid)
+        ->and($payload['message']['conversation_uuid'])->toBe($ingested->conversation->uuid)
+        ->and(strlen(json_encode($payload)))->toBeLessThan(1000);
+});
