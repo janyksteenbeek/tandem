@@ -30,8 +30,26 @@ const mailUrl = computed(() =>
     organization.value ? mailHome(organization.value.slug).url : '/',
 );
 
+// The hour is taken in the user's own timezone so the server-rendered
+// greeting matches what the browser hydrates, wherever the server runs.
+const currentHour = (): number => {
+    const timeZone = page.props.auth.user.timezone as string | undefined;
+
+    try {
+        return Number(
+            new Intl.DateTimeFormat('en-US', {
+                hour: 'numeric',
+                hourCycle: 'h23',
+                timeZone,
+            }).format(new Date()),
+        );
+    } catch {
+        return new Date().getHours();
+    }
+};
+
 const greeting = computed(() => {
-    const hour = new Date().getHours();
+    const hour = currentHour();
 
     if (hour < 5) {
         return 'Still up';

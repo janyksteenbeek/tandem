@@ -7,6 +7,7 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { useMounted } from '@vueuse/core';
 
 type Props = {
     routes?: {
@@ -19,6 +20,10 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+
+// Passkey support is only known in the browser; rendering nothing until
+// mounted keeps the server markup and the hydrated markup identical.
+const mounted = useMounted();
 
 const { verify, isLoading, error, isSupported } = usePasskeyVerify({
     ...(props.routes
@@ -36,7 +41,7 @@ const { verify, isLoading, error, isSupported } = usePasskeyVerify({
 </script>
 
 <template>
-    <div v-if="isSupported">
+    <div v-if="mounted && isSupported">
         <div class="grid gap-2">
             <Button
                 type="button"

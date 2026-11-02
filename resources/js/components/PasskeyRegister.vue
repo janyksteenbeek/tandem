@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePasskeyRegister } from '@laravel/passkeys/vue';
+import { useMounted } from '@vueuse/core';
 import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,8 @@ const getDefaultPasskeyName = () => {
 const name = ref(getDefaultPasskeyName());
 const showForm = ref(false);
 
+const mounted = useMounted();
+
 const { register, isLoading, error, isSupported } = usePasskeyRegister({
     onSuccess: () => {
         name.value = '';
@@ -60,7 +63,7 @@ const handleCancel = () => {
 </script>
 
 <template>
-    <div v-if="!isSupported" class="text-sm text-muted-foreground">
+    <div v-if="mounted && !isSupported" class="text-sm text-muted-foreground">
         Passkeys are not supported in this browser.
     </div>
 

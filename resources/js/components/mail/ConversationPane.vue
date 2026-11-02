@@ -19,7 +19,7 @@ import {
     Trash2,
     Users,
 } from '@lucide/vue';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import AssigneePicker from '@/components/mail/AssigneePicker.vue';
 import CommentCard from '@/components/mail/CommentCard.vue';
@@ -101,9 +101,11 @@ const local = ref<Conversation>(props.conversation);
 const expanded = ref<Set<string>>(new Set());
 const composerMode = ref<'none' | 'reply' | 'comment'>('none');
 const activeDraft = ref<Draft | null>(null);
-const contextOpen = ref(
-    typeof window !== 'undefined' ? window.innerWidth >= 1400 : false,
-);
+// Decided after mount so the server and the browser render the same markup.
+const contextOpen = ref(false);
+onMounted(() => {
+    contextOpen.value = window.innerWidth >= 1400;
+});
 const shareOpen = ref(false);
 const shareBusy = ref(false);
 const commentBusy = ref(false);

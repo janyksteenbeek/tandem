@@ -33,15 +33,28 @@ const reverbScheme =
     (isBrowser && window.location.protocol === 'http:' ? 'http' : 'https');
 const reverbPort = reverb?.port ?? (reverbScheme === 'https' ? 443 : 80);
 
-configureEcho({
-    broadcaster: 'reverb',
-    key: reverb?.key,
-    wsHost: reverb?.host ?? (isBrowser ? window.location.hostname : undefined),
-    wsPort: reverbPort,
-    wssPort: reverbPort,
-    forceTLS: reverbScheme === 'https',
-    enabledTransports: ['ws', 'wss'],
-});
+if (reverb?.key) {
+    configureEcho({
+        broadcaster: 'reverb',
+        key: reverb.key,
+        wsHost:
+            reverb.host ?? (isBrowser ? window.location.hostname : undefined),
+        wsPort: reverbPort,
+        wssPort: reverbPort,
+        forceTLS: reverbScheme === 'https',
+        enabledTransports: ['ws', 'wss'],
+    });
+} else {
+    // Without a key (BROADCAST_CONNECTION is not reverb, or REVERB_APP_KEY is
+    // empty on the web pods) realtime is off; everything else keeps working.
+    configureEcho({ broadcaster: 'null' });
+
+    if (isBrowser && import.meta.env.DEV) {
+        console.warn(
+            'Realtime is disabled: the server shared no Reverb app key.',
+        );
+    }
+}
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

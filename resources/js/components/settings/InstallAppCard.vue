@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMounted } from '@vueuse/core';
 import { Check, Download, MonitorSmartphone } from '@lucide/vue';
 import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
@@ -12,9 +13,11 @@ import { useInstallPrompt } from '@/composables/usePwa';
 const branding = useBranding();
 const { canInstall, isInstalled, install } = useInstallPrompt();
 
+const mounted = useMounted();
+
 const isSafari = computed(
     () =>
-        typeof navigator !== 'undefined' &&
+        mounted.value &&
         /safari/i.test(navigator.userAgent) &&
         !/chrome|chromium|crios|android/i.test(navigator.userAgent),
 );
