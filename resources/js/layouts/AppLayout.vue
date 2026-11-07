@@ -14,7 +14,9 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { provideAppShell } from '@/composables/useAppShell';
+import { provideSidebarState } from '@/composables/useSidebarState';
 import { useKeyboard } from '@/composables/useKeyboard';
+import { loadRememberedUrls, rememberVisit } from '@/lib/navigation';
 import { playNotificationSound } from '@/lib/notificationSound';
 import type { CreateIssuePrefill } from '@/types';
 
@@ -25,6 +27,7 @@ import type { CreateIssuePrefill } from '@/types';
  */
 const page = usePage();
 const column = provideAppShell();
+const sidebar = provideSidebarState();
 
 const paletteOpen = ref(false);
 const shortcutsOpen = ref(false);
@@ -33,11 +36,8 @@ const createIssueOpen = ref(false);
 const createIssuePrefill = ref<CreateIssuePrefill | null>(null);
 
 const userId = computed(() => page.props.auth.user.id);
-const mailUrl = computed(() =>
-    page.props.currentOrganization
-        ? `/${page.props.currentOrganization.slug}/mail`
-        : '/',
-);
+const slug = computed(() => page.props.currentOrganization?.slug ?? null);
+const mailUrl = computed(() => (slug.value ? `/${slug.value}/mail` : '/'));
 
 /** The palette's "Compose" goes to whatever page registered a handler; elsewhere it opens mail first. */
 const compose = () => {
@@ -85,14 +85,28 @@ useKeyboard(() => [
         description: 'Shortcuts',
         handler: () => (shortcutsOpen.value = true),
     },
+    {
+        keys: 'mod+\\',
+        description: 'Toggle sidebar',
+        handler: () => sidebar.toggle(),
+        allowInInput: true,
+    },
 ]);
 
 let stopListening: (() => void) | undefined;
 let stopFlash: (() => void) | undefined;
 
 onMounted(() => {
-    stopListening = router.on('navigate', () => {
+    loadRememberedUrls(slug.value);
+    rememberVisit(
+        window.location.pathname + window.location.search,
+        slug.value,
+    );
+    stopListening = router.on('navigate', (event) => {
         mobileNavOpen.value = false;
+
+        const url = new URL(event.detail.page.url, window.location.origin);
+        rememberVisit(url.pathname + url.search, slug.value);
     });
     stopFlash = router.on('flash', (event) => {
         const prefill = (
@@ -116,12 +130,10 @@ onBeforeUnmount(() => {
     <TooltipProvider :delay-duration="200">
         <div class="flex h-dvh w-full overflow-hidden bg-background">
             <div class="app-shell-desktop hidden md:flex">
-                <AppRail
-                    @open-search="paletteOpen = true"
-                    @open-shortcuts="shortcutsOpen = true"
-                />
+                <AppRail @open-shortcuts="shortcutsOpen = true" />
                 <div
-                    v-if="column"
+                    v-if="column && !sidebar.collapsed.value"
+                    id="app-shell-column"
                     class="flex [view-transition-name:shell-column]"
                 >
                     <component :is="column.component" v-bind="column.props" />
@@ -131,13 +143,10 @@ onBeforeUnmount(() => {
             <Sheet v-model:open="mobileNavOpen">
                 <SheetContent
                     side="left"
-                    :class="column ? 'w-[18.5rem] p-0' : 'w-14 p-0'"
+                    :class="column ? 'w-[19.5rem] p-0' : 'w-16 p-0'"
                 >
                     <div class="flex h-full">
-                        <AppRail
-                            @open-search="paletteOpen = true"
-                            @open-shortcuts="shortcutsOpen = true"
-                        />
+                        <AppRail @open-shortcuts="shortcutsOpen = true" />
                         <component
                             :is="column.component"
                             v-if="column"

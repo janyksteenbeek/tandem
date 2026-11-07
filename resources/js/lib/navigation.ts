@@ -1,21 +1,9 @@
 import type { LucideIcon } from '@lucide/vue';
-import {
-    CircleDot,
-    FolderKanban,
-    Inbox,
-    Package,
-    Settings,
-    Users,
-} from '@lucide/vue';
+import { CircleDot, Inbox, Settings } from '@lucide/vue';
 import { ref } from 'vue';
 
-export type AppSection =
-    | 'mail'
-    | 'my-issues'
-    | 'products'
-    | 'projects'
-    | 'teams'
-    | 'settings';
+/** The three areas the rail switches between. Everything else lives inside one of them. */
+export type AppSection = 'mail' | 'projects' | 'settings';
 
 export type RailItem = {
     section: AppSection;
@@ -25,45 +13,55 @@ export type RailItem = {
     badge?: number | null;
 };
 
-/** Org-relative path prefixes that light each rail item. */
-const SECTION_PREFIXES: Record<AppSection, string[]> = {
-    mail: ['/mail'],
-    'my-issues': ['/my-issues', '/views', '/issues', '/reports'],
-    products: ['/products'],
-    projects: ['/projects', '/initiatives'],
-    teams: ['/teams', '/cycles'],
-    settings: ['/settings'],
+export type RailBadges = {
+    mail?: number | null;
+    projects?: number | null;
 };
 
-const PROJECT_SECTIONS: AppSection[] = [
-    'my-issues',
-    'products',
-    'projects',
-    'teams',
-];
+/** Last URL visited per section, so the rail takes you back where you were. */
+export type LastUrls = Partial<Record<AppSection, string>>;
+
+const STORAGE_PREFIX = 'tandem:last-url';
 
 /**
- * Issue pages are reachable from every projects section; the rail keeps the one
- * you came from. Defaults to My Issues so SSR and the first paint agree.
+ * Remembered URLs, hydrated from sessionStorage after mount so server and first
+ * client render agree on the rail's hrefs.
  */
-export const lastProjectsSection = ref<AppSection>('my-issues');
+export const rememberedUrls = ref<LastUrls>({});
 
-export function isProjectsSection(section: AppSection | null): boolean {
-    return section !== null && PROJECT_SECTIONS.includes(section);
-}
+const storage = (): Storage | null => {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    try {
+        return window.sessionStorage;
+    } catch {
+        return null;
+    }
+};
+
+const strip = (path: string): string => path.split('#')[0];
+
+const pathname = (path: string): string => strip(path).split('?')[0];
 
 /**
- * Which rail item a URL belongs to. Global settings (`/settings/...`) and organization
- * settings (`/{org}/settings/...`) both count as settings.
+ * Which rail item a URL belongs to. Account and organization settings (`/settings/...`,
+ * `/organizations/...`) and org settings (`/{org}/settings/...`) all count as settings;
+ * every other organization page that is not mail is projects.
  */
 export function sectionForPath(
     path: string,
     orgSlug: string | null,
 ): AppSection | null {
-    const clean = path.split('?')[0].split('#')[0];
+    const clean = pathname(path);
 
     if (clean.startsWith('/settings') || clean.startsWith('/organizations')) {
         return 'settings';
+    }
+
+    if (clean === '/' || clean.startsWith('/mail')) {
+        return 'mail';
     }
 
     if (!orgSlug) {
@@ -72,60 +70,93 @@ export function sectionForPath(
 
     const prefix = `/${orgSlug}`;
 
-    if (!clean.startsWith(prefix)) {
+    if (clean !== prefix && !clean.startsWith(`${prefix}/`)) {
         return null;
     }
 
     const rest = clean.slice(prefix.length) || '/';
 
-    if (rest.startsWith('/issues')) {
-        return isProjectsSection(lastProjectsSection.value)
-            ? lastProjectsSection.value
-            : 'my-issues';
+    if (rest === '/mail' || rest.startsWith('/mail/')) {
+        return 'mail';
     }
 
-    for (const [section, prefixes] of Object.entries(SECTION_PREFIXES) as [
-        AppSection,
-        string[],
-    ][]) {
-        if (prefixes.some((p) => rest === p || rest.startsWith(`${p}/`))) {
-            return section;
-        }
+    if (rest === '/settings' || rest.startsWith('/settings/')) {
+        return 'settings';
     }
 
-    return null;
-}
-
-/** Remember the projects section a user is in so issue pages keep it lit. */
-export function rememberSection(path: string, orgSlug: string | null): void {
-    const section = sectionForPath(path, orgSlug);
-    const rest = orgSlug ? path.replace(`/${orgSlug}`, '') : path;
-
-    if (isProjectsSection(section) && !rest.startsWith('/issues')) {
-        lastProjectsSection.value = section as AppSection;
-    }
+    return 'projects';
 }
 
 export function homeFor(section: AppSection | null, orgSlug: string): string {
     switch (section) {
-        case 'my-issues':
-            return `/${orgSlug}/my-issues`;
-        case 'products':
-            return `/${orgSlug}/products`;
         case 'projects':
-            return `/${orgSlug}/projects/all`;
-        case 'teams':
-            return `/${orgSlug}/teams`;
+            return `/${orgSlug}/my-issues`;
         case 'settings':
-            return `/${orgSlug}/settings`;
+            return '/settings/profile';
         default:
             return `/${orgSlug}/mail`;
     }
 }
 
+const key = (orgSlug: string, section: AppSection) =>
+    `${STORAGE_PREFIX}:${orgSlug}:${section}`;
+
+/** Read every remembered URL for an organization out of sessionStorage. */
+export function loadRememberedUrls(orgSlug: string | null): void {
+    const store = storage();
+
+    if (!store || !orgSlug) {
+        rememberedUrls.value = {};
+
+        return;
+    }
+
+    const loaded: LastUrls = {};
+
+    (['mail', 'projects', 'settings'] as AppSection[]).forEach((section) => {
+        const url = store.getItem(key(orgSlug, section));
+
+        if (url) {
+            loaded[section] = url;
+        }
+    });
+
+    rememberedUrls.value = loaded;
+}
+
+/**
+ * Remember a visited URL under its section. Index pages are remembered with their query
+ * (filters, tabs); the hash is dropped.
+ */
+export function rememberVisit(path: string, orgSlug: string | null): void {
+    const section = sectionForPath(path, orgSlug);
+
+    if (!section || !orgSlug) {
+        return;
+    }
+
+    const url = strip(path);
+
+    rememberedUrls.value = { ...rememberedUrls.value, [section]: url };
+    storage()?.setItem(key(orgSlug, section), url);
+}
+
+export function lastUrlFor(
+    section: AppSection,
+    orgSlug: string,
+    remembered: LastUrls = rememberedUrls.value,
+): string {
+    return remembered[section] ?? homeFor(section, orgSlug);
+}
+
+/**
+ * The rail: Mail and Projects on top, Settings in the bottom group. Each item returns you
+ * to the last page you had open in that area.
+ */
 export function railItems(
     orgSlug: string | null,
-    counts: { assigned?: number; due_today?: number } | null,
+    badges: RailBadges = {},
+    remembered: LastUrls = rememberedUrls.value,
 ): RailItem[] {
     if (!orgSlug) {
         return [
@@ -133,7 +164,7 @@ export function railItems(
             {
                 section: 'settings',
                 title: 'Settings',
-                href: '/settings/mail-accounts',
+                href: '/settings/profile',
                 icon: Settings,
             },
         ];
@@ -143,38 +174,21 @@ export function railItems(
         {
             section: 'mail',
             title: 'Mail',
-            href: `/${orgSlug}/mail`,
+            href: lastUrlFor('mail', orgSlug, remembered),
             icon: Inbox,
-        },
-        {
-            section: 'my-issues',
-            title: 'My issues',
-            href: `/${orgSlug}/my-issues`,
-            icon: CircleDot,
-            badge: counts?.due_today ?? null,
-        },
-        {
-            section: 'products',
-            title: 'Products',
-            href: `/${orgSlug}/products`,
-            icon: Package,
+            badge: badges.mail ?? null,
         },
         {
             section: 'projects',
             title: 'Projects',
-            href: `/${orgSlug}/projects/all`,
-            icon: FolderKanban,
-        },
-        {
-            section: 'teams',
-            title: 'Teams',
-            href: `/${orgSlug}/teams`,
-            icon: Users,
+            href: lastUrlFor('projects', orgSlug, remembered),
+            icon: CircleDot,
+            badge: badges.projects ?? null,
         },
         {
             section: 'settings',
             title: 'Settings',
-            href: '/settings/mail-accounts',
+            href: lastUrlFor('settings', orgSlug, remembered),
             icon: Settings,
         },
     ];

@@ -2,15 +2,16 @@
 import { Link, router, usePage } from '@inertiajs/vue3';
 import {
     Bell,
+    Check,
     Download,
     Keyboard,
     LogOut,
+    Monitor,
     Moon,
-    Search,
-    Settings,
+    PanelLeftClose,
+    PanelLeftOpen,
     Sun,
-    SunMoon,
-    Zap,
+    UserRound,
 } from '@lucide/vue';
 import { computed } from 'vue';
 import BrandMark from '@/components/BrandMark.vue';
@@ -21,7 +22,12 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -32,179 +38,178 @@ import {
 import { useAppearance } from '@/composables/useAppearance';
 import { useBranding } from '@/composables/useBranding';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { useOrganizationSwitcher } from '@/composables/useOrganizationSwitcher';
 import { forgetPushSubscription } from '@/composables/usePushNotifications';
 import { useInstallPrompt } from '@/composables/usePwa';
-import { homeFor, railItems, sectionForPath } from '@/lib/navigation';
+import { useSidebarState } from '@/composables/useSidebarState';
+import {
+    homeFor,
+    railItems,
+    rememberedUrls,
+    sectionForPath,
+} from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
+import type { Appearance } from '@/types';
 
+/**
+ * The rail switches between the three areas of the app. Each item carries a label so nobody
+ * has to guess an icon, and takes you back to the page you last had open in that area.
+ */
 const branding = useBranding();
 
-const emit = defineEmits<{ openSearch: []; openShortcuts: [] }>();
+const emit = defineEmits<{ openShortcuts: [] }>();
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
-const organization = computed(() => page.props.currentOrganization);
-const organizations = computed(() => page.props.organizations ?? []);
+const { organization, organizations, switchTo } = useOrganizationSwitcher();
 const { currentUrl } = useCurrentUrl();
 const { appearance, updateAppearance } = useAppearance();
 const { canInstall, install } = useInstallPrompt();
+const sidebar = useSidebarState();
 
 const slug = computed(() => organization.value?.slug ?? null);
-const mailUrl = computed(() => (slug.value ? `/${slug.value}/mail` : '/'));
 const activeSection = computed(() =>
     sectionForPath(currentUrl.value, slug.value),
 );
 
-/** Mail, the project sections and settings. Everything else is a shortcut inside one of those. */
 const items = computed(() =>
-    railItems(slug.value, page.props.projectsNav?.counts ?? null).map(
-        (item) => ({
-            ...item,
-            active: activeSection.value === item.section,
-        }),
-    ),
+    railItems(
+        slug.value,
+        {
+            mail:
+                page.props.mailNav?.assigned_to_me ||
+                page.props.mailNav?.personal_unread ||
+                null,
+            projects: page.props.projectsNav?.counts.due_today ?? null,
+        },
+        rememberedUrls.value,
+    ).map((item) => ({
+        ...item,
+        active: activeSection.value === item.section,
+    })),
 );
 
-const switchOrganization = (slug: string) => {
-    router.post(
-        `/settings/organizations/${slug}/switch`,
-        {},
-        {
-            onFinish: () => router.visit(homeFor(activeSection.value, slug)),
-        },
-    );
-};
+const primary = computed(() =>
+    items.value.filter((item) => item.section !== 'settings'),
+);
+const settings = computed(() =>
+    items.value.find((item) => item.section === 'settings'),
+);
 
 const signOut = async () => {
     await forgetPushSubscription();
     router.post(logout().url);
 };
 
-const cycleAppearance = () => {
-    const next =
-        appearance.value === 'light'
-            ? 'dark'
-            : appearance.value === 'dark'
-              ? 'system'
-              : 'light';
-    updateAppearance(next);
-};
+const itemClass =
+    'relative flex h-12 w-14 flex-col items-center justify-center gap-1 rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-[0.97]';
+const activeClass =
+    'vt-rail-active bg-foreground/[0.08] text-sidebar-accent-foreground';
+const labelClass = 'text-[10px] leading-none font-medium tracking-[0.01em]';
+const badgeClass =
+    'absolute top-1 right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-brand-foreground tabular-nums';
 </script>
 
 <template>
     <nav
-        class="flex h-full w-14 shrink-0 flex-col items-center border-r border-sidebar-border py-3 shell-rail-surface"
+        class="flex h-full w-16 shrink-0 flex-col items-center border-r border-sidebar-border py-2.5 shell-rail-surface"
         aria-label="Primary"
     >
         <Link
-            :href="mailUrl"
-            class="mb-1 flex size-10 items-center justify-center rounded-xl transition-transform hover:scale-105 active:scale-95"
+            :href="slug ? homeFor('mail', slug) : '/'"
+            class="flex size-10 items-center justify-center rounded-xl transition-transform hover:scale-105 active:scale-95"
             :aria-label="`${branding.name} home`"
         >
             <BrandMark :size="26" />
         </Link>
 
-        <div class="flex flex-col items-center gap-1">
-            <template v-for="item in items" :key="item.title">
-                <Tooltip>
-                    <TooltipTrigger as-child>
-                        <Link
-                            :href="item.href"
-                            :class="
-                                cn(
-                                    'relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-95',
-                                    item.active &&
-                                        'vt-rail-active bg-foreground/[0.08] text-sidebar-accent-foreground',
-                                )
-                            "
-                            :aria-current="item.active ? 'page' : undefined"
-                        >
-                            <span
-                                v-if="item.active"
-                                class="absolute top-1/2 -left-2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
-                            />
-                            <component :is="item.icon" class="size-[18px]" />
-                            <span
-                                v-if="item.badge"
-                                class="absolute top-1.5 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-brand-foreground"
-                                >{{ item.badge > 9 ? '9+' : item.badge }}</span
-                            >
-                        </Link>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">{{
-                        item.title
-                    }}</TooltipContent>
-                </Tooltip>
-            </template>
-
-            <Tooltip>
-                <TooltipTrigger as-child>
-                    <button
-                        type="button"
-                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-95"
-                        @click="emit('openSearch')"
-                    >
-                        <Search class="size-[18px]" />
-                    </button>
-                </TooltipTrigger>
-                <TooltipContent side="right"
-                    >Search
-                    <kbd class="ml-1 rounded border px-1 text-[10px]"
-                        >⌘K</kbd
-                    ></TooltipContent
+        <Tooltip>
+            <TooltipTrigger as-child>
+                <button
+                    type="button"
+                    class="mt-1 hidden size-7 items-center justify-center rounded-md text-sidebar-foreground/50 transition-colors hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground md:flex"
+                    :aria-label="
+                        sidebar.collapsed.value
+                            ? 'Show sidebar'
+                            : 'Hide sidebar'
+                    "
+                    :aria-expanded="!sidebar.collapsed.value"
+                    aria-controls="app-shell-column"
+                    @click="sidebar.toggle()"
                 >
-            </Tooltip>
+                    <PanelLeftOpen
+                        v-if="sidebar.collapsed.value"
+                        class="size-4"
+                    />
+                    <PanelLeftClose v-else class="size-4" />
+                </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+                {{ sidebar.collapsed.value ? 'Show' : 'Hide' }} sidebar
+                <kbd class="ml-1 rounded border px-1 text-[10px]">⌘\</kbd>
+            </TooltipContent>
+        </Tooltip>
+
+        <div class="mt-3 flex flex-col items-center gap-1">
+            <Link
+                v-for="item in primary"
+                :key="item.section"
+                :href="item.href"
+                :class="cn(itemClass, item.active && activeClass)"
+                :aria-current="item.active ? 'page' : undefined"
+                :data-section="item.section"
+            >
+                <span
+                    v-if="item.active"
+                    class="absolute top-1/2 -left-1 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
+                />
+                <component :is="item.icon" class="size-5" />
+                <span :class="labelClass">{{ item.title }}</span>
+                <span v-if="item.badge" :class="badgeClass">{{
+                    item.badge > 99 ? '99+' : item.badge
+                }}</span>
+            </Link>
         </div>
 
         <div class="mt-auto flex flex-col items-center gap-1">
+            <Link
+                v-if="settings"
+                :href="settings.href"
+                :class="cn(itemClass, settings.active && activeClass)"
+                :aria-current="settings.active ? 'page' : undefined"
+                data-section="settings"
+            >
+                <span
+                    v-if="settings.active"
+                    class="absolute top-1/2 -left-1 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
+                />
+                <component :is="settings.icon" class="size-5" />
+                <span :class="labelClass">{{ settings.title }}</span>
+            </Link>
+
             <NotificationsPopover>
                 <template #trigger="{ unread }">
                     <button
                         type="button"
-                        class="relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-95"
+                        :class="itemClass"
                         aria-label="Notifications"
                     >
-                        <Bell class="size-[18px]" />
-                        <span
-                            v-if="unread > 0"
-                            class="absolute top-1.5 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-brand-foreground"
-                        >
-                            {{ unread > 9 ? '9+' : unread }}
-                        </span>
+                        <Bell class="size-5" />
+                        <span :class="labelClass">Alerts</span>
+                        <span v-if="unread > 0" :class="badgeClass">{{
+                            unread > 99 ? '99+' : unread
+                        }}</span>
                     </button>
                 </template>
             </NotificationsPopover>
-
-            <Tooltip>
-                <TooltipTrigger as-child>
-                    <button
-                        type="button"
-                        class="flex size-10 items-center justify-center rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-95"
-                        @click="cycleAppearance"
-                    >
-                        <Sun
-                            v-if="appearance === 'light'"
-                            class="size-[18px]"
-                        />
-                        <Moon
-                            v-else-if="appearance === 'dark'"
-                            class="size-[18px]"
-                        />
-                        <SunMoon v-else class="size-[18px]" />
-                    </button>
-                </TooltipTrigger>
-                <TooltipContent side="right"
-                    >Appearance: {{ appearance }}</TooltipContent
-                >
-            </Tooltip>
 
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <button
                         type="button"
-                        class="mt-1 rounded-full ring-offset-sidebar transition hover:ring-2 hover:ring-brand/40 hover:ring-offset-2"
+                        class="mt-1 mb-1 rounded-full ring-offset-sidebar transition hover:ring-2 hover:ring-brand/40 hover:ring-offset-2"
                         aria-label="Account menu"
                     >
                         <UserAvatar
@@ -235,37 +240,70 @@ const cycleAppearance = () => {
                         </span>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel
-                        class="text-[11px] tracking-wide text-muted-foreground uppercase"
-                        >Organizations</DropdownMenuLabel
-                    >
-                    <DropdownMenuItem
-                        v-for="org in organizations"
-                        :key="org.id"
-                        class="gap-2"
-                        @click="
-                            org.id === organization?.id
-                                ? undefined
-                                : switchOrganization(org.slug)
-                        "
-                    >
-                        <span
-                            class="flex size-5 items-center justify-center rounded-md bg-brand-soft text-[10px] font-bold text-brand-soft-foreground"
-                            >{{ org.name.slice(0, 1).toUpperCase() }}</span
-                        >
-                        <span class="flex-1 truncate">{{ org.name }}</span>
-                        <Zap
-                            v-if="org.id === organization?.id"
-                            class="size-3.5 text-brand"
-                        />
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem as-child>
                         <Link :href="editProfile()" class="gap-2"
-                            ><Settings class="size-4" /> Profile &
-                            settings</Link
+                            ><UserRound class="size-4" /> Profile</Link
                         >
                     </DropdownMenuItem>
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger class="gap-2">
+                            <Sun v-if="appearance === 'light'" class="size-4" />
+                            <Moon
+                                v-else-if="appearance === 'dark'"
+                                class="size-4"
+                            />
+                            <Monitor v-else class="size-4" />
+                            Appearance
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuRadioGroup
+                                :model-value="appearance"
+                                @update:model-value="
+                                    (value) =>
+                                        updateAppearance(value as Appearance)
+                                "
+                            >
+                                <DropdownMenuRadioItem value="light"
+                                    >Light</DropdownMenuRadioItem
+                                >
+                                <DropdownMenuRadioItem value="dark"
+                                    >Dark</DropdownMenuRadioItem
+                                >
+                                <DropdownMenuRadioItem value="system"
+                                    >System</DropdownMenuRadioItem
+                                >
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                    <DropdownMenuSub v-if="organizations.length > 1">
+                        <DropdownMenuSubTrigger class="gap-2">
+                            <span
+                                class="flex size-4 items-center justify-center rounded bg-brand-soft text-[9px] font-bold text-brand-soft-foreground"
+                                >{{
+                                    (organization?.name ?? '?')
+                                        .slice(0, 1)
+                                        .toUpperCase()
+                                }}</span
+                            >
+                            Switch organization
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent class="w-56">
+                            <DropdownMenuItem
+                                v-for="org in organizations"
+                                :key="org.id"
+                                class="gap-2"
+                                @click="switchTo(org.slug)"
+                            >
+                                <span class="flex-1 truncate">{{
+                                    org.name
+                                }}</span>
+                                <Check
+                                    v-if="org.id === organization?.id"
+                                    class="size-3.5 text-brand"
+                                />
+                            </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuSub>
                     <DropdownMenuItem
                         class="gap-2"
                         @click="emit('openShortcuts')"

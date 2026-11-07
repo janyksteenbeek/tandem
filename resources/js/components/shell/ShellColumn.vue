@@ -3,8 +3,8 @@ import { useSlots } from 'vue';
 
 /**
  * The shell's second column: a fixed-width aside beside the rail with a header,
- * a scrolling body and an optional footer. Mail and settings both render into
- * this frame.
+ * a scrolling body and an optional footer. Mail, projects and settings all render
+ * into this frame so the three areas feel like one app.
  */
 defineProps<{ label: string }>();
 
@@ -13,10 +13,12 @@ const slots = useSlots();
 
 <template>
     <aside
-        class="flex h-full w-60 shrink-0 flex-col border-r border-sidebar-border shell-column-surface"
+        class="flex h-full w-62 shrink-0 flex-col border-r border-sidebar-border shell-column-surface"
         :aria-label="label"
     >
-        <slot name="header" />
+        <div class="px-3 pt-2.5 pb-2">
+            <slot name="header" />
+        </div>
 
         <div class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-2 pb-4">
             <slot />

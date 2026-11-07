@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
-import { computed, inject, onBeforeUnmount, onMounted } from 'vue';
+import { computed, inject } from 'vue';
 import ProjectsSidebar from '@/components/projects/ProjectsSidebar.vue';
 import { useShellColumn } from '@/composables/useAppShell';
 import { useKeyboard } from '@/composables/useKeyboard';
 import { PRIORITY } from '@/lib/keyboard';
-import { rememberSection } from '@/lib/navigation';
 import type { CreateIssuePrefill } from '@/types';
 
 /**
@@ -65,23 +64,15 @@ useKeyboard(
             group: 'Navigate',
             handler: () => go('/mail'),
         },
+        {
+            keys: 'g s',
+            description: 'Go to settings',
+            group: 'Navigate',
+            handler: () => router.visit('/settings/profile'),
+        },
     ],
     { scope: 'Projects', priority: PRIORITY.section },
 );
-
-let stop: (() => void) | undefined;
-
-onMounted(() => {
-    rememberSection(window.location.pathname, slug.value || null);
-    stop = router.on('navigate', (event) =>
-        rememberSection(
-            new URL(event.detail.page.url, window.location.origin).pathname,
-            slug.value || null,
-        ),
-    );
-});
-
-onBeforeUnmount(() => stop?.());
 </script>
 
 <template>
