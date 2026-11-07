@@ -637,6 +637,12 @@ class DemoProjectsSeeder extends Seeder
             }
         }
 
+        if ($canceledAt && $issue->status_category !== StatusCategory::Canceled) {
+            $workflow = $this->workflows->issueWorkflowFor($this->organization, $issue->product);
+            $this->issueActions->setStatus($issue, $this->workflows->defaultStatusFor($workflow, StatusCategory::Canceled), $owner);
+            $issue = $issue->fresh();
+        }
+
         if (isset($spec['override'])) {
             $workflow = $this->workflows->issueWorkflowFor($this->organization, $issue->product);
             $this->issueActions->setStatus($issue->fresh(), $this->workflows->defaultStatusFor($workflow, StatusCategory::Completed), $owner, 'manual', true, $spec['override']);
