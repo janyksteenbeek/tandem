@@ -4,6 +4,7 @@ namespace App\Http\Resources\Mail;
 
 use App\Http\Resources\UserSummaryResource;
 use App\Models\Mail\Conversation;
+use App\Services\Projects\ConversationIssueLinks;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -50,6 +51,7 @@ class ConversationResource extends JsonResource
             'comments' => CommentResource::collection($this->comments)->resolve(),
             'events' => ConversationEventResource::collection($this->events)->resolve(),
             'drafts' => DraftResource::collection($drafts)->resolve(),
+            'linked_issues' => $user && $this->organization_id ? app(ConversationIssueLinks::class)->issuesFor($this->resource, $user) : [],
             'closed_at' => $this->closed_at?->toISOString(),
             'first_message_at' => $this->first_message_at?->toISOString(),
             'can' => [

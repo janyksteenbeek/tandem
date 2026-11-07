@@ -6,6 +6,7 @@ use App\Http\Controllers\Projects\InitiativeController;
 use App\Http\Controllers\Projects\IssueAttachmentController;
 use App\Http\Controllers\Projects\IssueCommentController;
 use App\Http\Controllers\Projects\IssueController;
+use App\Http\Controllers\Projects\IssueConversationLinkController;
 use App\Http\Controllers\Projects\IssueRelationController;
 use App\Http\Controllers\Projects\IssueViewController;
 use App\Http\Controllers\Projects\IssueWorkstreamController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectSettingsController;
 use App\Http\Controllers\Projects\ProjectsHomeController;
 use App\Http\Controllers\Projects\ReleaseController;
+use App\Http\Controllers\Projects\ReportController;
 use App\Http\Controllers\Projects\TeamController;
 use App\Http\Controllers\Projects\WorkflowController;
 use App\Http\Middleware\EnsureOrganizationMembership;
@@ -83,6 +85,11 @@ Route::prefix('{current_organization}')
             Route::delete('relations/{relation}', [IssueRelationController::class, 'destroy'])->name('relations.destroy');
 
             Route::post('comments', [IssueCommentController::class, 'store'])->name('comments.store');
+            Route::get('conversations', [IssueConversationLinkController::class, 'index'])->name('conversations.index');
+            Route::post('conversations', [IssueConversationLinkController::class, 'store'])->name('conversations.store');
+            Route::delete('conversations/{conversation}', [IssueConversationLinkController::class, 'destroy'])->name('conversations.destroy');
+            Route::post('conversations/{conversation}/share-excerpt', [IssueConversationLinkController::class, 'shareExcerpt'])->name('conversations.share-excerpt');
+            Route::post('conversations/{conversation}/share-attachment', [IssueConversationLinkController::class, 'shareAttachment'])->name('conversations.share-attachment');
             Route::post('attachments', [IssueAttachmentController::class, 'store'])->name('attachments.store');
         });
 
@@ -159,6 +166,10 @@ Route::prefix('{current_organization}')
             Route::delete('statuses/{status}', [WorkflowController::class, 'destroyStatus'])->name('statuses.destroy');
             Route::put('transitions', [WorkflowController::class, 'transitions'])->name('transitions');
         });
+
+        // --- Reports --------------------------------------------------------------------
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/data', [ReportController::class, 'data'])->name('reports.data');
 
         // --- Organization settings ----------------------------------------------------
         Route::get('settings/projects', [ProjectSettingsController::class, 'edit'])->name('settings.edit');

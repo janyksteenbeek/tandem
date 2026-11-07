@@ -90,9 +90,13 @@ class IssuePolicy
         return $this->manager($user, $issue);
     }
 
+    /**
+     * Anyone who can see the issue may link or share a conversation they themselves can read.
+     * The conversation policy is checked separately by the controller.
+     */
     public function linkConversation(User $user, Issue $issue): bool
     {
-        return $this->access->levelFor($user, $issue)?->isAtLeast(ProjectAccessLevel::Participant) ?? false;
+        return $this->view($user, $issue);
     }
 
     public function shareContent(User $user, Issue $issue): bool

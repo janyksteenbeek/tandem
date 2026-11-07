@@ -5,6 +5,7 @@ use App\Http\Controllers\Mail\CommentController;
 use App\Http\Controllers\Mail\ComposeController;
 use App\Http\Controllers\Mail\ContactController;
 use App\Http\Controllers\Mail\ConversationController;
+use App\Http\Controllers\Mail\ConversationIssueController;
 use App\Http\Controllers\Mail\DraftAttachmentController;
 use App\Http\Controllers\Mail\DraftController;
 use App\Http\Controllers\Mail\InboxViewController;
@@ -54,6 +55,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('{conversation}/share/{inbox}', [ConversationController::class, 'unshare'])->name('unshare');
         Route::delete('{conversation}', [ConversationController::class, 'destroy'])->name('destroy');
         Route::post('{conversation}/comments', [CommentController::class, 'store'])->name('comments.store');
+        Route::get('{conversation}/issues', [ConversationIssueController::class, 'index'])->name('issues.index');
+        Route::post('{conversation}/issues', [ConversationIssueController::class, 'store'])->name('issues.store');
+        Route::post('{conversation}/issues/share', [ConversationIssueController::class, 'share'])->name('issues.share');
+        Route::delete('{conversation}/issues/{identifier}', [ConversationIssueController::class, 'destroy'])->name('issues.destroy')->where('identifier', '[A-Za-z0-9]+-[0-9]+');
     });
 
     Route::patch('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
