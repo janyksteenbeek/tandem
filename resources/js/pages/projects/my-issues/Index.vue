@@ -2,6 +2,7 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Plus } from '@lucide/vue';
 import { computed, inject } from 'vue';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import IssueWorkspaceBody from '@/components/projects/IssueWorkspaceBody.vue';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
@@ -162,68 +163,66 @@ useKeyboard(
         :prefill="{ owner_id: meId }"
     >
         <template #header>
-            <header class="shrink-0 px-4 pt-2.5 pl-12 md:pl-4">
-                <div class="flex h-9 items-center gap-3">
-                    <h1 class="text-[15px] font-semibold tracking-[-0.01em]">
-                        My issues
-                    </h1>
+            <WorkspaceHeader :breadcrumbs="[{ label: 'My issues' }]">
+                <template #actions>
                     <Button
                         size="sm"
-                        class="ml-auto h-8 gap-1.5 text-brand-foreground brand-button-surface"
+                        variant="outline"
+                        class="h-8 gap-1.5"
                         @click="openCreateIssue({ owner_id: meId })"
                     >
                         <Plus class="size-3.5" /> New issue
-                        <Kbd
-                            class="h-4 min-w-4 bg-brand-foreground/15 px-1 text-[10px] text-brand-foreground/80"
-                            >C</Kbd
-                        >
+                        <Kbd class="h-4 min-w-4 px-1 text-[10px]">C</Kbd>
                     </Button>
-                </div>
-                <nav
-                    class="-mx-1 flex scrollbar-thin items-center gap-0.5 overflow-x-auto pb-1"
-                    aria-label="Buckets"
-                >
-                    <button
-                        v-for="tab in tabs"
-                        :key="tab.value"
-                        type="button"
-                        :class="
-                            cn(
-                                'flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[12.5px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
-                                bucket === tab.value &&
-                                    'bg-brand-soft/70 font-medium text-brand-soft-foreground hover:bg-brand-soft hover:text-brand-soft-foreground',
-                            )
-                        "
-                        :aria-current="
-                            bucket === tab.value ? 'page' : undefined
-                        "
-                        @click="switchBucket(tab.value)"
+                </template>
+                <template #tabs>
+                    <nav
+                        class="-mx-1 flex scrollbar-thin items-center gap-0.5 overflow-x-auto pb-1.5"
+                        aria-label="Buckets"
                     >
-                        {{ tab.label }}
-                        <span
-                            v-if="
-                                buckets === undefined && tab.value !== 'recent'
-                            "
-                            class="h-3 w-4 shimmer rounded"
-                        />
-                        <span
-                            v-else-if="
-                                buckets && buckets[tab.value] !== undefined
-                            "
+                        <button
+                            v-for="tab in tabs"
+                            :key="tab.value"
+                            type="button"
                             :class="
                                 cn(
-                                    'text-[10.5px] tabular-nums',
-                                    tab.value === 'overdue' &&
-                                        buckets[tab.value] > 0
-                                        ? 'font-semibold text-destructive'
-                                        : 'text-muted-foreground/80',
+                                    'flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[12.5px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
+                                    bucket === tab.value &&
+                                        'bg-brand-soft/70 font-medium text-brand-soft-foreground hover:bg-brand-soft hover:text-brand-soft-foreground',
                                 )
                             "
-                            >{{ buckets[tab.value] }}</span
+                            :aria-current="
+                                bucket === tab.value ? 'page' : undefined
+                            "
+                            @click="switchBucket(tab.value)"
                         >
-                    </button>
-                </nav>
-            </header>
+                            {{ tab.label }}
+                            <span
+                                v-if="
+                                    buckets === undefined &&
+                                    tab.value !== 'recent'
+                                "
+                                class="h-3 w-4 shimmer rounded"
+                            />
+                            <span
+                                v-else-if="
+                                    buckets && buckets[tab.value] !== undefined
+                                "
+                                :class="
+                                    cn(
+                                        'text-[10.5px] tabular-nums',
+                                        tab.value === 'overdue' &&
+                                            buckets[tab.value] > 0
+                                            ? 'font-semibold text-destructive'
+                                            : 'text-muted-foreground/80',
+                                    )
+                                "
+                                >{{ buckets[tab.value] }}</span
+                            >
+                        </button>
+                    </nav>
+                </template>
+            </WorkspaceHeader>
         </template>
     </IssueWorkspaceBody>
 </template>

@@ -2,6 +2,7 @@
 import { Head, usePage } from '@inertiajs/vue3';
 import { Plus } from '@lucide/vue';
 import { computed, inject, onMounted } from 'vue';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import IssueWorkspaceBody from '@/components/projects/IssueWorkspaceBody.vue';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
@@ -46,6 +47,14 @@ const openCreateIssue = inject<(prefill?: CreateIssuePrefill) => void>(
 );
 
 const title = computed(() => props.view?.name ?? 'Issues');
+const crumbs = computed(() =>
+    props.view
+        ? [
+              { label: 'Issues', href: `/${organization.value?.slug}/issues` },
+              { label: props.view.name },
+          ]
+        : [{ label: 'Issues' }],
+);
 const subtitle = computed(() =>
     props.view
         ? {
@@ -83,31 +92,19 @@ onMounted(() => {
         empty-key="default"
     >
         <template #header>
-            <header
-                class="flex h-12 shrink-0 items-center gap-3 px-4 pl-12 md:pl-4"
-            >
-                <div class="min-w-0">
-                    <h1
-                        class="truncate text-[15px] font-semibold tracking-[-0.01em]"
+            <WorkspaceHeader :breadcrumbs="crumbs" :subtitle="subtitle">
+                <template #actions>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        class="h-8 gap-1.5"
+                        @click="openCreateIssue()"
                     >
-                        {{ title }}
-                    </h1>
-                    <p class="truncate text-[11.5px] text-muted-foreground">
-                        {{ subtitle }}
-                    </p>
-                </div>
-                <Button
-                    size="sm"
-                    class="ml-auto h-8 gap-1.5 text-brand-foreground brand-button-surface"
-                    @click="openCreateIssue()"
-                >
-                    <Plus class="size-3.5" /> New issue
-                    <Kbd
-                        class="h-4 min-w-4 bg-brand-foreground/15 px-1 text-[10px] text-brand-foreground/80"
-                        >C</Kbd
-                    >
-                </Button>
-            </header>
+                        <Plus class="size-3.5" /> New issue
+                        <Kbd class="h-4 min-w-4 px-1 text-[10px]">C</Kbd>
+                    </Button>
+                </template>
+            </WorkspaceHeader>
         </template>
     </IssueWorkspaceBody>
 </template>

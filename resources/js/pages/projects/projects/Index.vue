@@ -2,6 +2,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { FolderKanban, Plus } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import CreateProjectDialog from '@/components/projects/dialogs/CreateProjectDialog.vue';
 import ProjectRows from '@/components/projects/workspace/ProjectRows.vue';
 import { Button } from '@/components/ui/button';
@@ -74,20 +75,11 @@ const grouped = computed(() => {
     <Head title="Projects" />
 
     <div class="flex h-full min-h-0 flex-col">
-        <header
-            class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-3 pl-12 sm:px-6 md:pl-6"
+        <WorkspaceHeader
+            :breadcrumbs="[{ label: 'Projects' }]"
+            subtitle="Initiatives with a goal and a target date."
         >
-            <div>
-                <h1
-                    class="font-display text-xl font-semibold tracking-[-0.01em]"
-                >
-                    Projects
-                </h1>
-                <p class="text-[12px] text-muted-foreground">
-                    Initiatives with a goal and a target date.
-                </p>
-            </div>
-            <div class="flex items-center gap-2">
+            <template #meta>
                 <div class="flex rounded-lg border p-0.5">
                     <button
                         v-for="filter in filters"
@@ -106,15 +98,17 @@ const grouped = computed(() => {
                         {{ filter.label }}
                     </button>
                 </div>
+            </template>
+            <template #actions>
                 <Button
                     v-if="can.create"
                     size="sm"
-                    class="gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
+                    class="h-8 gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
                     @click="createOpen = true"
                     ><Plus class="size-3.5" /> New project</Button
                 >
-            </div>
-        </header>
+            </template>
+        </WorkspaceHeader>
 
         <div
             class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6"

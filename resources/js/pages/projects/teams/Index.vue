@@ -2,6 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Users } from '@lucide/vue';
 import { computed } from 'vue';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import AvatarStack from '@/components/projects/shared/AvatarStack.vue';
 import InboxDot from '@/components/shared/InboxDot.vue';
 import type { CycleSummary, TeamSummary, UserSummary } from '@/types';
@@ -33,27 +34,19 @@ const ordered = computed(() =>
     <Head title="Teams" />
 
     <div class="flex h-full min-h-0 flex-col">
-        <header
-            class="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 pl-12 sm:px-6 md:pl-6"
+        <WorkspaceHeader
+            :breadcrumbs="[{ label: 'Teams' }]"
+            subtitle="Who does the work. Every team has its own workflow and cycles."
         >
-            <div>
-                <h1
-                    class="font-display text-xl font-semibold tracking-[-0.01em]"
+            <template #actions>
+                <Link
+                    v-if="canManage"
+                    :href="`/settings/organizations/${slug}/teams`"
+                    class="text-[12.5px] text-brand hover:underline"
+                    >Manage teams</Link
                 >
-                    Teams
-                </h1>
-                <p class="text-[12px] text-muted-foreground">
-                    Who does the work. Every team has its own workflow and
-                    cycles.
-                </p>
-            </div>
-            <Link
-                v-if="canManage"
-                :href="`/settings/organizations/${slug}/teams`"
-                class="text-[12.5px] text-brand hover:underline"
-                >Manage teams</Link
-            >
-        </header>
+            </template>
+        </WorkspaceHeader>
 
         <div
             class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6"

@@ -10,6 +10,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import IssueWorkspaceBody from '@/components/projects/IssueWorkspaceBody.vue';
 import Burndown from '@/components/projects/charts/Burndown.vue';
 import VelocityBars from '@/components/projects/charts/VelocityBars.vue';
@@ -23,7 +24,6 @@ import {
 } from '@/components/projects/cycles/cycleMeta';
 import ConfirmDialog from '@/components/projects/dialogs/ConfirmDialog.vue';
 import CycleDialog from '@/components/projects/dialogs/CycleDialog.vue';
-import Breadcrumbs from '@/components/projects/workspace/Breadcrumbs.vue';
 import OverviewSection from '@/components/projects/workspace/OverviewSection.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -260,156 +260,135 @@ const container = computed(() => ({
     <Head :title="`${cycle.name} · ${team.name}`" />
 
     <div class="flex h-full min-h-0 flex-col">
-        <header
-            class="shrink-0 border-b bg-background/95 px-4 pt-3 pb-3 backdrop-blur sm:px-6"
+        <WorkspaceHeader
+            :breadcrumbs="[
+                { label: 'Teams', href: `/${slug}/teams` },
+                { label: team.name, href: teamBase },
+                { label: 'Cycles', href: `${teamBase}/cycles` },
+                { label: cycle.name },
+            ]"
+            :title="cycle.name"
         >
-            <Breadcrumbs
-                :items="[
-                    { label: 'Teams', href: `/${slug}/teams` },
-                    { label: team.name, href: teamBase },
-                    { label: 'Cycles', href: `${teamBase}/cycles` },
-                    { label: cycle.name },
-                ]"
-                class="pl-9 md:pl-0"
-            />
-            <div
-                class="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-2"
-            >
-                <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                        <h1
-                            class="truncate font-display text-xl leading-tight font-semibold tracking-[-0.01em]"
-                        >
-                            {{ cycle.name }}
-                        </h1>
-                        <span
-                            :class="
-                                cn(
-                                    'rounded-full px-2 py-0.5 text-[11px] font-medium',
-                                    CYCLE_STATUS[cycle.status].className,
-                                )
-                            "
-                            >{{ CYCLE_STATUS[cycle.status].label }}</span
-                        >
-                    </div>
-                    <p class="text-[12px] text-muted-foreground">
-                        {{ cycleDates(cycle) }}
-                        <template v-if="cycle.status === 'active'">
-                            · {{ left }} day{{
-                                left === 1 ? '' : 's'
-                            }}
-                            left</template
-                        >
-                    </p>
+            <template #title-extra>
+                <span
+                    :class="
+                        cn(
+                            'rounded-full px-2 py-0.5 text-[11px] font-medium',
+                            CYCLE_STATUS[cycle.status].className,
+                        )
+                    "
+                    >{{ CYCLE_STATUS[cycle.status].label }}</span
+                >
+            </template>
+            <template #subtitle>
+                {{ cycleDates(cycle) }}
+                <template v-if="cycle.status === 'active'">
+                    · {{ left }} day{{ left === 1 ? '' : 's' }} left</template
+                >
+            </template>
+            <template #actions>
+                <div class="mr-2 flex items-center rounded-md border">
+                    <Link
+                        v-if="previous"
+                        :href="cycleUrl(previous)"
+                        class="flex size-7 items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground"
+                        :aria-label="`Previous: ${previous.name}`"
+                        ><ChevronLeft class="size-3.5"
+                    /></Link>
+                    <span
+                        v-else
+                        class="flex size-7 items-center justify-center text-muted-foreground/40"
+                        ><ChevronLeft class="size-3.5"
+                    /></span>
+                    <Popover>
+                        <PopoverTrigger as-child>
+                            <button
+                                type="button"
+                                class="h-7 border-x px-2 text-[11.5px] text-muted-foreground tabular-nums hover:bg-accent hover:text-foreground"
+                            >
+                                #{{ cycle.number }}
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent class="w-56 p-1" align="end">
+                            <Link
+                                v-for="c in [...ordered].reverse()"
+                                :key="c.uuid"
+                                :href="cycleUrl(c)"
+                                :class="
+                                    cn(
+                                        'flex items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] hover:bg-accent',
+                                        c.uuid === cycle.uuid &&
+                                            'bg-brand-soft/60 text-brand-soft-foreground',
+                                    )
+                                "
+                            >
+                                <span class="truncate">{{ c.name }}</span>
+                                <span
+                                    class="ml-auto text-[11px] text-muted-foreground"
+                                    >{{ CYCLE_STATUS[c.status].label }}</span
+                                >
+                            </Link>
+                        </PopoverContent>
+                    </Popover>
+                    <Link
+                        v-if="next"
+                        :href="cycleUrl(next)"
+                        class="flex size-7 items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground"
+                        :aria-label="`Next: ${next.name}`"
+                        ><ChevronRight class="size-3.5"
+                    /></Link>
+                    <span
+                        v-else
+                        class="flex size-7 items-center justify-center text-muted-foreground/40"
+                        ><ChevronRight class="size-3.5"
+                    /></span>
                 </div>
 
-                <div class="flex items-center gap-1.5">
-                    <div class="mr-2 flex items-center rounded-md border">
-                        <Link
-                            v-if="previous"
-                            :href="cycleUrl(previous)"
-                            class="flex size-7 items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground"
-                            :aria-label="`Previous: ${previous.name}`"
-                            ><ChevronLeft class="size-3.5"
-                        /></Link>
-                        <span
-                            v-else
-                            class="flex size-7 items-center justify-center text-muted-foreground/40"
-                            ><ChevronLeft class="size-3.5"
-                        /></span>
-                        <Popover>
-                            <PopoverTrigger as-child>
-                                <button
-                                    type="button"
-                                    class="h-7 border-x px-2 text-[11.5px] text-muted-foreground tabular-nums hover:bg-accent hover:text-foreground"
-                                >
-                                    #{{ cycle.number }}
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent class="w-56 p-1" align="end">
-                                <Link
-                                    v-for="c in [...ordered].reverse()"
-                                    :key="c.uuid"
-                                    :href="cycleUrl(c)"
-                                    :class="
-                                        cn(
-                                            'flex items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] hover:bg-accent',
-                                            c.uuid === cycle.uuid &&
-                                                'bg-brand-soft/60 text-brand-soft-foreground',
-                                        )
-                                    "
-                                >
-                                    <span class="truncate">{{ c.name }}</span>
-                                    <span
-                                        class="ml-auto text-[11px] text-muted-foreground"
-                                        >{{
-                                            CYCLE_STATUS[c.status].label
-                                        }}</span
-                                    >
-                                </Link>
-                            </PopoverContent>
-                        </Popover>
-                        <Link
-                            v-if="next"
-                            :href="cycleUrl(next)"
-                            class="flex size-7 items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground"
-                            :aria-label="`Next: ${next.name}`"
-                            ><ChevronRight class="size-3.5"
-                        /></Link>
-                        <span
-                            v-else
-                            class="flex size-7 items-center justify-center text-muted-foreground/40"
-                            ><ChevronRight class="size-3.5"
-                        /></span>
-                    </div>
-
-                    <template v-if="team.can.lead">
-                        <Button
-                            v-if="cycle.status === 'upcoming'"
-                            size="sm"
-                            class="h-8 gap-1.5"
-                            @click="start"
-                            ><Play class="size-3.5" /> Start cycle</Button
-                        >
-                        <Button
-                            v-else-if="cycle.status === 'active'"
-                            size="sm"
-                            variant="outline"
-                            class="h-8 gap-1.5"
-                            @click="completeOpen = true"
-                            ><Square class="size-3.5" /> Complete</Button
-                        >
-                        <DropdownMenu>
-                            <DropdownMenuTrigger as-child>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    class="size-8"
-                                    aria-label="Cycle actions"
-                                    ><MoreHorizontal class="size-4"
-                                /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="w-44">
-                                <DropdownMenuItem @click="editOpen = true"
-                                    >Edit cycle</DropdownMenuItem
-                                >
-                                <DropdownMenuItem @click="openSheet"
-                                    >Add issues</DropdownMenuItem
-                                >
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    class="text-destructive"
-                                    :disabled="cycle.status === 'active'"
-                                    @click="deleteOpen = true"
-                                    >Delete</DropdownMenuItem
-                                >
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </template>
-                </div>
-            </div>
-
-            <div class="mt-3 space-y-3">
+                <template v-if="team.can.lead">
+                    <Button
+                        v-if="cycle.status === 'upcoming'"
+                        size="sm"
+                        class="h-8 gap-1.5"
+                        @click="start"
+                        ><Play class="size-3.5" /> Start cycle</Button
+                    >
+                    <Button
+                        v-else-if="cycle.status === 'active'"
+                        size="sm"
+                        variant="outline"
+                        class="h-8 gap-1.5"
+                        @click="completeOpen = true"
+                        ><Square class="size-3.5" /> Complete</Button
+                    >
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                class="size-8"
+                                aria-label="Cycle actions"
+                                ><MoreHorizontal class="size-4"
+                            /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" class="w-44">
+                            <DropdownMenuItem @click="editOpen = true"
+                                >Edit cycle</DropdownMenuItem
+                            >
+                            <DropdownMenuItem @click="openSheet"
+                                >Add issues</DropdownMenuItem
+                            >
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                class="text-destructive"
+                                :disabled="cycle.status === 'active'"
+                                @click="deleteOpen = true"
+                                >Delete</DropdownMenuItem
+                            >
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </template>
+            </template>
+            <div class="space-y-3">
                 <div v-if="team.can.lead || cycle.goals" class="text-[13px]">
                     <Textarea
                         v-if="editingGoals"
@@ -443,7 +422,7 @@ const container = computed(() => ({
                 </div>
                 <CycleProgressStrip :summary="summary" :status="cycle.status" />
             </div>
-        </header>
+        </WorkspaceHeader>
 
         <div class="scrollbar-thin min-h-0 flex-1 overflow-y-auto">
             <div

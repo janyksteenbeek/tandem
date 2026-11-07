@@ -3,12 +3,12 @@ import { Head, router, usePage } from '@inertiajs/vue3';
 import { MoreHorizontal } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
 import ConfirmDialog from '@/components/projects/dialogs/ConfirmDialog.vue';
 import InitiativeDialog from '@/components/projects/dialogs/InitiativeDialog.vue';
 import type { Initiative } from '@/components/projects/dialogs/InitiativeDialog.vue';
 import { INITIATIVE_STATUS } from '@/components/projects/dialogs/InitiativeDialog.vue';
-import Breadcrumbs from '@/components/projects/workspace/Breadcrumbs.vue';
 import OverviewSection from '@/components/projects/workspace/OverviewSection.vue';
 import ProjectRows from '@/components/projects/workspace/ProjectRows.vue';
 import StatPill from '@/components/projects/workspace/StatPill.vue';
@@ -88,93 +88,75 @@ const MILESTONE_DOT: Record<string, string> = {
     <Head :title="initiative.name" />
 
     <div class="flex h-full min-h-0 flex-col">
-        <header
-            class="shrink-0 border-b bg-background/95 px-4 pt-3 pb-3 backdrop-blur sm:px-6"
+        <WorkspaceHeader
+            :breadcrumbs="[
+                { label: 'Initiatives', href: `/${slug}/initiatives` },
+                { label: initiative.name },
+            ]"
+            :title="initiative.name"
+            :color="initiative.color"
         >
-            <Breadcrumbs
-                :items="[
-                    { label: 'Initiatives', href: `/${slug}/initiatives` },
-                    { label: initiative.name },
-                ]"
-                class="pl-9 md:pl-0"
-            />
-            <div
-                class="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-2"
-            >
-                <div class="flex min-w-0 items-center gap-2.5">
-                    <InboxDot
-                        :color="initiative.color"
-                        size="md"
-                        class="size-3"
-                    />
-                    <h1
-                        class="truncate font-display text-xl leading-tight font-semibold tracking-[-0.01em]"
-                    >
-                        {{ initiative.name }}
-                    </h1>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
+            <template #meta>
+                <span
+                    class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
+                >
                     <span
-                        class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
-                    >
-                        <span
-                            :class="
-                                cn(
-                                    'size-1.5 rounded-full',
-                                    INITIATIVE_STATUS[initiative.status].dot,
-                                )
-                            "
-                        />{{ INITIATIVE_STATUS[initiative.status].label }}
-                    </span>
-                    <span
-                        class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
-                        ><ProgressRing :value="progress" :size="14" />{{
-                            Math.round(progress * 100)
-                        }}%</span
-                    >
-                    <span
-                        v-if="initiative.owner"
-                        class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
-                    >
-                        <UserAvatar
-                            :name="initiative.owner.name"
-                            :email="initiative.owner.email"
-                            :src="initiative.owner.avatar"
-                            :initials="initiative.owner.initials"
-                            size="xs"
-                        />{{ initiative.owner.name }}
-                    </span>
-                    <span
-                        v-if="initiative.target_date"
-                        class="text-[12px] text-muted-foreground"
-                        >Target {{ date(initiative.target_date) }}</span
-                    >
-                    <DropdownMenu v-if="initiative.can?.update">
-                        <DropdownMenuTrigger as-child>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                class="size-8"
-                                aria-label="Initiative actions"
-                                ><MoreHorizontal class="size-4"
-                            /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-44">
-                            <DropdownMenuItem @click="editOpen = true"
-                                >Edit initiative</DropdownMenuItem
-                            >
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                v-if="initiative.can?.delete"
-                                class="text-destructive"
-                                @click="deleteOpen = true"
-                                >Delete</DropdownMenuItem
-                            >
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
+                        :class="
+                            cn(
+                                'size-1.5 rounded-full',
+                                INITIATIVE_STATUS[initiative.status].dot,
+                            )
+                        "
+                    />{{ INITIATIVE_STATUS[initiative.status].label }}
+                </span>
+                <span
+                    class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
+                    ><ProgressRing :value="progress" :size="14" />{{
+                        Math.round(progress * 100)
+                    }}%</span
+                >
+                <span
+                    v-if="initiative.owner"
+                    class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
+                >
+                    <UserAvatar
+                        :name="initiative.owner.name"
+                        :email="initiative.owner.email"
+                        :src="initiative.owner.avatar"
+                        :initials="initiative.owner.initials"
+                        size="xs"
+                    />{{ initiative.owner.name }}
+                </span>
+                <span
+                    v-if="initiative.target_date"
+                    class="text-[12px] text-muted-foreground"
+                    >Target {{ date(initiative.target_date) }}</span
+                >
+                <DropdownMenu v-if="initiative.can?.update">
+                    <DropdownMenuTrigger as-child>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="size-8"
+                            aria-label="Initiative actions"
+                            ><MoreHorizontal class="size-4"
+                        /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" class="w-44">
+                        <DropdownMenuItem @click="editOpen = true"
+                            >Edit initiative</DropdownMenuItem
+                        >
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            v-if="initiative.can?.delete"
+                            class="text-destructive"
+                            @click="deleteOpen = true"
+                            >Delete</DropdownMenuItem
+                        >
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </template>
+        </WorkspaceHeader>
 
         <div
             class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6"

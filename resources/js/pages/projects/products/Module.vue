@@ -2,8 +2,8 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Layers, Plus } from '@lucide/vue';
 import { computed, inject } from 'vue';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import IssueWorkspaceBody from '@/components/projects/IssueWorkspaceBody.vue';
-import Breadcrumbs from '@/components/projects/workspace/Breadcrumbs.vue';
 import CompactIssueRow from '@/components/projects/workspace/CompactIssueRow.vue';
 import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
 import StatPill from '@/components/projects/workspace/StatPill.vue';
@@ -93,71 +93,47 @@ const container = computed(() => ({
             empty-key="product"
         >
             <template #header>
-                <header
-                    class="border-b bg-background/95 px-4 pt-3 pb-3 sm:px-6"
+                <WorkspaceHeader
+                    :breadcrumbs="crumbs"
+                    :title="module.name"
+                    :subtitle="module.description"
+                    :color="module.color ?? product.color"
                 >
-                    <Breadcrumbs :items="crumbs" class="pl-9 md:pl-0" />
-                    <div
-                        class="mt-2 flex flex-wrap items-start justify-between gap-3"
-                    >
-                        <div class="flex min-w-0 items-center gap-2.5">
-                            <InboxDot
-                                :color="module.color ?? product.color"
-                                size="md"
-                                class="size-3"
-                            />
-                            <div class="min-w-0">
-                                <h1
-                                    class="truncate font-display text-xl leading-tight font-semibold tracking-[-0.01em]"
-                                >
-                                    {{ module.name }}
-                                </h1>
-                                <p
-                                    v-if="module.description"
-                                    class="line-clamp-1 text-[12px] text-muted-foreground"
-                                >
-                                    {{ module.description }}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span
-                                v-if="module.owner"
-                                class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
-                                ><UserAvatar
-                                    :name="module.owner.name"
-                                    :email="module.owner.email"
-                                    :src="module.owner.avatar"
-                                    :initials="module.owner.initials"
-                                    size="xs"
-                                />{{ module.owner.name }}</span
-                            >
-                            <span
-                                v-if="module.teams?.length"
-                                class="flex items-center -space-x-0.5"
-                                ><InboxDot
-                                    v-for="team in module.teams"
-                                    :key="team.id"
-                                    :color="team.color"
-                                    size="sm"
-                            /></span>
-                            <Button
+                    <template #meta>
+                        <span
+                            v-if="module.owner"
+                            class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
+                            ><UserAvatar
+                                :name="module.owner.name"
+                                :email="module.owner.email"
+                                :src="module.owner.avatar"
+                                :initials="module.owner.initials"
+                                size="xs"
+                            />{{ module.owner.name }}</span
+                        >
+                        <span
+                            v-if="module.teams?.length"
+                            class="flex items-center -space-x-0.5"
+                            ><InboxDot
+                                v-for="team in module.teams"
+                                :key="team.id"
+                                :color="team.color"
                                 size="sm"
-                                variant="outline"
-                                class="h-8 gap-1.5"
-                                @click="
-                                    openCreateIssue({
-                                        product_id: product.id,
-                                        module_ids: [module.id],
-                                    })
-                                "
-                                ><Plus class="size-3.5" /> New issue</Button
-                            >
-                        </div>
-                    </div>
-                    <div
-                        class="mt-3 grid gap-x-8 gap-y-3 lg:grid-cols-[auto_1fr]"
-                    >
+                        /></span>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            class="h-8 gap-1.5"
+                            @click="
+                                openCreateIssue({
+                                    product_id: product.id,
+                                    module_ids: [module.id],
+                                })
+                            "
+                            ><Plus class="size-3.5" /> New issue</Button
+                        >
+                    </template>
+                    <div class="grid gap-x-8 gap-y-3 lg:grid-cols-[auto_1fr]">
                         <StatPill
                             :items="[
                                 { label: 'open', value: overview.open },
@@ -258,7 +234,7 @@ const container = computed(() => ({
                             </div>
                         </div>
                     </details>
-                </header>
+                </WorkspaceHeader>
             </template>
         </IssueWorkspaceBody>
     </div>

@@ -2,6 +2,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Compass, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
 import InitiativeDialog from '@/components/projects/dialogs/InitiativeDialog.vue';
 import type { Initiative } from '@/components/projects/dialogs/InitiativeDialog.vue';
@@ -51,27 +52,20 @@ const progress = (i: Initiative) => {
     <Head title="Initiatives" />
 
     <div class="flex h-full min-h-0 flex-col">
-        <header
-            class="flex shrink-0 items-start justify-between gap-4 border-b px-4 py-3 pl-12 sm:px-6 md:pl-6"
+        <WorkspaceHeader
+            :breadcrumbs="[{ label: 'Initiatives' }]"
+            subtitle="Strategic groupings of projects, with progress rolled up."
         >
-            <div>
-                <h1
-                    class="font-display text-xl font-semibold tracking-[-0.01em]"
+            <template #actions>
+                <Button
+                    v-if="can.create"
+                    size="sm"
+                    class="h-8 gap-1.5"
+                    @click="createOpen = true"
+                    ><Plus class="size-3.5" /> New initiative</Button
                 >
-                    Initiatives
-                </h1>
-                <p class="text-[12px] text-muted-foreground">
-                    Strategic groupings of projects, with progress rolled up.
-                </p>
-            </div>
-            <Button
-                v-if="can.create"
-                size="sm"
-                class="h-8 gap-1.5"
-                @click="createOpen = true"
-                ><Plus class="size-3.5" /> New initiative</Button
-            >
-        </header>
+            </template>
+        </WorkspaceHeader>
 
         <div
             class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6"

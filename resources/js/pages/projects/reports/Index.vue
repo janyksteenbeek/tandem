@@ -3,6 +3,7 @@ import { Deferred, Head, Link, router, usePage } from '@inertiajs/vue3';
 import { AlertTriangle, ArrowRight, CalendarClock } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { index as reportsIndex } from '@/actions/App/Http/Controllers/Projects/ReportController';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
 import ChartTooltip from '@/components/projects/charts/ChartTooltip.vue';
 import Sparkline from '@/components/projects/charts/Sparkline.vue';
@@ -12,7 +13,6 @@ import DueDateBadge from '@/components/projects/shared/DueDateBadge.vue';
 import IssueIdentifier from '@/components/projects/shared/IssueIdentifier.vue';
 import PriorityIcon from '@/components/projects/shared/PriorityIcon.vue';
 import StatusIcon from '@/components/projects/shared/StatusIcon.vue';
-import Breadcrumbs from '@/components/projects/workspace/Breadcrumbs.vue';
 import OverviewSection from '@/components/projects/workspace/OverviewSection.vue';
 import {
     NativeSelect,
@@ -495,92 +495,74 @@ const categoryLabel = (category: StatusCategory) =>
     <Head title="Reports" />
 
     <div class="flex h-full min-h-0 flex-col">
-        <header
-            class="shrink-0 border-b bg-background/95 px-4 pt-3 pb-3 backdrop-blur sm:px-6"
+        <WorkspaceHeader
+            :breadcrumbs="[
+                { label: 'Reports', href: `/${slug}/reports` },
+                { label: scope.name },
+            ]"
+            :title="scope.name"
+            subtitle="Issues are counted once however many teams work on them. Team figures count workstreams."
         >
-            <Breadcrumbs
-                :items="[
-                    { label: 'Reports', href: `/${slug}/reports` },
-                    { label: scope.name },
-                ]"
-                class="pl-9 md:pl-0"
-            />
-            <div
-                class="mt-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-3"
-            >
-                <div class="min-w-0">
-                    <h1
-                        class="truncate font-display text-xl leading-tight font-semibold tracking-[-0.01em]"
+            <template #actions>
+                <NativeSelect
+                    :model-value="scopeType"
+                    class="h-7 py-0 text-[12px]"
+                    aria-label="Report scope"
+                    @change="changeType"
+                >
+                    <NativeSelectOption value="organization"
+                        >Organization</NativeSelectOption
                     >
-                        {{ scope.name }}
-                    </h1>
-                    <p class="text-[12px] text-muted-foreground">
-                        Issues are counted once however many teams work on them.
-                        Team figures count workstreams.
-                    </p>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-2">
-                    <NativeSelect
-                        :model-value="scopeType"
-                        class="h-7 py-0 text-[12px]"
-                        aria-label="Report scope"
-                        @change="changeType"
+                    <NativeSelectOption
+                        value="product"
+                        :disabled="options.products.length === 0"
+                        >Product</NativeSelectOption
                     >
-                        <NativeSelectOption value="organization"
-                            >Organization</NativeSelectOption
-                        >
-                        <NativeSelectOption
-                            value="product"
-                            :disabled="options.products.length === 0"
-                            >Product</NativeSelectOption
-                        >
-                        <NativeSelectOption
-                            value="project"
-                            :disabled="options.projects.length === 0"
-                            >Project</NativeSelectOption
-                        >
-                        <NativeSelectOption
-                            value="team"
-                            :disabled="options.teams.length === 0"
-                            >Team</NativeSelectOption
-                        >
-                    </NativeSelect>
-                    <NativeSelect
-                        v-if="scopeType !== 'organization'"
-                        :model-value="scopeId"
-                        class="h-7 max-w-56 py-0 text-[12px]"
-                        :aria-label="`Which ${scopeType}`"
-                        @change="changeEntity"
+                    <NativeSelectOption
+                        value="project"
+                        :disabled="options.projects.length === 0"
+                        >Project</NativeSelectOption
                     >
-                        <NativeSelectOption
-                            v-for="entity in entities"
-                            :key="entity.id"
-                            :value="entity.id"
-                            >{{ entity.label }}</NativeSelectOption
-                        >
-                    </NativeSelect>
-                    <ToggleGroup
-                        type="single"
-                        :model-value="activePreset ?? ''"
-                        size="sm"
-                        variant="outline"
-                        aria-label="Date range"
-                        @update:model-value="(v) => v && changeRange(String(v))"
+                    <NativeSelectOption
+                        value="team"
+                        :disabled="options.teams.length === 0"
+                        >Team</NativeSelectOption
                     >
-                        <ToggleGroupItem
-                            v-for="preset in RANGE_PRESETS"
-                            :key="preset.key"
-                            :value="preset.key"
-                            class="h-7 px-2 text-[12px]"
-                            >{{
-                                preset.label.replace('Last ', '')
-                            }}</ToggleGroupItem
-                        >
-                    </ToggleGroup>
-                </div>
-            </div>
-        </header>
+                </NativeSelect>
+                <NativeSelect
+                    v-if="scopeType !== 'organization'"
+                    :model-value="scopeId"
+                    class="h-7 max-w-56 py-0 text-[12px]"
+                    :aria-label="`Which ${scopeType}`"
+                    @change="changeEntity"
+                >
+                    <NativeSelectOption
+                        v-for="entity in entities"
+                        :key="entity.id"
+                        :value="entity.id"
+                        >{{ entity.label }}</NativeSelectOption
+                    >
+                </NativeSelect>
+                <ToggleGroup
+                    type="single"
+                    :model-value="activePreset ?? ''"
+                    size="sm"
+                    variant="outline"
+                    aria-label="Date range"
+                    @update:model-value="(v) => v && changeRange(String(v))"
+                >
+                    <ToggleGroupItem
+                        v-for="preset in RANGE_PRESETS"
+                        :key="preset.key"
+                        :value="preset.key"
+                        class="h-7 px-2 text-[12px]"
+                        >{{
+                            preset.label.replace('Last ', '')
+                        }}</ToggleGroupItem
+                    >
+                </ToggleGroup>
+            </template>
+        </WorkspaceHeader>
 
         <div
             class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6"

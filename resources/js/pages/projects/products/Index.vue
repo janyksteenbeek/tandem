@@ -2,6 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Package, Plus } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import CreateProductDialog from '@/components/projects/dialogs/CreateProductDialog.vue';
 import AvatarStack from '@/components/projects/shared/AvatarStack.vue';
 import InboxDot from '@/components/shared/InboxDot.vue';
@@ -55,28 +56,20 @@ const archived = computed(() =>
     <Head title="Products" />
 
     <div class="flex h-full min-h-0 flex-col">
-        <header
-            class="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 pl-12 sm:px-6 md:pl-6"
+        <WorkspaceHeader
+            :breadcrumbs="[{ label: 'Products' }]"
+            :subtitle="`What ${page.props.currentOrganization?.name} builds and maintains.`"
         >
-            <div>
-                <h1
-                    class="font-display text-xl font-semibold tracking-[-0.01em]"
+            <template #actions>
+                <Button
+                    v-if="can.create"
+                    size="sm"
+                    class="h-8 gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
+                    @click="createOpen = true"
+                    ><Plus class="size-3.5" /> New product</Button
                 >
-                    Products
-                </h1>
-                <p class="text-[12px] text-muted-foreground">
-                    What {{ page.props.currentOrganization?.name }} builds and
-                    maintains.
-                </p>
-            </div>
-            <Button
-                v-if="can.create"
-                size="sm"
-                class="gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
-                @click="createOpen = true"
-                ><Plus class="size-3.5" /> New product</Button
-            >
-        </header>
+            </template>
+        </WorkspaceHeader>
 
         <div
             class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6"

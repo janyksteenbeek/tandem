@@ -10,11 +10,11 @@ import CommentThread from '@/components/projects/comments/CommentThread.vue';
 import ActivityTimeline from '@/components/projects/detail/ActivityTimeline.vue';
 import AttachmentList from '@/components/projects/detail/AttachmentList.vue';
 import DependencyList from '@/components/projects/detail/DependencyList.vue';
-import IssueBreadcrumbs from '@/components/projects/detail/IssueBreadcrumbs.vue';
 import IssueHeader from '@/components/projects/detail/IssueHeader.vue';
 import IssueProperties from '@/components/projects/detail/IssueProperties.vue';
 import LinkedConversations from '@/components/projects/detail/LinkedConversations.vue';
 import SharedContentList from '@/components/projects/detail/SharedContentList.vue';
+import IssueTopBar from '@/components/projects/detail/IssueTopBar.vue';
 import SubIssueList from '@/components/projects/detail/SubIssueList.vue';
 import WorkstreamsSection from '@/components/projects/detail/WorkstreamsSection.vue';
 import ConfirmDialog from '@/components/projects/dialogs/ConfirmDialog.vue';
@@ -59,7 +59,6 @@ const emit = defineEmits<{
 
 const page = usePage();
 const slug = computed(() => page.props.currentOrganization?.slug ?? '');
-const orgName = computed(() => page.props.currentOrganization?.name ?? '');
 
 const local = ref<Issue>(props.issue);
 const editingTitle = ref(false);
@@ -340,131 +339,132 @@ defineExpose({
 </script>
 
 <template>
-    <div class="flex h-full min-h-0 flex-col lg:flex-row">
-        <div class="scrollbar-thin min-h-0 flex-1 overflow-y-auto">
-            <div
-                class="mx-auto w-full max-w-3xl px-5 pt-12 pb-10 sm:px-8 md:pt-5"
-            >
-                <IssueBreadcrumbs
-                    :issue="local"
-                    :org-slug="slug"
-                    :org-name="orgName"
-                />
+    <div class="flex h-full min-h-0 flex-col">
+        <IssueTopBar
+            :issue="local"
+            :org-slug="slug"
+            @follow="(f) => actions.follow(local, f)"
+            @move="moveDialog = true"
+            @delete="deleteDialog = true"
+        />
+        <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
+            <div class="scrollbar-thin min-h-0 flex-1 overflow-y-auto">
+                <div class="mx-auto w-full max-w-3xl px-5 pt-5 pb-10 sm:px-8">
+                    <div>
+                        <IssueHeader
+                            ref="header"
+                            :issue="local"
+                            :statuses="statuses"
+                            @rename="(t) => actions.rename(local, t)"
+                            @status="(s) => actions.setStatus(local, s)"
+                            @priority="(p) => actions.setPriority(local, p)"
+                            @editing="(a) => (editingTitle = a)"
+                        />
+                    </div>
 
-                <div class="mt-3">
-                    <IssueHeader
-                        ref="header"
-                        :issue="local"
-                        :statuses="statuses"
-                        @rename="(t) => actions.rename(local, t)"
-                        @status="(s) => actions.setStatus(local, s)"
-                        @priority="(p) => actions.setPriority(local, p)"
-                        @follow="(f) => actions.follow(local, f)"
-                        @move="moveDialog = true"
-                        @delete="deleteDialog = true"
-                        @editing="(a) => (editingTitle = a)"
-                    />
-                </div>
+                    <div class="mt-3 lg:hidden">
+                        <button
+                            type="button"
+                            class="flex items-center gap-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase"
+                            :aria-expanded="propertiesOpen"
+                            @click="propertiesOpen = !propertiesOpen"
+                        >
+                            <ChevronRight
+                                :class="
+                                    cn(
+                                        'size-3 transition-transform',
+                                        propertiesOpen && 'rotate-90',
+                                    )
+                                "
+                            />
+                            Properties
+                        </button>
+                        <Collapse :open="propertiesOpen">
+                            <div
+                                data-issue-props
+                                class="mt-2 rounded-lg border bg-surface/60 px-3 py-2"
+                            >
+                                <IssueProperties
+                                    :issue="local"
+                                    :lookups="lookups"
+                                    :org-slug="slug"
+                                    stacked
+                                />
+                            </div>
+                        </Collapse>
+                    </div>
 
-                <div class="mt-3 lg:hidden">
-                    <button
-                        type="button"
-                        class="flex items-center gap-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase"
-                        :aria-expanded="propertiesOpen"
-                        @click="propertiesOpen = !propertiesOpen"
-                    >
-                        <ChevronRight
-                            :class="
-                                cn(
-                                    'size-3 transition-transform',
-                                    propertiesOpen && 'rotate-90',
-                                )
+                    <div class="relative mt-4">
+                        <RichTextEditor
+                            v-if="local.can.update"
+                            v-model="description"
+                            placeholder="Add a description… Type @ to mention someone."
+                            :members="lookups.members"
+                            :upload-url="`/${slug}/issues/${local.identifier}/attachments`"
+                            min-height="4rem"
+                            @focus="editingDescription = true"
+                            @blur="
+                                () => {
+                                    editingDescription = false;
+                                    void persistDescription();
+                                }
                             "
                         />
-                        Properties
-                    </button>
-                    <Collapse :open="propertiesOpen">
                         <div
-                            data-issue-props
-                            class="mt-2 rounded-lg border bg-surface/60 px-3 py-2"
+                            v-else-if="local.description_html"
+                            class="prose-tandem text-[14px]"
+                            v-html="safeDescription"
+                        />
+                        <p v-else class="text-[13px] text-muted-foreground">
+                            No description.
+                        </p>
+                        <span
+                            v-if="saveState !== 'idle'"
+                            class="absolute -top-5 right-0 text-[11px] text-muted-foreground transition-opacity"
+                            >{{
+                                saveState === 'saving' ? 'Saving…' : 'Saved'
+                            }}</span
                         >
-                            <IssueProperties
-                                :issue="local"
-                                :lookups="lookups"
-                                :org-slug="slug"
-                                stacked
-                            />
-                        </div>
-                    </Collapse>
-                </div>
+                    </div>
 
-                <div class="relative mt-4">
-                    <RichTextEditor
-                        v-if="local.can.update"
-                        v-model="description"
-                        placeholder="Add a description… Type @ to mention someone."
-                        :members="lookups.members"
-                        :upload-url="`/${slug}/issues/${local.identifier}/attachments`"
-                        min-height="4rem"
-                        @focus="editingDescription = true"
-                        @blur="
-                            () => {
-                                editingDescription = false;
-                                void persistDescription();
-                            }
-                        "
-                    />
-                    <div
-                        v-else-if="local.description_html"
-                        class="prose-tandem text-[14px]"
-                        v-html="safeDescription"
-                    />
-                    <p v-else class="text-[13px] text-muted-foreground">
-                        No description.
-                    </p>
-                    <span
-                        v-if="saveState !== 'idle'"
-                        class="absolute -top-5 right-0 text-[11px] text-muted-foreground transition-opacity"
-                        >{{
-                            saveState === 'saving' ? 'Saving…' : 'Saved'
-                        }}</span
-                    >
-                </div>
-
-                <div class="mt-8 space-y-8">
-                    <WorkstreamsSection :issue="local" :lookups="lookups" />
-                    <SubIssueList :issue="local" />
-                    <DependencyList :issue="local" />
-                    <AttachmentList :issue="local" @change="setAttachments" />
-                    <SharedContentList :items="local.shared_content" />
-                    <LinkedConversations
-                        :data="linkedConversations"
-                        :can-link="local.can.link_conversations"
-                        :identifier="local.identifier"
-                        @link="emit('linkConversation')"
-                    />
-                    <ActivityTimeline :activity="activity" />
-                    <CommentThread
-                        ref="comments"
-                        :issue="local"
-                        :comments="local.comments"
-                        :members="lookups.members"
-                        @change="setComments"
-                    />
+                    <div class="mt-8 space-y-8">
+                        <WorkstreamsSection :issue="local" :lookups="lookups" />
+                        <SubIssueList :issue="local" />
+                        <DependencyList :issue="local" />
+                        <AttachmentList
+                            :issue="local"
+                            @change="setAttachments"
+                        />
+                        <SharedContentList :items="local.shared_content" />
+                        <LinkedConversations
+                            :data="linkedConversations"
+                            :can-link="local.can.link_conversations"
+                            :identifier="local.identifier"
+                            @link="emit('linkConversation')"
+                        />
+                        <ActivityTimeline :activity="activity" />
+                        <CommentThread
+                            ref="comments"
+                            :issue="local"
+                            :comments="local.comments"
+                            :members="lookups.members"
+                            @change="setComments"
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <aside
-            data-issue-props
-            class="hidden scrollbar-thin w-80 shrink-0 overflow-y-auto border-l bg-surface/60 lg:block"
-        >
-            <IssueProperties
-                :issue="local"
-                :lookups="lookups"
-                :org-slug="slug"
-            />
-        </aside>
+            <aside
+                data-issue-props
+                class="hidden scrollbar-thin w-80 shrink-0 overflow-y-auto border-l bg-surface/60 lg:block"
+            >
+                <IssueProperties
+                    :issue="local"
+                    :lookups="lookups"
+                    :org-slug="slug"
+                />
+            </aside>
+        </div>
 
         <ConfirmDialog
             v-model:open="deleteDialog"

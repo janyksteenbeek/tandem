@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/vue3';
 import { AlertTriangle, MoreHorizontal, Plus, Search, X } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
 import ConfirmDialog from '@/components/projects/dialogs/ConfirmDialog.vue';
 import ReleaseDialog from '@/components/projects/dialogs/ReleaseDialog.vue';
 import type { ReleaseDetail } from '@/components/projects/dialogs/ReleaseDialog.vue';
@@ -10,7 +11,6 @@ import RichTextEditor from '@/components/projects/editor/RichTextEditor.vue';
 import { DatePicker } from '@/components/projects/pickers';
 import IssueIdentifier from '@/components/projects/shared/IssueIdentifier.vue';
 import StatusIcon from '@/components/projects/shared/StatusIcon.vue';
-import Breadcrumbs from '@/components/projects/workspace/Breadcrumbs.vue';
 import CompactIssueRow from '@/components/projects/workspace/CompactIssueRow.vue';
 import OverviewSection from '@/components/projects/workspace/OverviewSection.vue';
 import SegmentedProgress from '@/components/projects/workspace/SegmentedProgress.vue';
@@ -227,117 +227,102 @@ const onReleaseSaved = (saved: ReleaseDetail) => {
     <Head :title="`${release.name} · ${product.name}`" />
 
     <div class="flex h-full min-h-0 flex-col">
-        <header
-            class="shrink-0 border-b bg-background/95 px-4 pt-3 pb-3 backdrop-blur sm:px-6"
+        <WorkspaceHeader
+            :breadcrumbs="[
+                { label: 'Products', href: `/${slug}/products` },
+                { label: product.name, href: productBase },
+                { label: 'Releases', href: `${productBase}/releases` },
+                { label: release.name },
+            ]"
+            :title="release.name"
         >
-            <Breadcrumbs
-                :items="[
-                    { label: 'Products', href: `/${slug}/products` },
-                    { label: product.name, href: productBase },
-                    { label: 'Releases', href: `${productBase}/releases` },
-                    { label: release.name },
-                ]"
-                class="pl-9 md:pl-0"
-            />
-            <div
-                class="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-2"
-            >
-                <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                        <h1
-                            class="truncate font-display text-xl leading-tight font-semibold tracking-[-0.01em]"
+            <template #title-extra>
+                <span
+                    v-if="release.version"
+                    class="rounded-md border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground"
+                    >{{ release.version }}</span
+                >
+                <span
+                    v-if="!can.update"
+                    :class="
+                        cn(
+                            'rounded-full px-2 py-0.5 text-[11px] font-medium',
+                            STATUS[release.status].className,
+                        )
+                    "
+                    >{{ STATUS[release.status].label }}</span
+                >
+            </template>
+            <template #subtitle>
+                <template v-if="release.released_at"
+                    >Released {{ date(release.released_at) }}</template
+                >
+                <template v-else-if="release.planned_at"
+                    >Planned for {{ date(release.planned_at) }}</template
+                >
+                <template v-else>No date yet</template>
+                · {{ release.completed_issues_count }} of
+                {{ release.issues_count }} issues done
+            </template>
+            <template #actions>
+                <template v-if="can.update">
+                    <NativeSelect
+                        :model-value="release.status"
+                        class="h-8 text-[12.5px]"
+                        aria-label="Release status"
+                        @change="
+                            (e: Event) =>
+                                patch({
+                                    status: (e.target as HTMLSelectElement)
+                                        .value,
+                                })
+                        "
+                    >
+                        <NativeSelectOption
+                            v-for="(meta, key) in STATUS"
+                            :key="key"
+                            :value="key"
+                            >{{ meta.label }}</NativeSelectOption
                         >
-                            {{ release.name }}
-                        </h1>
-                        <span
-                            v-if="release.version"
-                            class="rounded-md border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground"
-                            >{{ release.version }}</span
-                        >
-                        <span
-                            v-if="!can.update"
-                            :class="
-                                cn(
-                                    'rounded-full px-2 py-0.5 text-[11px] font-medium',
-                                    STATUS[release.status].className,
-                                )
-                            "
-                            >{{ STATUS[release.status].label }}</span
-                        >
-                    </div>
-                    <p class="text-[12px] text-muted-foreground">
-                        <template v-if="release.released_at"
-                            >Released {{ date(release.released_at) }}</template
-                        >
-                        <template v-else-if="release.planned_at"
-                            >Planned for
-                            {{ date(release.planned_at) }}</template
-                        >
-                        <template v-else>No date yet</template>
-                        · {{ release.completed_issues_count }} of
-                        {{ release.issues_count }} issues done
-                    </p>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <template v-if="can.update">
-                        <NativeSelect
-                            :model-value="release.status"
-                            class="h-8 text-[12.5px]"
-                            aria-label="Release status"
-                            @change="
-                                (e: Event) =>
-                                    patch({
-                                        status: (e.target as HTMLSelectElement)
-                                            .value,
-                                    })
-                            "
-                        >
-                            <NativeSelectOption
-                                v-for="(meta, key) in STATUS"
-                                :key="key"
-                                :value="key"
-                                >{{ meta.label }}</NativeSelectOption
+                    </NativeSelect>
+                    <DatePicker
+                        :value="release.planned_at"
+                        label="Planned date"
+                        @change="(v) => patch({ planned_at: v })"
+                    />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                class="size-8"
+                                aria-label="Release actions"
+                                ><MoreHorizontal class="size-4"
+                            /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" class="w-40">
+                            <DropdownMenuItem @click="editOpen = true"
+                                >Edit release</DropdownMenuItem
                             >
-                        </NativeSelect>
-                        <DatePicker
-                            :value="release.planned_at"
-                            label="Planned date"
-                            @change="(v) => patch({ planned_at: v })"
-                        />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger as-child>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    class="size-8"
-                                    aria-label="Release actions"
-                                    ><MoreHorizontal class="size-4"
-                                /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="w-40">
-                                <DropdownMenuItem @click="editOpen = true"
-                                    >Edit release</DropdownMenuItem
-                                >
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    class="text-destructive"
-                                    @click="deleteOpen = true"
-                                    >Delete</DropdownMenuItem
-                                >
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </template>
-                </div>
-            </div>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                class="text-destructive"
+                                @click="deleteOpen = true"
+                                >Delete</DropdownMenuItem
+                            >
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </template>
+            </template>
             <SegmentedProgress
-                class="mt-3 max-w-3xl"
+                class="max-w-3xl"
                 :completed="counts.completed"
                 :started="counts.started"
                 :unstarted="counts.unstarted"
                 :backlog="counts.backlog"
                 :canceled="counts.canceled"
             />
-        </header>
+        </WorkspaceHeader>
 
         <div
             class="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6"

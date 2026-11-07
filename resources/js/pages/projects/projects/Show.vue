@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Plus } from '@lucide/vue';
 import { computed, defineAsyncComponent, inject, ref, watch } from 'vue';
 import IssueWorkspaceBody from '@/components/projects/IssueWorkspaceBody.vue';
@@ -9,6 +9,7 @@ import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue
 import { workspaceTabs } from '@/components/projects/workspace/useWorkspaceTabs';
 import OverviewTab from '@/components/projects/workspace/project/OverviewTab.vue';
 import type { ProjectOverview } from '@/components/projects/workspace/project/OverviewTab.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
 import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
@@ -123,14 +124,7 @@ const listTab = computed(() =>
     ['issues', 'board', 'timeline'].includes(props.tab),
 );
 const crumbs = computed(() => [
-    ...(project.value.product
-        ? [
-              {
-                  label: project.value.product.name,
-                  href: `/${slug.value}/products/${project.value.product.slug}`,
-              },
-          ]
-        : [{ label: 'Projects', href: `/${slug.value}/projects/all` }]),
+    { label: 'Projects', href: `/${slug.value}/projects/all` },
     { label: project.value.name },
 ]);
 </script>
@@ -149,6 +143,14 @@ const crumbs = computed(() => [
             :favorite-id="project.id"
         >
             <template #meta>
+                <Link
+                    v-if="project.product"
+                    :href="`/${slug}/products/${project.product.slug}`"
+                    class="flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11.5px] text-muted-foreground transition-colors hover:text-foreground"
+                    ><InboxDot :color="project.product.color" size="sm" />{{
+                        project.product.name
+                    }}</Link
+                >
                 <span
                     class="flex items-center gap-1.5 text-[12px] text-muted-foreground"
                     ><span
