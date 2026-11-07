@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Mail;
 use App\Enums\Mail\MailboxView;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Mail\ConversationListItemResource;
+use App\Http\Resources\Projects\IssueListItemResource;
 use App\Models\Mail\Inbox;
+use App\Models\Projects\Issue;
 use App\Services\Mail\Conversations\ConversationQuery;
+use App\Services\Projects\IssueQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,7 +24,10 @@ class SearchController extends Controller
             'q' => ['required', 'string', 'min:2', 'max:200'],
             'inbox' => ['nullable', 'string'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'types' => ['nullable', 'string'],
         ]);
+
+        $types = array_filter(explode(',', (string) ($data['types'] ?? 'conversations')));
 
         $user = $request->user();
         $organization = $user->currentOrganization;
@@ -31,10 +37,21 @@ class SearchController extends Controller
             ->when($data['inbox'] ?? null, fn ($q, $uuid) => $uuid === 'all' ? $q->whereNull('organization_id') : $q->where('uuid', $uuid))
             ->get();
 
-        $results = $conversations->build($inboxes, MailboxView::All, $user, ['q' => $data['q']])
-            ->limit($data['limit'] ?? 25)
-            ->get();
+        $results = in_array('conversations', $types, true)
+            ? $conversations->build($inboxes, MailboxView::All, $user, ['q' => $data['q']])->limit($data['limit'] ?? 25)->get()
+            : collect();
 
-        return response()->json(['conversations' => ConversationListItemResource::collection($results)->resolve()]);
+        $issues = [];
+
+        if (in_array('issues', $types, true) && $organization) {
+            $issues = IssueListItemResource::collection(
+                Issue::query()->visibleTo($user)->with(IssueQuery::EAGER)->search($data['q'])->orderByDesc('last_activity_at')->limit($data['limit'] ?? 10)->get()
+            )->resolve();
+        }
+
+        return response()->json([
+            'conversations' => in_array('conversations', $types, true) ? ConversationListItemResource::collection($results)->resolve() : [],
+            'issues' => $issues,
+        ]);
     }
 }
