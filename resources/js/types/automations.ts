@@ -1,4 +1,12 @@
+import type { IssueLookups } from '@/types/projects';
+
 export type CatalogOption = { value: string; label: string };
+
+export type AutomationSubjectType = 'conversation' | 'issue';
+
+export type CatalogTrigger = CatalogOption & {
+    subject?: AutomationSubjectType;
+};
 
 export type ConditionValueType =
     | 'inbox'
@@ -8,7 +16,15 @@ export type ConditionValueType =
     | 'user'
     | 'boolean'
     | 'status'
-    | 'priority';
+    | 'priority'
+    | 'product'
+    | 'project'
+    | 'team'
+    | 'workflow_status'
+    | 'status_category'
+    | 'issue_priority'
+    | 'label'
+    | 'number';
 
 export type OperatorValueShape = 'string' | 'array' | 'none';
 
@@ -16,6 +32,7 @@ export type CatalogField = {
     value: string;
     label: string;
     value_type: ConditionValueType;
+    subject?: AutomationSubjectType;
     operators: string[];
 };
 
@@ -35,19 +52,23 @@ export type CatalogActionParam = {
 export type CatalogAction = {
     value: string;
     label: string;
+    subjects?: AutomationSubjectType[];
     params: CatalogActionParam[];
 };
 
 export type TemplateVariable = { key: string; label: string };
 
 export type AutomationCatalog = {
-    triggers: CatalogOption[];
+    subjects?: CatalogOption[];
+    triggers: CatalogTrigger[];
     match: CatalogOption[];
     fields: CatalogField[];
     operators: CatalogOperator[];
     actions: CatalogAction[];
     statuses: CatalogOption[];
     priorities: CatalogOption[];
+    issue_priorities?: CatalogOption[];
+    status_categories?: CatalogOption[];
     strategies: CatalogOption[];
     variables: TemplateVariable[];
     default_cooldown_minutes: number;
@@ -79,11 +100,28 @@ export type AutomationAction = {
 
 export type AutomationInboxRef = { uuid: string; name: string };
 
+export type AutomationProductRef = { id: number; name: string; key: string };
+
+export type AutomationTeamRef = {
+    id: number;
+    name: string;
+    color: string | null;
+};
+
+export type AutomationIssueRef = {
+    uuid: string;
+    identifier: string;
+    title: string;
+};
+
 export type AutomationRuleSummary = {
     uuid: string;
     name: string;
     description: string | null;
     trigger: CatalogOption;
+    subject_type: AutomationSubjectType;
+    product: AutomationProductRef | null;
+    team: AutomationTeamRef | null;
     match: AutomationMatch;
     is_active: boolean;
     position: number;
@@ -99,6 +137,8 @@ export type AutomationRuleSummary = {
 
 export type AutomationRuleDetail = AutomationRuleSummary & {
     inbox_uuid: string | null;
+    product_id: number | null;
+    team_id: number | null;
     conditions: AutomationCondition[];
     actions: AutomationAction[];
 };
@@ -137,6 +177,7 @@ export type AutomationRun = {
     status: AutomationRunStatus;
     details: AutomationRunDetails | null;
     conversation: { uuid: string; subject: string | null } | null;
+    issue: AutomationIssueRef | null;
     created_at: string;
 };
 
@@ -190,12 +231,17 @@ export type AutomationLookups = {
     users: AutomationUserOption[];
     teams: AutomationTeamOption[];
     templates: AutomationTemplateOption[];
+    /** Projects lookups (products, teams, statuses, labels…) for issue rules. */
+    issues?: IssueLookups | null;
 };
 
 export type AutomationRuleForm = {
     name: string;
     description: string;
+    subject_type: AutomationSubjectType;
     inbox_uuid: string | null;
+    product_id: number | null;
+    team_id: number | null;
     trigger: string;
     match: AutomationMatch;
     is_active: boolean;
@@ -206,7 +252,8 @@ export type AutomationRuleForm = {
 
 export type DryRunResult = {
     rule: { uuid: string; name: string };
-    conversation: { uuid: string; subject: string | null };
+    conversation?: { uuid: string; subject: string | null };
+    issue?: AutomationIssueRef;
     matched: boolean;
     match: AutomationMatch;
     conditions: AutomationRunConditionResult[];

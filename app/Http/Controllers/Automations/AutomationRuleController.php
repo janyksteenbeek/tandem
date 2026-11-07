@@ -33,7 +33,7 @@ class AutomationRuleController extends Controller
         $organization = $currentOrganization;
 
         $rules = $organization->automationRules()
-            ->with('inbox')
+            ->with(['inbox', 'product', 'team'])
             ->orderBy('position')
             ->orderBy('id')
             ->get()

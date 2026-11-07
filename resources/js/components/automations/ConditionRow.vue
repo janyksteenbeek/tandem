@@ -14,6 +14,7 @@ import {
 import {
     coerceValue,
     fieldFor,
+    fieldsFor,
     operatorsForField,
     valueShapeOf,
 } from '@/lib/automations';
@@ -21,15 +22,22 @@ import type {
     AutomationCatalog,
     AutomationCondition,
     AutomationLookups,
+    AutomationSubjectType,
 } from '@/types/automations';
 
-const props = defineProps<{
-    index: number;
-    catalog: AutomationCatalog;
-    lookups: AutomationLookups;
-    conjunction: string;
-    errors?: { field?: string; operator?: string; value?: string };
-}>();
+const props = withDefaults(
+    defineProps<{
+        index: number;
+        catalog: AutomationCatalog;
+        lookups: AutomationLookups;
+        conjunction: string;
+        subject?: AutomationSubjectType;
+        errors?: { field?: string; operator?: string; value?: string };
+    }>(),
+    { subject: 'conversation', errors: undefined },
+);
+
+const fields = computed(() => fieldsFor(props.catalog, props.subject));
 
 const condition = defineModel<AutomationCondition>({ required: true });
 const emit = defineEmits<{ remove: [] }>();
@@ -105,7 +113,7 @@ const setValue = (value: AutomationCondition['value']) => {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem
-                            v-for="option in catalog.fields"
+                            v-for="option in fields"
                             :key="option.value"
                             :value="option.value"
                             >{{ option.label }}</SelectItem

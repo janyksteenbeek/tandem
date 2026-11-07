@@ -6,12 +6,17 @@ import type {
     AutomationConditionValue,
     AutomationLookups,
     AutomationMatch,
+    AutomationParamValue,
     AutomationRuleForm,
+    AutomationSubjectType,
     CatalogAction,
+    CatalogActionParam,
     CatalogField,
     CatalogOperator,
+    CatalogTrigger,
     OperatorValueShape,
 } from '@/types/automations';
+import type { WorkflowStatus } from '@/types/projects';
 
 /**
  * Everything the rule builder needs to describe a rule in plain English, build sensible
@@ -24,7 +29,107 @@ export const EMPTY_LOOKUPS: AutomationLookups = {
     users: [],
     teams: [],
     templates: [],
+    issues: null,
 };
+
+export const SUBJECT_LABELS: Record<AutomationSubjectType, string> = {
+    conversation: 'Conversation',
+    issue: 'Issue',
+};
+
+export function subjectOfTrigger(
+    catalog: AutomationCatalog,
+    trigger: string,
+): AutomationSubjectType {
+    return (
+        catalog.triggers.find((option) => option.value === trigger)?.subject ??
+        'conversation'
+    );
+}
+
+export function triggersFor(
+    catalog: AutomationCatalog,
+    subject: AutomationSubjectType,
+): CatalogTrigger[] {
+    return catalog.triggers.filter(
+        (option) => (option.subject ?? 'conversation') === subject,
+    );
+}
+
+export function fieldsFor(
+    catalog: AutomationCatalog,
+    subject: AutomationSubjectType,
+): CatalogField[] {
+    return catalog.fields.filter(
+        (field) => (field.subject ?? 'conversation') === subject,
+    );
+}
+
+export function actionsFor(
+    catalog: AutomationCatalog,
+    subject: AutomationSubjectType,
+): CatalogAction[] {
+    return catalog.actions.filter((action) =>
+        (action.subjects ?? ['conversation']).includes(subject),
+    );
+}
+
+export function actionSupports(
+    catalog: AutomationCatalog,
+    type: string,
+    subject: AutomationSubjectType,
+): boolean {
+    const action = actionFor(catalog, type);
+
+    return action
+        ? (action.subjects ?? ['conversation']).includes(subject)
+        : false;
+}
+
+/**
+ * Every status an issue rule may pick from: the organization's issue workflows first, then
+ * each team workflow, or only one team's workflow when a team is given.
+ */
+export function statusOptionsFor(
+    lookups: AutomationLookups,
+    teamId: number | null = null,
+): (WorkflowStatus & { group: string })[] {
+    const issues = lookups.issues;
+
+    if (!issues) {
+        return [];
+    }
+
+    const workflows = Object.values(issues.workflows);
+
+    if (teamId !== null) {
+        const team = issues.teams.find((candidate) => candidate.id === teamId);
+        const workflow = workflows.find(
+            (candidate) =>
+                candidate.id === team?.workflow_id ||
+                candidate.team_id === teamId,
+        );
+
+        return (workflow?.statuses ?? []).map((status) => ({
+            ...status,
+            group: team?.name ?? 'Team',
+        }));
+    }
+
+    return workflows
+        .filter((workflow) => workflow.kind === 'issue')
+        .flatMap((workflow) =>
+            workflow.statuses.map((status) => ({
+                ...status,
+                group:
+                    workflow.id === issues.default_workflow_id
+                        ? 'Default'
+                        : (issues.products.find(
+                              (product) => product.workflow_id === workflow.id,
+                          )?.name ?? 'Product'),
+            })),
+        );
+}
 
 const TRIGGER_PHRASES: Record<string, string> = {
     conversation_received: 'a new conversation arrives',
@@ -36,6 +141,18 @@ const TRIGGER_PHRASES: Record<string, string> = {
     tag_added: 'a tag is added',
     business_hours_started: 'business hours start',
     business_hours_ended: 'business hours end',
+    issue_created: 'an issue is created',
+    issue_assigned: 'someone is assigned',
+    team_added: 'a team is added to an issue',
+    workstream_status_changed: 'a team changes its status',
+    overall_status_changed: 'the overall status changes',
+    issue_completed: 'an issue is completed',
+    dependency_resolved: 'a blocker is resolved',
+    due_date_approaching: 'a due date is approaching',
+    issue_overdue: 'an issue is overdue',
+    comment_added: 'a comment is added',
+    cycle_started: 'a cycle starts',
+    cycle_completed: 'a cycle completes',
 };
 
 export const TRIGGER_HINTS: Record<string, string> = {
@@ -53,6 +170,24 @@ export const TRIGGER_HINTS: Record<string, string> = {
         'Checked every minute against every open conversation when you open.',
     business_hours_ended:
         'Checked every minute against every open conversation when you close.',
+    issue_created:
+        'A new issue is created, by hand, from an email or by a rule.',
+    issue_assigned:
+        'A person is assigned to one of the issue’s team workstreams.',
+    team_added: 'A team joins the issue and gets its own workstream.',
+    workstream_status_changed:
+        'One team moves its part of the issue to another status.',
+    overall_status_changed:
+        'The issue’s overall status changes, by hand or automatically.',
+    issue_completed: 'The overall status becomes a completed one.',
+    dependency_resolved: 'Something that blocked the issue is finished.',
+    due_date_approaching:
+        'Checked hourly, once per day per issue, while the due date is within two weeks.',
+    issue_overdue:
+        'Checked hourly, once per day per issue, after the due date passes.',
+    comment_added: 'Someone posts a comment on the issue.',
+    cycle_started: 'A cycle starts; fires once per issue in that cycle.',
+    cycle_completed: 'A cycle completes; fires once per issue in that cycle.',
 };
 
 const ACTION_VERBS: Record<string, string> = {
@@ -67,6 +202,54 @@ const ACTION_VERBS: Record<string, string> = {
     notify_users: 'notify people',
     add_follower: 'add a follower',
     add_comment: 'leave an internal note',
+    create_issue: 'create an issue',
+    link_issue: 'link an issue',
+    set_issue_status: 'set the overall status',
+    set_issue_priority: 'set the priority',
+    set_issue_owner: 'set the owner',
+    add_team_to_issue: 'add a team',
+    assign_workstream: 'assign a team member',
+    set_workstream_status: 'set a team’s status',
+    add_issue_label: 'add a label',
+    remove_issue_label: 'remove a label',
+    add_issue_comment: 'add a comment',
+    add_issue_follower: 'add a follower',
+    move_issue_to_project: 'move to a project',
+};
+
+/**
+ * Human labels for catalog-driven action parameters.
+ */
+export const PARAM_LABELS: Record<string, string> = {
+    product_id: 'Product',
+    project_id: 'Project',
+    team_id: 'Team',
+    team_ids: 'Teams',
+    user_id: 'Person',
+    user_ids: 'People',
+    owner_id: 'Owner',
+    label_id: 'Label',
+    label_ids: 'Labels',
+    label_name: 'Or a new label name',
+    status_id: 'Status',
+    priority: 'Priority',
+    title_template: 'Title',
+    include_excerpt: 'Share the latest message as an excerpt',
+    is_required: 'Required before the issue can complete',
+    strategy: 'Hand out work',
+    mode: 'Which issue',
+    identifier: 'Issue identifier',
+    body: 'Comment',
+    message: 'Message',
+};
+
+export const PARAM_HINTS: Record<string, string> = {
+    title_template:
+        'Leave empty to use the conversation subject. Variables like {{ conversation.subject }} work.',
+    include_excerpt:
+        'Only the rule’s creator must be able to read the conversation; nothing else leaks.',
+    label_name: 'Creates the label when it does not exist yet.',
+    identifier: 'e.g. FRONT-12',
 };
 
 const PLACEHOLDER = '…';
@@ -157,17 +340,44 @@ export function coerceValue(
 
 export function emptyCondition(
     catalog: AutomationCatalog,
+    subject: AutomationSubjectType = 'conversation',
 ): AutomationCondition {
+    const fields = fieldsFor(catalog, subject);
+    const preferred = subject === 'issue' ? 'issue_priority' : 'sender';
     const field =
-        catalog.fields.find((candidate) => candidate.value === 'sender') ??
+        fields.find((candidate) => candidate.value === preferred) ??
+        fields[0] ??
         catalog.fields[0];
     const operator = field?.operators[0] ?? 'equals';
 
     return {
-        field: field?.value ?? 'sender',
+        field: field?.value ?? preferred,
         operator,
         value: coerceValue('', valueShapeOf(catalog, operator)),
     };
+}
+
+/**
+ * A sensible empty value for a catalog parameter, by its declared type.
+ */
+export function defaultParamValue(
+    param: CatalogActionParam,
+): AutomationParamValue {
+    switch (param.type) {
+        case 'teams':
+        case 'users':
+        case 'labels':
+            return [];
+        case 'boolean':
+            return false;
+        case 'select':
+            return param.options?.[0]?.value ?? null;
+        case 'string':
+        case 'text':
+            return '';
+        default:
+            return null;
+    }
 }
 
 export function defaultParams(
@@ -175,6 +385,28 @@ export function defaultParams(
     type: string,
 ): AutomationActionParams {
     switch (type) {
+        case 'create_issue':
+            return {
+                product_id: null,
+                project_id: null,
+                team_ids: [],
+                title_template: '',
+                priority: null,
+                owner_id: null,
+                label_ids: [],
+                include_excerpt: false,
+            };
+        case 'link_issue':
+            return { mode: 'subject_match', identifier: '' };
+        case 'set_issue_priority':
+            return { priority: 'high' };
+        case 'add_team_to_issue':
+            return { team_id: null, is_required: true };
+        case 'assign_workstream':
+            return { team_id: null, user_id: null, strategy: 'round_robin' };
+        case 'add_issue_label':
+        case 'remove_issue_label':
+            return { label_id: null, label_name: '' };
         case 'reply_with_template':
             return {
                 template_id: null,
@@ -201,8 +433,15 @@ export function defaultParams(
             return { user_id: null };
         case 'move_to_inbox':
             return { inbox_uuid: null };
-        default:
-            return {};
+        default: {
+            const params: AutomationActionParams = {};
+
+            for (const param of actionFor(catalog, type)?.params ?? []) {
+                params[param.name] = defaultParamValue(param);
+            }
+
+            return params;
+        }
     }
 }
 
@@ -213,17 +452,68 @@ export function emptyAction(
     return { type, params: defaultParams(catalog, type) };
 }
 
-export function emptyRuleForm(catalog: AutomationCatalog): AutomationRuleForm {
+export function defaultActionType(subject: AutomationSubjectType): string {
+    return subject === 'issue' ? 'set_issue_priority' : 'add_tag';
+}
+
+export function emptyRuleForm(
+    catalog: AutomationCatalog,
+    subject: AutomationSubjectType = 'conversation',
+): AutomationRuleForm {
+    const fallback =
+        subject === 'issue' ? 'issue_created' : 'conversation_received';
+
     return {
         name: '',
         description: '',
+        subject_type: subject,
         inbox_uuid: null,
-        trigger: catalog.triggers[0]?.value ?? 'conversation_received',
+        product_id: null,
+        team_id: null,
+        trigger: triggersFor(catalog, subject)[0]?.value ?? fallback,
         match: 'all',
         is_active: true,
         cooldown_minutes: null,
         conditions: [],
-        actions: [emptyAction(catalog)],
+        actions: [emptyAction(catalog, defaultActionType(subject))],
+    };
+}
+
+/**
+ * Move a rule to the other subject: pick that subject's first trigger, drop conditions and
+ * actions that do not apply there, and clear the scope that belongs to the old subject.
+ */
+export function switchSubject(
+    form: AutomationRuleForm,
+    subject: AutomationSubjectType,
+    catalog: AutomationCatalog,
+): AutomationRuleForm {
+    if (form.subject_type === subject) {
+        return form;
+    }
+
+    const fields = new Set(fieldsFor(catalog, subject).map((f) => f.value));
+    const actions = form.actions.filter((action) =>
+        actionSupports(catalog, action.type, subject),
+    );
+
+    return {
+        ...form,
+        subject_type: subject,
+        trigger:
+            subjectOfTrigger(catalog, form.trigger) === subject
+                ? form.trigger
+                : (triggersFor(catalog, subject)[0]?.value ?? form.trigger),
+        inbox_uuid: null,
+        product_id: null,
+        team_id: null,
+        conditions: form.conditions.filter((condition) =>
+            fields.has(condition.field),
+        ),
+        actions:
+            actions.length > 0
+                ? actions
+                : [emptyAction(catalog, defaultActionType(subject))],
     };
 }
 
@@ -244,6 +534,20 @@ function nameOf<T extends { name: string }>(
     predicate: (item: T) => boolean,
 ): string | null {
     return items.find(predicate)?.name ?? null;
+}
+
+function teamsOf(lookups: AutomationLookups): { id: number; name: string }[] {
+    return (lookups.issues?.teams ?? lookups.teams).map((team) => ({
+        id: team.id,
+        name: team.name,
+    }));
+}
+
+function membersOf(lookups: AutomationLookups): { id: number; name: string }[] {
+    return (lookups.issues?.members ?? lookups.users).map((user) => ({
+        id: user.id,
+        name: user.name,
+    }));
 }
 
 function describeValue(
@@ -288,6 +592,60 @@ function describeValue(
                 catalog.priorities.find((option) => option.value === value)
                     ?.label ?? value,
             );
+        case 'product':
+            return (
+                nameOf(
+                    lookups.issues?.products ?? [],
+                    (product) => String(product.id) === value,
+                ) ?? `product #${value}`
+            );
+        case 'project':
+            return (
+                nameOf(
+                    lookups.issues?.projects ?? [],
+                    (project) => String(project.id) === value,
+                ) ?? `project #${value}`
+            );
+        case 'team':
+            return (
+                nameOf(teamsOf(lookups), (team) => String(team.id) === value) ??
+                `team #${value}`
+            );
+        case 'label':
+            return (
+                nameOf(
+                    lookups.issues?.labels ?? [],
+                    (label) => String(label.id) === value,
+                ) ?? `label #${value}`
+            );
+        case 'workflow_status':
+            return (
+                nameOf(
+                    statusOptionsFor(lookups),
+                    (status) => String(status.id) === value,
+                ) ??
+                nameOf(
+                    Object.values(lookups.issues?.workflows ?? {}).flatMap(
+                        (workflow) => workflow.statuses,
+                    ),
+                    (status) => String(status.id) === value,
+                ) ??
+                `status #${value}`
+            );
+        case 'status_category':
+            return lowerFirst(
+                (catalog.status_categories ?? []).find(
+                    (option) => option.value === value,
+                )?.label ?? value,
+            );
+        case 'issue_priority':
+            return lowerFirst(
+                (catalog.issue_priorities ?? []).find(
+                    (option) => option.value === value,
+                )?.label ?? value,
+            );
+        case 'number':
+            return value;
         default:
             return quote(value);
     }
@@ -302,7 +660,7 @@ export function describeCondition(
     const operator = operatorFor(catalog, condition.operator);
     const subject = lowerFirst(field?.label ?? humanize(condition.field));
 
-    if (field?.value_type === 'boolean') {
+    if (field?.value === 'business_hours') {
         if (condition.operator === 'is_false') {
             return `it is outside ${subject}`;
         }
@@ -310,6 +668,25 @@ export function describeCondition(
         if (condition.operator === 'is_true') {
             return `it is during ${subject}`;
         }
+    }
+
+    if (field?.value === 'issue_has_blockers') {
+        if (condition.operator === 'is_false') {
+            return 'it is not blocked';
+        }
+
+        if (condition.operator === 'is_true') {
+            return 'it is blocked';
+        }
+    }
+
+    if (field?.value_type === 'number' && operator?.value_shape === 'string') {
+        const raw = Array.isArray(condition.value)
+            ? (condition.value[0] ?? '')
+            : (condition.value ?? '');
+        const amount = String(raw).trim();
+
+        return `${subject} ${operator?.label ?? humanize(condition.operator)} ${amount === '' ? PLACEHOLDER : amount}`;
     }
 
     const verb = operator?.label ?? humanize(condition.operator);
@@ -470,6 +847,158 @@ export function describeAction(
             return present(param(action, 'body'))
                 ? 'leave an internal note'
                 : ACTION_VERBS[action.type];
+        case 'create_issue': {
+            const issues = lookups.issues;
+            const product = nameOf(
+                issues?.products ?? [],
+                (candidate) =>
+                    String(candidate.id) ===
+                    String(param(action, 'product_id')),
+            );
+            const teamIds = Array.isArray(param(action, 'team_ids'))
+                ? (param(action, 'team_ids') as unknown[]).map(String)
+                : [];
+            const teams = teamIds
+                .map((id) =>
+                    nameOf(
+                        teamsOf(lookups),
+                        (candidate) => String(candidate.id) === id,
+                    ),
+                )
+                .filter((name): name is string => Boolean(name));
+            const where = product ? ` in ${product}` : '';
+            const who = teams.length > 0 ? ` for ${list(teams, 'and')}` : '';
+
+            return `create an issue${where}${who}`;
+        }
+        case 'link_issue': {
+            const identifier = String(param(action, 'identifier') ?? '').trim();
+
+            return param(action, 'mode') === 'subject_match'
+                ? 'link the issue named in the subject'
+                : identifier
+                  ? `link ${identifier.toUpperCase()}`
+                  : ACTION_VERBS[action.type];
+        }
+        case 'set_issue_status': {
+            const status = nameOf(
+                statusOptionsFor(lookups),
+                (candidate) =>
+                    String(candidate.id) === String(param(action, 'status_id')),
+            );
+
+            return status
+                ? `set the overall status to ${status}`
+                : ACTION_VERBS[action.type];
+        }
+        case 'set_issue_priority': {
+            const priority = (catalog.issue_priorities ?? []).find(
+                (option) => option.value === param(action, 'priority'),
+            )?.label;
+
+            return priority
+                ? `set priority to ${lowerFirst(priority)}`
+                : ACTION_VERBS[action.type];
+        }
+        case 'set_issue_owner':
+        case 'add_issue_follower': {
+            const user = nameOf(
+                membersOf(lookups),
+                (candidate) =>
+                    String(candidate.id) === String(param(action, 'user_id')),
+            );
+
+            if (!user) {
+                return ACTION_VERBS[action.type];
+            }
+
+            return action.type === 'set_issue_owner'
+                ? `make ${user} the owner`
+                : `add ${user} as a follower`;
+        }
+        case 'add_team_to_issue':
+        case 'assign_workstream':
+        case 'set_workstream_status': {
+            const team = nameOf(
+                teamsOf(lookups),
+                (candidate) =>
+                    String(candidate.id) === String(param(action, 'team_id')),
+            );
+
+            if (!team) {
+                return ACTION_VERBS[action.type];
+            }
+
+            if (action.type === 'add_team_to_issue') {
+                return `add team ${team}`;
+            }
+
+            if (action.type === 'set_workstream_status') {
+                const status = nameOf(
+                    statusOptionsFor(
+                        lookups,
+                        Number(param(action, 'team_id')) || null,
+                    ),
+                    (candidate) =>
+                        String(candidate.id) ===
+                        String(param(action, 'status_id')),
+                );
+
+                return status
+                    ? `set ${team}’s status to ${status}`
+                    : `set ${team}’s status`;
+            }
+
+            const user = nameOf(
+                membersOf(lookups),
+                (candidate) =>
+                    String(candidate.id) === String(param(action, 'user_id')),
+            );
+            const strategy = catalog.strategies.find(
+                (option) => option.value === param(action, 'strategy'),
+            )?.label;
+
+            return user
+                ? `assign ${user} for ${team}`
+                : `assign someone from ${team}${strategy ? ` (${lowerFirst(strategy)})` : ''}`;
+        }
+        case 'add_issue_label':
+        case 'remove_issue_label': {
+            const verb =
+                action.type === 'add_issue_label'
+                    ? 'add label'
+                    : 'remove label';
+            const labelId = param(action, 'label_id');
+            const labelName = param(action, 'label_name');
+            const label = present(labelId)
+                ? nameOf(
+                      lookups.issues?.labels ?? [],
+                      (candidate) => String(candidate.id) === String(labelId),
+                  )
+                : null;
+
+            if (label) {
+                return `${verb} ${label}`;
+            }
+
+            return present(labelName)
+                ? `${verb} ${String(labelName).trim()}`
+                : ACTION_VERBS[action.type];
+        }
+        case 'add_issue_comment':
+            return present(param(action, 'body'))
+                ? 'add a comment'
+                : ACTION_VERBS[action.type];
+        case 'move_issue_to_project': {
+            const project = nameOf(
+                lookups.issues?.projects ?? [],
+                (candidate) =>
+                    String(candidate.id) ===
+                    String(param(action, 'project_id')),
+            );
+
+            return project ? `move to ${project}` : ACTION_VERBS[action.type];
+        }
         default:
             return (
                 ACTION_VERBS[action.type] ??
@@ -481,10 +1010,47 @@ export function describeAction(
 export type SummarizableRule = {
     trigger: string;
     match: AutomationMatch;
+    subject_type?: AutomationSubjectType;
     inbox_uuid?: string | null;
+    product_id?: number | null;
+    team_id?: number | null;
     conditions: AutomationCondition[];
     actions: AutomationAction[];
 };
+
+/**
+ * "in Frontier for Engineering" or "in Support": the scope clause of a rule sentence.
+ */
+export function describeScope(
+    rule: SummarizableRule,
+    lookups: AutomationLookups = EMPTY_LOOKUPS,
+): string {
+    if ((rule.subject_type ?? 'conversation') === 'issue') {
+        const product = rule.product_id
+            ? nameOf(
+                  lookups.issues?.products ?? [],
+                  (candidate) => candidate.id === rule.product_id,
+              )
+            : null;
+        const team = rule.team_id
+            ? nameOf(
+                  teamsOf(lookups),
+                  (candidate) => candidate.id === rule.team_id,
+              )
+            : null;
+
+        return `${product ? ` in ${product}` : ''}${team ? ` for ${team}` : ''}`;
+    }
+
+    const inbox = rule.inbox_uuid
+        ? nameOf(
+              lookups.inboxes,
+              (candidate) => candidate.uuid === rule.inbox_uuid,
+          )
+        : null;
+
+    return inbox ? ` in ${inbox}` : '';
+}
 
 /**
  * One plain-English sentence for the whole rule, e.g.
@@ -495,13 +1061,7 @@ export function summarizeRule(
     catalog: AutomationCatalog,
     lookups: AutomationLookups = EMPTY_LOOKUPS,
 ): string {
-    const inbox = rule.inbox_uuid
-        ? nameOf(
-              lookups.inboxes,
-              (candidate) => candidate.uuid === rule.inbox_uuid,
-          )
-        : null;
-    const when = `When ${triggerPhrase(catalog, rule.trigger)}${inbox ? ` in ${inbox}` : ''}`;
+    const when = `When ${triggerPhrase(catalog, rule.trigger)}${describeScope(rule, lookups)}`;
 
     const conditions = rule.conditions.map((condition) =>
         describeCondition(condition, catalog, lookups),
