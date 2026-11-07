@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Enums\PushTopic;
 use App\Models\Automations\AutomationRule;
 use App\Models\Mail\Conversation;
+use App\Models\Projects\Issue;
 use App\Notifications\Concerns\PushesToDevices;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
@@ -19,7 +20,7 @@ class AutomationNotification extends Notification
 
     public function __construct(
         public AutomationRule $rule,
-        public Conversation $conversation,
+        public Conversation|Issue $subject,
         public ?string $message = null,
     ) {}
 
@@ -36,15 +37,29 @@ class AutomationNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        return [
+        $base = [
             'kind' => 'automation',
             'rule_id' => $this->rule->id,
             'rule_uuid' => $this->rule->uuid,
             'rule_name' => $this->rule->name,
-            'conversation_id' => $this->conversation->id,
-            'conversation_uuid' => $this->conversation->uuid,
-            'subject' => $this->conversation->subject,
-            'inbox_uuid' => $this->conversation->inbox->uuid,
+        ];
+
+        if ($this->subject instanceof Issue) {
+            return $base + [
+                'issue_uuid' => $this->subject->uuid,
+                'issue_identifier' => $this->subject->identifier,
+                'issue_title' => $this->subject->title,
+                'title' => $this->message ?: sprintf('Automation "%s" flagged %s for you.', $this->rule->name, $this->subject->identifier),
+                'body' => $this->subject->title,
+                'message' => $this->message ?: sprintf('Automation "%s" flagged %s for you.', $this->rule->name, $this->subject->identifier),
+            ];
+        }
+
+        return $base + [
+            'conversation_id' => $this->subject->id,
+            'conversation_uuid' => $this->subject->uuid,
+            'subject' => $this->subject->subject,
+            'inbox_uuid' => $this->subject->inbox->uuid,
             'message' => $this->message ?: sprintf('Automation "%s" flagged a conversation for you.', $this->rule->name),
         ];
     }

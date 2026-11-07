@@ -17,6 +17,8 @@ enum AutomationConditionOperator: string
     case IsEmpty = 'is_empty';
     case IsTrue = 'is_true';
     case IsFalse = 'is_false';
+    case AtMost = 'at_most';
+    case AtLeast = 'at_least';
 
     public function label(): string
     {
@@ -34,6 +36,8 @@ enum AutomationConditionOperator: string
             self::IsEmpty => 'is empty',
             self::IsTrue => 'is true',
             self::IsFalse => 'is false',
+            self::AtMost => 'is at most',
+            self::AtLeast => 'is at least',
         };
     }
 

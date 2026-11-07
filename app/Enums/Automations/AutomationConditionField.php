@@ -18,6 +18,22 @@ enum AutomationConditionField: string
     case Status = 'status';
     case Priority = 'priority';
 
+    // Issues
+    case IssueProduct = 'issue_product';
+    case IssueProject = 'issue_project';
+    case IssueTeam = 'issue_team';
+    case IssueLeadTeam = 'issue_lead_team';
+    case IssueStatus = 'issue_status';
+    case IssueStatusCategory = 'issue_status_category';
+    case IssuePriority = 'issue_priority';
+    case IssueOwner = 'issue_owner';
+    case IssueLabel = 'issue_label';
+    case WorkstreamTeam = 'workstream_team';
+    case WorkstreamStatusCategory = 'workstream_status_category';
+    case IssueDaysUntilDue = 'issue_days_until_due';
+    case IssueHasBlockers = 'issue_has_blockers';
+    case IssueTitle = 'issue_title';
+
     public function label(): string
     {
         return match ($this) {
@@ -31,6 +47,30 @@ enum AutomationConditionField: string
             self::BusinessHours => 'Business hours',
             self::Status => 'Status',
             self::Priority => 'Priority',
+            self::IssueProduct => 'Product',
+            self::IssueProject => 'Project',
+            self::IssueTeam => 'Participating team',
+            self::IssueLeadTeam => 'Lead team',
+            self::IssueStatus => 'Overall status',
+            self::IssueStatusCategory => 'Overall status category',
+            self::IssuePriority => 'Priority',
+            self::IssueOwner => 'Owner',
+            self::IssueLabel => 'Label',
+            self::WorkstreamTeam => 'Team that changed',
+            self::WorkstreamStatusCategory => 'Team status category',
+            self::IssueDaysUntilDue => 'Days until due',
+            self::IssueHasBlockers => 'Has blockers',
+            self::IssueTitle => 'Title',
+        };
+    }
+
+    public function subjectType(): AutomationSubjectType
+    {
+        return match ($this) {
+            self::IssueProduct, self::IssueProject, self::IssueTeam, self::IssueLeadTeam, self::IssueStatus, self::IssueStatusCategory,
+            self::IssuePriority, self::IssueOwner, self::IssueLabel, self::WorkstreamTeam, self::WorkstreamStatusCategory,
+            self::IssueDaysUntilDue, self::IssueHasBlockers, self::IssueTitle => AutomationSubjectType::Issue,
+            default => AutomationSubjectType::Conversation,
         };
     }
 
@@ -45,9 +85,19 @@ enum AutomationConditionField: string
             self::Subject, self::Body => 'text',
             self::Tag => 'tag',
             self::Assignee => 'user',
-            self::BusinessHours => 'boolean',
+            self::BusinessHours, self::IssueHasBlockers => 'boolean',
             self::Status => 'status',
             self::Priority => 'priority',
+            self::IssueProduct => 'product',
+            self::IssueProject => 'project',
+            self::IssueTeam, self::IssueLeadTeam, self::WorkstreamTeam => 'team',
+            self::IssueStatus => 'workflow_status',
+            self::IssueStatusCategory, self::WorkstreamStatusCategory => 'status_category',
+            self::IssuePriority => 'issue_priority',
+            self::IssueOwner => 'user',
+            self::IssueLabel => 'label',
+            self::IssueDaysUntilDue => 'number',
+            self::IssueTitle => 'text',
         };
     }
 
@@ -105,9 +155,39 @@ enum AutomationConditionField: string
                 AutomationConditionOperator::IsSet,
                 AutomationConditionOperator::IsEmpty,
             ],
-            self::BusinessHours => [
+            self::BusinessHours, self::IssueHasBlockers => [
                 AutomationConditionOperator::IsTrue,
                 AutomationConditionOperator::IsFalse,
+            ],
+            self::IssueProduct, self::IssueProject, self::IssueTeam, self::IssueLeadTeam, self::IssueOwner, self::IssueLabel, self::WorkstreamTeam => [
+                AutomationConditionOperator::Equals,
+                AutomationConditionOperator::NotEquals,
+                AutomationConditionOperator::In,
+                AutomationConditionOperator::NotIn,
+                AutomationConditionOperator::IsSet,
+                AutomationConditionOperator::IsEmpty,
+            ],
+            self::IssueStatus, self::IssueStatusCategory, self::IssuePriority, self::WorkstreamStatusCategory => [
+                AutomationConditionOperator::Equals,
+                AutomationConditionOperator::NotEquals,
+                AutomationConditionOperator::In,
+                AutomationConditionOperator::NotIn,
+            ],
+            self::IssueDaysUntilDue => [
+                AutomationConditionOperator::Equals,
+                AutomationConditionOperator::AtMost,
+                AutomationConditionOperator::AtLeast,
+                AutomationConditionOperator::IsSet,
+                AutomationConditionOperator::IsEmpty,
+            ],
+            self::IssueTitle => [
+                AutomationConditionOperator::Equals,
+                AutomationConditionOperator::NotEquals,
+                AutomationConditionOperator::Contains,
+                AutomationConditionOperator::NotContains,
+                AutomationConditionOperator::StartsWith,
+                AutomationConditionOperator::EndsWith,
+                AutomationConditionOperator::MatchesRegex,
             ],
         };
     }
@@ -118,17 +198,20 @@ enum AutomationConditionField: string
     }
 
     /**
-     * @return array<int, array{value: string, label: string, value_type: string, operators: array<int, string>}>
+     * @return array<int, array{value: string, label: string, value_type: string, subject: string, operators: array<int, string>}>
      */
-    public static function options(): array
+    public static function options(?AutomationSubjectType $subject = null): array
     {
         return collect(self::cases())
+            ->filter(fn (self $field) => $subject === null || $field->subjectType() === $subject)
             ->map(fn (self $field) => [
                 'value' => $field->value,
                 'label' => $field->label(),
                 'value_type' => $field->valueType(),
+                'subject' => $field->subjectType()->value,
                 'operators' => array_map(fn (AutomationConditionOperator $operator) => $operator->value, $field->operators()),
             ])
+            ->values()
             ->all();
     }
 }

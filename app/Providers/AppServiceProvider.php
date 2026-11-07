@@ -7,7 +7,17 @@ use App\Events\Mail\ConversationMoved;
 use App\Events\Mail\ConversationStatusChanged;
 use App\Events\Mail\ConversationTagged;
 use App\Events\Mail\MessageIngested;
+use App\Events\Projects\CycleCompleted;
+use App\Events\Projects\CycleStarted;
+use App\Events\Projects\DependencyResolved;
+use App\Events\Projects\IssueAssigned;
+use App\Events\Projects\IssueCommentPosted;
+use App\Events\Projects\IssueCreated;
+use App\Events\Projects\IssueStatusChanged;
+use App\Events\Projects\TeamAddedToIssue;
+use App\Events\Projects\WorkstreamStatusChanged;
 use App\Listeners\Automations\RunAutomations;
+use App\Listeners\Automations\RunIssueAutomations;
 use App\Models\AuditLog;
 use App\Models\Automations\AutomationRule;
 use App\Models\Automations\AutomationRun;
@@ -186,6 +196,18 @@ class AppServiceProvider extends ServiceProvider
             ConversationStatusChanged::class,
             ConversationTagged::class,
         ], RunAutomations::class);
+
+        Event::listen([
+            IssueCreated::class,
+            IssueAssigned::class,
+            TeamAddedToIssue::class,
+            WorkstreamStatusChanged::class,
+            IssueStatusChanged::class,
+            DependencyResolved::class,
+            IssueCommentPosted::class,
+            CycleStarted::class,
+            CycleCompleted::class,
+        ], RunIssueAutomations::class);
     }
 
     /**

@@ -1,5 +1,8 @@
 <?php
 
+use App\Enums\Automations\AutomationActionType;
+use App\Enums\Automations\AutomationConditionField;
+use App\Enums\Automations\AutomationConditionOperator;
 use App\Enums\Automations\AutomationTrigger;
 use App\Enums\OrganizationRole;
 use App\Models\Automations\AutomationRule;
@@ -75,9 +78,10 @@ test('admins can view the automation pages with catalogs and related data', func
                 ->where('trigger.value', 'conversation_received')
                 ->etc())
             ->has('catalog.triggers', count(AutomationTrigger::cases()))
-            ->has('catalog.fields', 10)
-            ->has('catalog.operators', 13)
-            ->has('catalog.actions', 11)
+            ->has('catalog.subjects', 2)
+            ->has('catalog.fields', count(AutomationConditionField::cases()))
+            ->has('catalog.operators', count(AutomationConditionOperator::cases()))
+            ->has('catalog.actions', count(AutomationActionType::cases()))
             ->has('catalog.variables', 12));
 
     $this->actingAs($this->admin)

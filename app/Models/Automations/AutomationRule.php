@@ -2,10 +2,13 @@
 
 namespace App\Models\Automations;
 
+use App\Enums\Automations\AutomationSubjectType;
 use App\Enums\Automations\AutomationTrigger;
 use App\Models\Mail\AutoresponderSend;
 use App\Models\Mail\Inbox;
 use App\Models\Organization;
+use App\Models\Projects\Product;
+use App\Models\Team;
 use Carbon\CarbonInterface;
 use Database\Factories\Automations\AutomationRuleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -22,6 +25,9 @@ use Illuminate\Support\Str;
  * @property string $uuid
  * @property int $organization_id
  * @property int|null $inbox_id
+ * @property AutomationSubjectType $subject_type
+ * @property int|null $product_id
+ * @property int|null $team_id
  * @property int|null $created_by_id
  * @property string $name
  * @property string|null $description
@@ -38,9 +44,11 @@ use Illuminate\Support\Str;
  * @property CarbonInterface|null $updated_at
  * @property-read Organization $organization
  * @property-read Inbox|null $inbox
+ * @property-read Product|null $product
+ * @property-read Team|null $team
  * @property-read Collection<int, AutomationRun> $runs
  */
-#[Fillable(['organization_id', 'inbox_id', 'created_by_id', 'name', 'description', 'trigger', 'match', 'conditions', 'actions', 'is_active', 'position', 'cooldown_minutes', 'run_count', 'last_run_at'])]
+#[Fillable(['organization_id', 'inbox_id', 'subject_type', 'product_id', 'team_id', 'created_by_id', 'name', 'description', 'trigger', 'match', 'conditions', 'actions', 'is_active', 'position', 'cooldown_minutes', 'run_count', 'last_run_at'])]
 class AutomationRule extends Model
 {
     /** @use HasFactory<AutomationRuleFactory> */
@@ -63,6 +71,18 @@ class AutomationRule extends Model
         return $this->belongsTo(Inbox::class);
     }
 
+    /** @return BelongsTo<Product, $this> */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /** @return BelongsTo<Team, $this> */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
+
     /** @return HasMany<AutomationRun, $this> */
     public function runs(): HasMany
     {
@@ -78,6 +98,7 @@ class AutomationRule extends Model
     protected function casts(): array
     {
         return [
+            'subject_type' => AutomationSubjectType::class,
             'trigger' => AutomationTrigger::class,
             'conditions' => 'array',
             'actions' => 'array',

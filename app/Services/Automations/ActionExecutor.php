@@ -16,6 +16,7 @@ use App\Models\Mail\Conversation;
 use App\Models\Mail\ConversationEvent;
 use App\Models\Mail\Inbox;
 use App\Models\Mail\Message;
+use App\Models\Projects\Issue;
 use App\Models\Tag;
 use App\Models\Team;
 use App\Models\User;
@@ -36,6 +37,8 @@ class ActionExecutor
         protected TeamAssigner $teamAssigner,
         protected TemplateRenderer $renderer,
         protected TriggerEchoGuard $echoes,
+        protected IssueActionExecutor $issues,
+        protected MailToIssueActions $bridge,
     ) {}
 
     /**
@@ -43,7 +46,7 @@ class ActionExecutor
      * @param  array{message?: Message|null}  $context
      * @return array<string, mixed>
      */
-    public function execute(AutomationRule $rule, array $action, Conversation $conversation, array $context = []): array
+    public function execute(AutomationRule $rule, array $action, Conversation|Issue $subject, array $context = []): array
     {
         $type = AutomationActionType::tryFrom(is_string($action['type'] ?? null) ? $action['type'] : '');
 
@@ -53,7 +56,15 @@ class ActionExecutor
 
         $params = is_array($action['params'] ?? null) ? $action['params'] : [];
 
+        if ($subject instanceof Issue) {
+            return ['type' => $type->value] + $this->issues->execute($rule, $type, $params, $subject, $context);
+        }
+
+        $conversation = $subject;
+
         $result = match ($type) {
+            AutomationActionType::CreateIssue => $this->bridge->createIssue($rule, $conversation, $params, $context),
+            AutomationActionType::LinkIssue => $this->bridge->linkIssue($rule, $conversation, $params),
             AutomationActionType::ReplyWithTemplate => $this->autoresponder->respond($rule, $conversation, $params, $context),
             AutomationActionType::AssignUser => $this->assignUser($rule, $conversation, $params),
             AutomationActionType::AssignTeam => $this->assignTeam($rule, $conversation, $params),
@@ -65,6 +76,7 @@ class ActionExecutor
             AutomationActionType::NotifyUsers => $this->notifyUsers($rule, $conversation, $params),
             AutomationActionType::AddFollower => $this->addFollower($rule, $conversation, $params),
             AutomationActionType::AddComment => $this->addComment($rule, $conversation, $params, $context),
+            default => ['status' => 'skipped', 'reason' => 'not_applicable'],
         };
 
         return ['type' => $type->value] + $result;

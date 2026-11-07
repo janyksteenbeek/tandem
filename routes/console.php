@@ -32,3 +32,4 @@ Schedule::command('conversations:wake-snoozed')->everyMinute()->withoutOverlappi
 Schedule::command('tandem:prune')->daily()->description('Prune old sync runs, webhook receipts and automation runs');
 
 Schedule::command('projects:cycles')->hourly()->withoutOverlapping()->description('Start, complete and schedule team cycles');
+Schedule::command('projects:due-dates')->hourly()->withoutOverlapping()->description('Fire due-date automations and reminders');

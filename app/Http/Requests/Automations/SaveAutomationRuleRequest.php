@@ -5,12 +5,18 @@ namespace App\Http\Requests\Automations;
 use App\Enums\Automations\AutomationActionType;
 use App\Enums\Automations\AutomationConditionField;
 use App\Enums\Automations\AutomationConditionOperator;
+use App\Enums\Automations\AutomationSubjectType;
 use App\Enums\Automations\AutomationTrigger;
 use App\Enums\Mail\ConversationPriority;
 use App\Enums\Mail\ConversationStatus;
+use App\Enums\Projects\IssuePriority;
 use App\Http\Requests\OrganizationScopedRequest;
 use App\Models\Mail\Inbox;
 use App\Models\Mail\MessageTemplate;
+use App\Models\Projects\IssueLabel;
+use App\Models\Projects\Product;
+use App\Models\Projects\Project;
+use App\Models\Projects\WorkflowStatus;
 use App\Models\Tag;
 use App\Models\Team;
 use App\Services\Automations\TeamAssigner;
@@ -31,7 +37,10 @@ class SaveAutomationRuleRequest extends OrganizationScopedRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:255'],
+            'subject_type' => ['nullable', Rule::enum(AutomationSubjectType::class)],
             'inbox_uuid' => ['nullable', 'string', Rule::exists('inboxes', 'uuid')->where('organization_id', $organization->id)->whereNull('deleted_at')],
+            'product_id' => ['nullable', 'integer', Rule::exists('products', 'id')->where('organization_id', $organization->id)],
+            'team_id' => ['nullable', 'integer', Rule::exists('teams', 'id')->where('organization_id', $organization->id)],
             'trigger' => ['required', Rule::enum(AutomationTrigger::class)],
             'match' => ['required', Rule::in(['all', 'any'])],
             'is_active' => ['sometimes', 'boolean'],
@@ -56,6 +65,29 @@ class SaveAutomationRuleRequest extends OrganizationScopedRequest
     {
         return [
             function (Validator $validator) {
+                $subject = $this->subjectType();
+                $trigger = AutomationTrigger::tryFrom((string) $this->input('trigger'));
+
+                if ($trigger && $trigger->subjectType() !== $subject) {
+                    $validator->errors()->add('trigger', sprintf('"%s" is a %s trigger.', $trigger->label(), $trigger->subjectType()->label()));
+                }
+
+                foreach ($this->input('conditions', []) as $index => $condition) {
+                    $field = AutomationConditionField::tryFrom((string) (is_array($condition) ? ($condition['field'] ?? '') : ''));
+
+                    if ($field && $field->subjectType() !== $subject) {
+                        $validator->errors()->add("conditions.$index.field", sprintf('"%s" does not apply to %ss.', $field->label(), strtolower($subject->label())));
+                    }
+                }
+
+                foreach ($this->input('actions', []) as $index => $action) {
+                    $type = AutomationActionType::tryFrom((string) (is_array($action) ? ($action['type'] ?? '') : ''));
+
+                    if ($type && ! $type->supports($subject)) {
+                        $validator->errors()->add("actions.$index.type", sprintf('"%s" cannot run on %ss.', $type->label(), strtolower($subject->label())));
+                    }
+                }
+
                 foreach ($this->input('conditions', []) as $index => $condition) {
                     $this->validateCondition($validator, $index, is_array($condition) ? $condition : []);
                 }
@@ -81,8 +113,13 @@ class SaveAutomationRuleRequest extends OrganizationScopedRequest
         $conditions = $this->validated('conditions');
         $actions = $this->validated('actions');
 
+        $subject = $this->subjectType();
+
         return [
-            'inbox_id' => $inbox?->id,
+            'subject_type' => $subject,
+            'inbox_id' => $subject === AutomationSubjectType::Conversation ? $inbox?->id : null,
+            'product_id' => $subject === AutomationSubjectType::Issue ? $this->validated('product_id') : null,
+            'team_id' => $subject === AutomationSubjectType::Issue ? $this->validated('team_id') : null,
             'name' => $this->validated('name'),
             'description' => $this->validated('description'),
             'trigger' => AutomationTrigger::from($this->validated('trigger')),
@@ -102,6 +139,11 @@ class SaveAutomationRuleRequest extends OrganizationScopedRequest
                 ->values()
                 ->all(),
         ];
+    }
+
+    public function subjectType(): AutomationSubjectType
+    {
+        return AutomationSubjectType::tryFrom((string) $this->input('subject_type', 'conversation')) ?? AutomationSubjectType::Conversation;
     }
 
     /**
@@ -253,6 +295,90 @@ class SaveAutomationRuleRequest extends OrganizationScopedRequest
 
                 if (! $status || $status === ConversationStatus::Snoozed) {
                     $validator->errors()->add("$prefix.status", 'Choose open, pending or closed.');
+                }
+                break;
+
+            case AutomationActionType::CreateIssue:
+                if (isset($params['product_id']) && (! is_numeric($params['product_id']) || ! Product::query()->where('organization_id', $organization->id)->whereKey((int) $params['product_id'])->exists())) {
+                    $validator->errors()->add("$prefix.product_id", 'Choose a product of this organization.');
+                }
+
+                if (isset($params['project_id']) && (! is_numeric($params['project_id']) || ! Project::query()->where('organization_id', $organization->id)->whereKey((int) $params['project_id'])->exists())) {
+                    $validator->errors()->add("$prefix.project_id", 'Choose a project of this organization.');
+                }
+
+                foreach (is_array($params['team_ids'] ?? null) ? $params['team_ids'] : [] as $teamId) {
+                    if (! is_numeric($teamId) || ! Team::query()->where('organization_id', $organization->id)->whereKey((int) $teamId)->exists()) {
+                        $validator->errors()->add("$prefix.team_ids", 'Choose teams of this organization.');
+                        break;
+                    }
+                }
+                break;
+
+            case AutomationActionType::LinkIssue:
+                if (($params['mode'] ?? 'identifier') === 'identifier' && (! is_string($params['identifier'] ?? null) || ! preg_match('/^[A-Za-z][A-Za-z0-9]{1,9}-\d+$/', $params['identifier']))) {
+                    $validator->errors()->add("$prefix.identifier", 'Enter an issue identifier like FRONT-12.');
+                }
+                break;
+
+            case AutomationActionType::SetIssueStatus:
+            case AutomationActionType::SetWorkstreamStatus:
+                $statusId = $params['status_id'] ?? null;
+
+                if (! is_numeric($statusId) || ! WorkflowStatus::query()->whereKey((int) $statusId)->whereHas('workflow', fn ($q) => $q->where('organization_id', $organization->id))->exists()) {
+                    $validator->errors()->add("$prefix.status_id", 'Choose a status of this organization.');
+                }
+
+                if ($type === AutomationActionType::SetWorkstreamStatus && (! is_numeric($params['team_id'] ?? null) || ! Team::query()->where('organization_id', $organization->id)->whereKey((int) $params['team_id'])->exists())) {
+                    $validator->errors()->add("$prefix.team_id", 'Choose a team of this organization.');
+                }
+                break;
+
+            case AutomationActionType::SetIssuePriority:
+                if (! is_string($params['priority'] ?? null) || ! in_array(strtolower($params['priority']), array_column(IssuePriority::options(), 'value'), true)) {
+                    $validator->errors()->add("$prefix.priority", 'Choose a priority.');
+                }
+                break;
+
+            case AutomationActionType::SetIssueOwner:
+            case AutomationActionType::AddIssueFollower:
+                if (! is_numeric($params['user_id'] ?? null) || ! in_array((int) $params['user_id'], $memberIds(), true)) {
+                    $validator->errors()->add("$prefix.user_id", 'Choose a member of this organization.');
+                }
+                break;
+
+            case AutomationActionType::AddTeamToIssue:
+            case AutomationActionType::AssignWorkstream:
+                if (! is_numeric($params['team_id'] ?? null) || ! Team::query()->where('organization_id', $organization->id)->whereKey((int) $params['team_id'])->exists()) {
+                    $validator->errors()->add("$prefix.team_id", 'Choose a team of this organization.');
+                }
+
+                if ($type === AutomationActionType::AssignWorkstream && isset($params['user_id']) && (! is_numeric($params['user_id']) || ! in_array((int) $params['user_id'], $memberIds(), true))) {
+                    $validator->errors()->add("$prefix.user_id", 'Choose a member of this organization.');
+                }
+                break;
+
+            case AutomationActionType::AddIssueLabel:
+            case AutomationActionType::RemoveIssueLabel:
+                $hasId = is_numeric($params['label_id'] ?? null);
+                $hasName = is_string($params['label_name'] ?? null) && trim($params['label_name']) !== '';
+
+                if (! $hasId && ! $hasName) {
+                    $validator->errors()->add("$prefix.label_id", 'Choose a label or enter a label name.');
+                } elseif ($hasId && ! IssueLabel::query()->where('organization_id', $organization->id)->whereKey((int) $params['label_id'])->exists()) {
+                    $validator->errors()->add("$prefix.label_id", 'Choose a label of this organization.');
+                }
+                break;
+
+            case AutomationActionType::AddIssueComment:
+                if (! is_string($params['body'] ?? null) || trim($params['body']) === '') {
+                    $validator->errors()->add("$prefix.body", 'Enter the comment text.');
+                }
+                break;
+
+            case AutomationActionType::MoveIssueToProject:
+                if (! is_numeric($params['project_id'] ?? null) || ! Project::query()->where('organization_id', $organization->id)->whereKey((int) $params['project_id'])->exists()) {
+                    $validator->errors()->add("$prefix.project_id", 'Choose a project of this organization.');
                 }
                 break;
 

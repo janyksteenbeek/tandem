@@ -7,11 +7,14 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property int $id
  * @property int $automation_rule_id
  * @property int|null $conversation_id
+ * @property string|null $subject_type
+ * @property int|null $subject_id
  * @property string $trigger
  * @property string $status
  * @property array<string, mixed>|null $details
@@ -19,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read AutomationRule $rule
  * @property-read Conversation|null $conversation
  */
-#[Fillable(['automation_rule_id', 'conversation_id', 'trigger', 'status', 'details', 'created_at'])]
+#[Fillable(['automation_rule_id', 'conversation_id', 'subject_type', 'subject_id', 'trigger', 'status', 'details', 'created_at'])]
 class AutomationRun extends Model
 {
     public $timestamps = false;
@@ -39,6 +42,12 @@ class AutomationRun extends Model
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class);
+    }
+
+    /** @return MorphTo<Model, $this> */
+    public function subject(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     protected function casts(): array

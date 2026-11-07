@@ -19,7 +19,8 @@ class TestAutomationRuleRequest extends OrganizationScopedRequest
     public function rules(): array
     {
         return [
-            'conversation_uuid' => ['required', 'string', Rule::exists('conversations', 'uuid')->where('organization_id', $this->organization()->id)->whereNull('deleted_at')],
+            'conversation_uuid' => ['required_without:issue_identifier', 'nullable', 'string', Rule::exists('conversations', 'uuid')->where('organization_id', $this->organization()->id)->whereNull('deleted_at')],
+            'issue_identifier' => ['required_without:conversation_uuid', 'nullable', 'string', 'max:24'],
             'match' => ['sometimes', Rule::in(['all', 'any'])],
             'conditions' => ['sometimes', 'array', 'max:25'],
             'conditions.*.field' => ['required_with:conditions', Rule::enum(AutomationConditionField::class)],

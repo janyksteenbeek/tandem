@@ -24,4 +24,9 @@ class AutomationRuleFactory extends Factory
             'is_active' => true,
         ];
     }
+
+    public function issue(): static
+    {
+        return $this->state(fn () => ['subject_type' => 'issue', 'inbox_id' => null, 'trigger' => 'issue_created']);
+    }
 }
