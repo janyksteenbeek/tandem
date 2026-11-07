@@ -4,6 +4,7 @@ import { useDebounceFn } from '@vueuse/core';
 import PriorityIcon from '@/components/projects/shared/PriorityIcon.vue';
 import StatusIcon from '@/components/projects/shared/StatusIcon.vue';
 import {
+    Bookmark,
     Box,
     ChartColumnBig,
     CircleDot,
@@ -166,6 +167,28 @@ const staticItems = computed<Item[]>(() => {
                 emit('createIssue');
             },
         });
+        projectsNav.value?.recent.slice(0, 6).forEach((entity) =>
+            items.push({
+                id: `recent-${entity.key}`,
+                group: 'Recent',
+                label: entity.name,
+                hint: entity.identifier,
+                keywords: `${entity.name} ${entity.identifier ?? ''} recent ${entity.type}`,
+                icon:
+                    entity.type === 'issue'
+                        ? CircleDot
+                        : entity.type === 'view'
+                          ? Bookmark
+                          : entity.type === 'team'
+                            ? Users
+                            : undefined,
+                color:
+                    entity.type === 'issue' || entity.type === 'view'
+                        ? undefined
+                        : (entity.color ?? undefined),
+                run: () => go(entity.url),
+            }),
+        );
         items.push({
             id: 'my-issues',
             group: 'Jump to',
@@ -173,6 +196,14 @@ const staticItems = computed<Item[]>(() => {
             keywords: 'issues assigned mine projects',
             icon: CircleDot,
             run: () => go(`/${slug.value}/my-issues`),
+        });
+        items.push({
+            id: 'all-issues',
+            group: 'Jump to',
+            label: 'Issues',
+            keywords: 'all issues list board triage',
+            icon: Layers,
+            run: () => go(`/${slug.value}/issues`),
         });
         items.push({
             id: 'products',
@@ -205,6 +236,22 @@ const staticItems = computed<Item[]>(() => {
             keywords: 'reports metrics throughput velocity analytics',
             icon: ChartColumnBig,
             run: () => go(`/${slug.value}/reports`),
+        });
+        items.push({
+            id: 'initiatives',
+            group: 'Jump to',
+            label: 'Initiatives',
+            keywords: 'initiatives strategy goals',
+            icon: FolderKanban,
+            run: () => go(`/${slug.value}/initiatives`),
+        });
+        items.push({
+            id: 'settings',
+            group: 'Jump to',
+            label: 'Settings',
+            keywords: 'settings profile preferences account',
+            icon: Settings,
+            run: () => go('/settings/profile'),
         });
 
         projectsNav.value?.products.forEach((product) =>

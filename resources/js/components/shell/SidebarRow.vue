@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * One row of any sidebar: an icon or coloured dot, a label, and whatever trails it.
- * Rows that can expand get a chevron on the left; `depth` indents nested rows.
+ * Rows that can expand swap the dot for a chevron on hover; `depth` indents nested rows.
  * `heading` rows (a mailbox) only gain weight when open, never a fill.
  */
 withDefaults(
@@ -54,20 +54,6 @@ const emit = defineEmits<{ toggle: [] }>();
             )
         "
     >
-        <button
-            v-if="expandable"
-            type="button"
-            class="-mr-0.5 flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-sidebar-accent hover:text-foreground"
-            :aria-label="expanded ? 'Collapse' : 'Expand'"
-            :aria-expanded="expanded"
-            @click.prevent="emit('toggle')"
-        >
-            <ChevronRight
-                :class="
-                    cn('size-3.5 transition-transform', expanded && 'rotate-90')
-                "
-            />
-        </button>
         <Link
             :href="href"
             :title="title ?? undefined"
@@ -85,20 +71,50 @@ const emit = defineEmits<{ toggle: [] }>();
             :aria-current="active ? 'page' : undefined"
         >
             <span
-                v-if="icon || color"
-                class="flex size-4 shrink-0 items-center justify-center"
+                v-if="icon || color || expandable"
+                class="relative flex size-4 shrink-0 items-center justify-center"
             >
-                <component
-                    :is="icon"
-                    v-if="icon"
+                <span
                     :class="
                         cn(
-                            'size-4 text-muted-foreground transition-colors group-hover/row:text-sidebar-foreground',
-                            active && variant === 'default' && 'text-brand',
+                            'flex items-center justify-center transition-opacity',
+                            expandable && 'group-hover/row:opacity-0',
                         )
                     "
-                />
-                <InboxDot v-else :color="color ?? 'slate'" size="sm" />
+                >
+                    <component
+                        :is="icon"
+                        v-if="icon"
+                        :class="
+                            cn(
+                                'size-4 text-muted-foreground transition-colors group-hover/row:text-sidebar-foreground',
+                                active && variant === 'default' && 'text-brand',
+                            )
+                        "
+                    />
+                    <InboxDot
+                        v-else-if="color || !expandable"
+                        :color="color ?? 'slate'"
+                        size="sm"
+                    />
+                </span>
+                <button
+                    v-if="expandable"
+                    type="button"
+                    class="absolute inset-0 flex items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100 hover:bg-sidebar-accent hover:text-foreground focus-visible:opacity-100"
+                    :aria-label="expanded ? 'Collapse' : 'Expand'"
+                    :aria-expanded="expanded"
+                    @click.prevent.stop="emit('toggle')"
+                >
+                    <ChevronRight
+                        :class="
+                            cn(
+                                'size-3.5 transition-transform',
+                                expanded && 'rotate-90',
+                            )
+                        "
+                    />
+                </button>
             </span>
             <span
                 v-if="identifier"

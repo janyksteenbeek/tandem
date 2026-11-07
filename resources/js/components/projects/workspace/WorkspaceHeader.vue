@@ -14,6 +14,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useSidebarPreferences } from '@/composables/projects/useSidebarPreferences';
 import { api, reportError } from '@/lib/http';
 import { cn } from '@/lib/utils';
 
@@ -54,6 +55,16 @@ const emit = defineEmits<{ tab: [key: string] }>();
 
 const page = usePage();
 const slug = computed(() => page.props.currentOrganization?.slug ?? '');
+const prefs = useSidebarPreferences();
+
+/** Sidebar rows return to the tab you used last on this product, project or team. */
+const changeTab = (key: string) => {
+    if (props.favoriteType && props.favoriteId) {
+        prefs.rememberTab(`${props.favoriteType}:${props.favoriteId}`, key);
+    }
+
+    emit('tab', key);
+};
 
 const derivedFavorite = computed(() => {
     if (props.isFavorite !== null) {
@@ -162,7 +173,7 @@ const toggleFavorite = async () => {
             class="mt-2"
             :tabs="tabs"
             :active="activeTab"
-            @change="(key) => emit('tab', key)"
+            @change="changeTab"
         />
     </header>
 </template>

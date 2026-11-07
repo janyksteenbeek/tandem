@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import {
     AlertTriangle,
-    ArrowLeft,
     AtSign,
     Bell,
     Building2,
@@ -11,7 +10,6 @@ import {
     Keyboard,
     LayoutGrid,
     Mailbox,
-    Package,
     Palette,
     Plug,
     Search,
@@ -23,8 +21,9 @@ import {
 import type { LucideIcon } from '@lucide/vue';
 import { computed, inject, ref } from 'vue';
 import ShellColumn from '@/components/shell/ShellColumn.vue';
-import ShellNavItem from '@/components/shell/ShellNavItem.vue';
-import { Button } from '@/components/ui/button';
+import SidebarRow from '@/components/shell/SidebarRow.vue';
+import SidebarSection from '@/components/shell/SidebarSection.vue';
+import WorkspaceSwitcher from '@/components/shell/WorkspaceSwitcher.vue';
 import {
     Tooltip,
     TooltipContent,
@@ -65,7 +64,6 @@ type SettingsItem = {
 
 type SettingsGroup = {
     label: string;
-    initial?: string;
     items: SettingsItem[];
 };
 
@@ -91,34 +89,12 @@ const sharedAttention = computed(
         nav.value?.shared.filter((inbox) => inbox.health === 'attention')
             .length ?? 0,
 );
-const attentionTotal = computed(
-    () => personalAttention.value + sharedAttention.value,
-);
-
 const appearanceLabel = computed(
     () => ({ light: 'Light', dark: 'Dark', system: 'Auto' })[appearance.value],
 );
 
 const plural = (count: number, singular: string, pluralForm: string) =>
     `${count} ${count === 1 ? singular : pluralForm}`;
-
-const status = computed(() => {
-    if (attentionTotal.value > 0) {
-        return {
-            tone: 'warning' as const,
-            text: `${plural(attentionTotal.value, 'account needs', 'accounts need')} attention`,
-        };
-    }
-
-    if (!user.value.two_factor_enabled) {
-        return {
-            tone: 'muted' as const,
-            text: 'Two-factor is off.',
-        };
-    }
-
-    return { tone: 'muted' as const, text: 'Everything is connected.' };
-});
 
 const groups = computed<SettingsGroup[]>(() => {
     const result: SettingsGroup[] = [
@@ -184,7 +160,6 @@ const groups = computed<SettingsGroup[]>(() => {
 
     const workspace: SettingsGroup = {
         label: organization.value.name,
-        initial: organization.value.name.slice(0, 1).toUpperCase(),
         items: [
             {
                 title: 'Organization',
@@ -214,24 +189,17 @@ const groups = computed<SettingsGroup[]>(() => {
 
     const projects: SettingsGroup = {
         label: 'Projects',
-        items: [
-            {
-                title: 'Products',
-                href: `/${slug}/products`,
-                icon: Package,
-                keywords: 'products modules releases issue key',
-            },
-        ],
+        items: canManage.value
+            ? [
+                  {
+                      title: 'Project settings',
+                      href: `/${slug}/settings/projects`,
+                      icon: FolderKanban,
+                      keywords: 'workflows issue key cycles estimates statuses',
+                  },
+              ]
+            : [],
     };
-
-    if (canManage.value) {
-        projects.items.push({
-            title: 'Project settings',
-            href: `/${slug}/settings/projects`,
-            icon: FolderKanban,
-            keywords: 'workflows issue key cycles estimates statuses',
-        });
-    }
 
     if (canManage.value) {
         workspace.items.push(
@@ -256,7 +224,11 @@ const groups = computed<SettingsGroup[]>(() => {
         );
     }
 
-    result.push(workspace, projects);
+    result.push(workspace);
+
+    if (projects.items.length > 0) {
+        result.push(projects);
+    }
 
     return result;
 });
@@ -296,10 +268,6 @@ const activeHref = computed(() => {
 const isActive = (item: SettingsItem): boolean =>
     toUrl(item.href) === activeHref.value;
 
-const mailUrl = computed(() =>
-    organization.value ? `/${organization.value.slug}/mail` : '/',
-);
-
 useKeyboard(() => [
     {
         keys: '/',
@@ -315,49 +283,8 @@ useKeyboard(() => [
 <template>
     <ShellColumn label="Settings">
         <template #header>
-            <div
-                class="flex h-[52px] items-center justify-between gap-2 px-4 pt-3"
-            >
-                <div class="min-w-0">
-                    <p
-                        class="font-display text-[19px] leading-[22px] text-sidebar-foreground"
-                    >
-                        Settings
-                    </p>
-                    <p
-                        class="truncate text-[11px] leading-[15px]"
-                        :class="
-                            status.tone === 'warning'
-                                ? 'font-medium text-warning-foreground dark:text-warning'
-                                : 'text-muted-foreground'
-                        "
-                    >
-                        {{ status.text }}
-                    </p>
-                </div>
-                <Tooltip>
-                    <TooltipTrigger as-child>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            class="size-8 shrink-0 rounded-lg"
-                            as-child
-                        >
-                            <Link :href="mailUrl" aria-label="Back to mail">
-                                <ArrowLeft class="size-4" />
-                            </Link>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"
-                        >Back to mail
-                        <kbd class="ml-1 rounded border px-1 text-[10px]"
-                            >G M</kbd
-                        ></TooltipContent
-                    >
-                </Tooltip>
-            </div>
-
-            <label class="relative mx-4 mt-2 mb-2 block">
+            <WorkspaceSwitcher />
+            <label class="relative mt-2 block">
                 <Search
                     class="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
                 />
@@ -366,7 +293,7 @@ useKeyboard(() => [
                     v-model="query"
                     type="search"
                     placeholder="Find a setting…"
-                    class="h-8 w-full rounded-lg border border-sidebar-border bg-background pr-8 pl-8 text-[13px] text-foreground placeholder:text-muted-foreground focus:border-brand/50 focus:ring-2 focus:ring-brand/20 focus:outline-none"
+                    class="h-8 w-full rounded-lg border border-sidebar-border bg-background/70 pr-8 pl-8 text-[12.5px] text-foreground shadow-xs placeholder:text-muted-foreground focus:border-brand/50 focus:ring-2 focus:ring-brand/20 focus:outline-none"
                     aria-label="Find a setting"
                 />
                 <kbd
@@ -377,55 +304,45 @@ useKeyboard(() => [
             </label>
         </template>
 
-        <nav class="flex flex-col gap-5 pt-1" aria-label="Settings sections">
-            <section v-for="group in visibleGroups" :key="group.label">
-                <p
-                    class="mb-1 flex items-center gap-1.5 truncate px-2 text-[11px] font-semibold tracking-wide text-muted-foreground/80 uppercase"
+        <nav aria-label="Settings sections">
+            <SidebarSection
+                v-for="group in visibleGroups"
+                :key="group.label"
+                :label="group.label"
+            >
+                <SidebarRow
+                    v-for="item in group.items"
+                    :key="toUrl(item.href)"
+                    :href="item.href"
+                    :icon="item.icon"
+                    :active="isActive(item)"
                 >
-                    <span
-                        v-if="group.initial"
-                        class="flex size-4 shrink-0 items-center justify-center rounded bg-brand-soft text-[9px] font-bold text-brand-soft-foreground"
-                        aria-hidden="true"
-                        >{{ group.initial }}</span
-                    >
-                    <span class="truncate">{{ group.label }}</span>
-                </p>
-                <div class="flex flex-col gap-0.5">
-                    <ShellNavItem
-                        v-for="item in group.items"
-                        :key="toUrl(item.href)"
-                        :href="item.href"
-                        :icon="item.icon"
-                        :active="isActive(item)"
-                    >
-                        {{ item.title }}
-                        <template #trailing>
-                            <Tooltip v-if="item.attention">
-                                <TooltipTrigger as-child>
-                                    <AlertTriangle
-                                        class="size-3.5 shrink-0 text-warning"
-                                    />
-                                </TooltipTrigger>
-                                <TooltipContent side="right">{{
-                                    item.attention
-                                }}</TooltipContent>
-                            </Tooltip>
-                            <span
-                                v-else-if="
-                                    item.meta !== null &&
-                                    item.meta !== undefined
-                                "
-                                class="text-[11px] text-muted-foreground tabular-nums"
-                                >{{ item.meta }}</span
-                            >
-                        </template>
-                    </ShellNavItem>
-                </div>
-            </section>
+                    {{ item.title }}
+                    <template #trailing>
+                        <Tooltip v-if="item.attention">
+                            <TooltipTrigger as-child>
+                                <AlertTriangle
+                                    class="size-3.5 shrink-0 text-warning"
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent side="right">{{
+                                item.attention
+                            }}</TooltipContent>
+                        </Tooltip>
+                        <span
+                            v-else-if="
+                                item.meta !== null && item.meta !== undefined
+                            "
+                            class="text-[11px] text-muted-foreground tabular-nums"
+                            >{{ item.meta }}</span
+                        >
+                    </template>
+                </SidebarRow>
+            </SidebarSection>
 
             <div
                 v-if="visibleGroups.length === 0"
-                class="mx-2 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
+                class="mx-2 mt-2 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
             >
                 <p class="font-medium text-sidebar-foreground">
                     Nothing called “{{ query.trim() }}”.

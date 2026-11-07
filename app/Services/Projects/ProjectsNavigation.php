@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Sidebar data for the Projects section: counts for the current user, their favorites and recent
  * items, and the products, projects, teams, cycles and saved views they can see. Teams only count
- * once they do project work (a workflow, a product or a project); mail-only teams stay out.
+ * once they do project work (a product, a project, a workstream or cycles); mail-only teams stay out.
  */
 class ProjectsNavigation
 {
@@ -72,7 +72,7 @@ class ProjectsNavigation
             ->get();
 
         $teams = $organization->teams()
-            ->where(fn ($q) => $q->whereHas('workflow')->orWhereHas('products')->orWhereHas('projects'))
+            ->where(fn ($q) => $q->whereHas('products')->orWhereHas('projects')->orWhereHas('workstreams')->orWhere('cycle_settings->enabled', true))
             ->with(['cycles' => fn ($q) => $q->where('status', CycleStatus::Active->value)])
             ->get();
 

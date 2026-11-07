@@ -6,6 +6,8 @@ import type { IssueDisplay } from '@/types';
 type Preferences = {
     collapsed: Record<string, boolean>;
     expanded: Record<string, boolean>;
+    /** Last workspace tab opened per container (`team:3` → `board`), so sidebar rows return there. */
+    tabs: Record<string, string>;
     display: Record<
         string,
         Partial<IssueDisplay> & {
@@ -15,7 +17,12 @@ type Preferences = {
     >;
 };
 
-const DEFAULTS: Preferences = { collapsed: {}, expanded: {}, display: {} };
+const DEFAULTS: Preferences = {
+    collapsed: {},
+    expanded: {},
+    tabs: {},
+    display: {},
+};
 
 /**
  * Sidebar and list display preferences, per organization, in localStorage. SSR renders the
@@ -53,6 +60,14 @@ export function useSidebarPreferences() {
                     ...state.value.expanded,
                     [key]: !state.value.expanded[key],
                 },
+            };
+        },
+        lastTab: (container: string): string | null =>
+            state.value.tabs?.[container] ?? null,
+        rememberTab: (container: string, tab: string) => {
+            state.value = {
+                ...state.value,
+                tabs: { ...state.value.tabs, [container]: tab },
             };
         },
         displayFor: (container: string) => state.value.display[container] ?? {},
