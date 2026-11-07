@@ -62,19 +62,19 @@ class ReportController extends Controller
                 $product = Product::query()->where('organization_id', $organization->id)->where('slug', (string) ($data['id'] ?? ''))->firstOrFail();
                 $this->authorize('view', $product);
 
-                return ['descriptor' => ['type' => 'product', 'id' => $product->slug, 'name' => $product->name, 'days' => $since->diffInDays(now())], 'report' => fn () => $this->reporting->product($product, $user, $since)];
+                return ['descriptor' => ['type' => 'product', 'id' => $product->slug, 'name' => $product->name, 'days' => (int) $since->diffInDays(now())], 'report' => fn () => $this->reporting->product($product, $user, $since)];
             case 'project':
                 $project = Project::query()->where('organization_id', $organization->id)->where('slug', (string) ($data['id'] ?? ''))->firstOrFail();
                 $this->authorize('view', $project);
 
-                return ['descriptor' => ['type' => 'project', 'id' => $project->slug, 'name' => $project->name, 'days' => $since->diffInDays(now())], 'report' => fn () => $this->reporting->project($project, $user, $since)];
+                return ['descriptor' => ['type' => 'project', 'id' => $project->slug, 'name' => $project->name, 'days' => (int) $since->diffInDays(now())], 'report' => fn () => $this->reporting->project($project, $user, $since)];
             case 'team':
                 $team = Team::query()->where('organization_id', $organization->id)->where('slug', (string) ($data['id'] ?? ''))->firstOrFail();
                 $this->authorize('view', $team);
 
-                return ['descriptor' => ['type' => 'team', 'id' => $team->slug, 'name' => $team->name, 'days' => $since->diffInDays(now())], 'report' => fn () => $this->reporting->team($team, $user, $since)];
+                return ['descriptor' => ['type' => 'team', 'id' => $team->slug, 'name' => $team->name, 'days' => (int) $since->diffInDays(now())], 'report' => fn () => $this->reporting->team($team, $user, $since)];
             default:
-                return ['descriptor' => ['type' => 'organization', 'id' => null, 'name' => $organization->name, 'days' => $since->diffInDays(now())], 'report' => fn () => $this->reporting->organization($organization, $user, $since)];
+                return ['descriptor' => ['type' => 'organization', 'id' => null, 'name' => $organization->name, 'days' => (int) $since->diffInDays(now())], 'report' => fn () => $this->reporting->organization($organization, $user, $since)];
         }
     }
 }

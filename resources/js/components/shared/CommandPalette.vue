@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
-import { useDebounceFn } from '@vueuse/core';
-import PriorityIcon from '@/components/projects/shared/PriorityIcon.vue';
-import StatusIcon from '@/components/projects/shared/StatusIcon.vue';
+import { router, usePage } from "@inertiajs/vue3";
+import { useDebounceFn } from "@vueuse/core";
+import PriorityIcon from "@/components/projects/shared/PriorityIcon.vue";
+import StatusIcon from "@/components/projects/shared/StatusIcon.vue";
 import {
     Box,
+    ChartColumnBig,
     CircleDot,
     FolderKanban,
     Inbox,
@@ -16,27 +17,27 @@ import {
     Settings,
     Users,
     Workflow,
-} from '@lucide/vue';
-import { computed, nextTick, ref, watch } from 'vue';
-import InboxDot from '@/components/shared/InboxDot.vue';
-import UserAvatar from '@/components/shared/UserAvatar.vue';
+} from "@lucide/vue";
+import { computed, nextTick, ref, watch } from "vue";
+import InboxDot from "@/components/shared/InboxDot.vue";
+import UserAvatar from "@/components/shared/UserAvatar.vue";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogTitle,
-} from '@/components/ui/dialog';
-import { api } from '@/lib/http';
-import { displayName } from '@/lib/mail';
-import { listTime } from '@/lib/time';
-import { cn } from '@/lib/utils';
-import { IDENTIFIER_PATTERN } from '@/lib/projects/meta';
+} from "@/components/ui/dialog";
+import { api } from "@/lib/http";
+import { displayName } from "@/lib/mail";
+import { listTime } from "@/lib/time";
+import { cn } from "@/lib/utils";
+import { IDENTIFIER_PATTERN } from "@/lib/projects/meta";
 import type {
     ConversationListItem,
     IssueListItem,
     MailNav,
     ProjectsNav,
-} from '@/types';
+} from "@/types";
 
 type Item = {
     id: string;
@@ -51,7 +52,7 @@ type Item = {
     run: () => void;
 };
 
-const open = defineModel<boolean>('open', { default: false });
+const open = defineModel<boolean>("open", { default: false });
 const emit = defineEmits<{ compose: []; createIssue: [] }>();
 
 const page = usePage();
@@ -60,9 +61,9 @@ const projectsNav = computed<ProjectsNav | null>(
     () => page.props.projectsNav ?? null,
 );
 const organization = computed(() => page.props.currentOrganization);
-const slug = computed(() => organization.value?.slug ?? '');
+const slug = computed(() => organization.value?.slug ?? "");
 
-const query = ref('');
+const query = ref("");
 const results = ref<ConversationListItem[]>([]);
 const issueResults = ref<IssueListItem[]>([]);
 const searching = ref(false);
@@ -87,7 +88,7 @@ const search = useDebounceFn(async (term: string) => {
 
     try {
         const [mail, issues] = await Promise.all([
-            api.get<{ conversations: ConversationListItem[] }>('/search', {
+            api.get<{ conversations: ConversationListItem[] }>("/search", {
                 q: term,
                 limit: 6,
             }),
@@ -117,7 +118,7 @@ watch(query, (value) => {
 
 watch(open, async (value) => {
     if (!value) {
-        query.value = '';
+        query.value = "";
         results.value = [];
         issueResults.value = [];
 
@@ -131,77 +132,85 @@ watch(open, async (value) => {
 const staticItems = computed<Item[]>(() => {
     const items: Item[] = [
         {
-            id: 'compose',
-            group: 'Actions',
-            label: 'Compose new message',
-            hint: 'C',
-            keywords: 'compose new write email',
+            id: "compose",
+            group: "Actions",
+            label: "Compose new message",
+            hint: "C",
+            keywords: "compose new write email",
             icon: PenLine,
             run: () => {
                 open.value = false;
-                emit('compose');
+                emit("compose");
             },
         },
         {
-            id: 'accounts',
-            group: 'Actions',
-            label: 'Mail accounts & connection health',
-            keywords: 'settings accounts gmail imap connect health sync',
+            id: "accounts",
+            group: "Actions",
+            label: "Mail accounts & connection health",
+            keywords: "settings accounts gmail imap connect health sync",
             icon: Settings,
-            run: () => go('/settings/mail-accounts'),
+            run: () => go("/settings/mail-accounts"),
         },
     ];
 
     if (organization.value) {
         items.push({
-            id: 'create-issue',
-            group: 'Actions',
-            label: 'Create issue',
-            hint: 'C',
-            keywords: 'new issue task bug create project',
+            id: "create-issue",
+            group: "Actions",
+            label: "Create issue",
+            hint: "C",
+            keywords: "new issue task bug create project",
             icon: Plus,
             run: () => {
                 open.value = false;
-                emit('createIssue');
+                emit("createIssue");
             },
         });
         items.push({
-            id: 'my-issues',
-            group: 'Jump to',
-            label: 'My issues',
-            keywords: 'issues assigned mine projects',
+            id: "my-issues",
+            group: "Jump to",
+            label: "My issues",
+            keywords: "issues assigned mine projects",
             icon: CircleDot,
             run: () => go(`/${slug.value}/my-issues`),
         });
         items.push({
-            id: 'products',
-            group: 'Jump to',
-            label: 'Products',
-            keywords: 'products modules',
+            id: "products",
+            group: "Jump to",
+            label: "Products",
+            keywords: "products modules",
             icon: Box,
             run: () => go(`/${slug.value}/products`),
         });
         items.push({
-            id: 'projects',
-            group: 'Jump to',
-            label: 'Projects',
-            keywords: 'projects initiatives roadmap',
+            id: "projects",
+            group: "Jump to",
+            label: "Projects",
+            keywords: "projects initiatives roadmap",
             icon: FolderKanban,
             run: () => go(`/${slug.value}/projects/all`),
         });
         items.push({
-            id: 'teams',
-            group: 'Jump to',
-            label: 'Teams',
-            keywords: 'teams cycles workload',
+            id: "teams",
+            group: "Jump to",
+            label: "Teams",
+            keywords: "teams cycles workload",
             icon: Users,
             run: () => go(`/${slug.value}/teams`),
+        });
+        items.push({
+            id: "reports",
+            group: "Jump to",
+            label: "Reports",
+            keywords: "reports metrics throughput velocity analytics",
+            icon: ChartColumnBig,
+            run: () => go(`/${slug.value}/reports`),
         });
 
         projectsNav.value?.products.forEach((product) =>
             items.push({
                 id: `product-${product.uuid}`,
-                group: 'Products',
+                group: "Products",
                 label: product.name,
                 hint: product.key,
                 keywords: `${product.name} ${product.key} product`,
@@ -212,7 +221,7 @@ const staticItems = computed<Item[]>(() => {
         projectsNav.value?.projects.forEach((project) =>
             items.push({
                 id: `project-${project.uuid}`,
-                group: 'Projects',
+                group: "Projects",
                 label: project.name,
                 hint: project.product?.key,
                 keywords: `${project.name} project`,
@@ -223,7 +232,7 @@ const staticItems = computed<Item[]>(() => {
         projectsNav.value?.teams.forEach((team) =>
             items.push({
                 id: `team-${team.id}`,
-                group: 'Teams',
+                group: "Teams",
                 label: team.name,
                 keywords: `${team.name} team`,
                 color: team.color,
@@ -233,7 +242,7 @@ const staticItems = computed<Item[]>(() => {
         projectsNav.value?.views.forEach((view) =>
             items.push({
                 id: `view-${view.uuid}`,
-                group: 'Views',
+                group: "Views",
                 label: view.name,
                 keywords: `${view.name} view saved`,
                 run: () => go(`/${slug.value}/views/${view.uuid}`),
@@ -241,18 +250,18 @@ const staticItems = computed<Item[]>(() => {
         );
 
         items.push({
-            id: 'inboxes',
-            group: 'Actions',
-            label: 'Shared inboxes & teams',
-            keywords: 'settings inboxes teams shared organization',
+            id: "inboxes",
+            group: "Actions",
+            label: "Shared inboxes & teams",
+            keywords: "settings inboxes teams shared organization",
             icon: Users,
             run: () => go(`/settings/organizations/${slug.value}/inboxes`),
         });
         items.push({
-            id: 'automations',
-            group: 'Actions',
-            label: 'Automations',
-            keywords: 'automation rules autoresponder templates',
+            id: "automations",
+            group: "Actions",
+            label: "Automations",
+            keywords: "automation rules autoresponder templates",
             icon: Workflow,
             run: () => go(`/${slug.value}/settings/automations`),
         });
@@ -261,10 +270,10 @@ const staticItems = computed<Item[]>(() => {
     if (nav.value) {
         if (nav.value.personal.length > 1) {
             items.push({
-                id: 'all',
-                group: 'Jump to',
-                label: 'All personal mail',
-                keywords: 'all personal inbox',
+                id: "all",
+                group: "Jump to",
+                label: "All personal mail",
+                keywords: "all personal inbox",
                 icon: Layers,
                 run: () => go(`/${slug.value}/mail/all/inbox`),
             });
@@ -273,10 +282,10 @@ const staticItems = computed<Item[]>(() => {
         nav.value.personal.forEach((inbox) =>
             items.push({
                 id: inbox.uuid,
-                group: 'Jump to',
+                group: "Jump to",
                 label: inbox.email ?? inbox.name,
                 hint: inbox.count ? `${inbox.count} unread` : undefined,
-                keywords: `${inbox.name} ${inbox.email ?? ''} personal`,
+                keywords: `${inbox.name} ${inbox.email ?? ""} personal`,
                 icon: Mail,
                 run: () => go(`/${slug.value}/mail/${inbox.uuid}/inbox`),
             }),
@@ -285,10 +294,10 @@ const staticItems = computed<Item[]>(() => {
         nav.value.shared.forEach((inbox) =>
             items.push({
                 id: inbox.uuid,
-                group: 'Jump to',
+                group: "Jump to",
                 label: inbox.name,
                 hint: inbox.count ? `${inbox.count} open` : undefined,
-                keywords: `${inbox.name} ${inbox.email ?? ''} shared team`,
+                keywords: `${inbox.name} ${inbox.email ?? ""} shared team`,
                 color: inbox.color,
                 run: () => go(`/${slug.value}/mail/${inbox.uuid}/open`),
             }),
@@ -303,9 +312,9 @@ const visible = computed<Item[]>(() => {
 
     const conversations: Item[] = results.value.map((conversation) => ({
         id: `c-${conversation.uuid}`,
-        group: 'Conversations',
-        label: conversation.subject ?? '(no subject)',
-        keywords: '',
+        group: "Conversations",
+        label: conversation.subject ?? "(no subject)",
+        keywords: "",
         conversation,
         run: () =>
             go(
@@ -315,10 +324,10 @@ const visible = computed<Item[]>(() => {
 
     const issues: Item[] = issueResults.value.map((issue) => ({
         id: `i-${issue.uuid}`,
-        group: 'Issues',
+        group: "Issues",
         label: issue.title,
         hint: issue.identifier,
-        keywords: '',
+        keywords: "",
         issue,
         run: () => go(`/${slug.value}/issues/${issue.identifier}`),
     }));
@@ -331,9 +340,9 @@ const visible = computed<Item[]>(() => {
     ) {
         issues.push({
             id: `open-${term}`,
-            group: 'Issues',
+            group: "Issues",
             label: `Open ${term.toUpperCase()}`,
-            keywords: '',
+            keywords: "",
             icon: CircleDot,
             run: () => go(`/${slug.value}/issues/${term.toUpperCase()}`),
         });
@@ -345,7 +354,7 @@ const visible = computed<Item[]>(() => {
           )
         : staticItems.value.filter(
               (item) =>
-                  !['Products', 'Projects', 'Teams', 'Views'].includes(
+                  !["Products", "Projects", "Teams", "Views"].includes(
                       item.group,
                   ),
           );
@@ -373,18 +382,18 @@ const move = (delta: number) => {
     nextTick(() =>
         list.value
             ?.querySelector<HTMLElement>(`[data-index="${highlighted.value}"]`)
-            ?.scrollIntoView({ block: 'nearest' }),
+            ?.scrollIntoView({ block: "nearest" }),
     );
 };
 
 const onKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'ArrowDown') {
+    if (event.key === "ArrowDown") {
         event.preventDefault();
         move(1);
-    } else if (event.key === 'ArrowUp') {
+    } else if (event.key === "ArrowUp") {
         event.preventDefault();
         move(-1);
-    } else if (event.key === 'Enter') {
+    } else if (event.key === "Enter") {
         event.preventDefault();
         visible.value[highlighted.value]?.run();
     }
@@ -488,10 +497,10 @@ const indexOf = (item: Item) => visible.value.indexOf(item);
                                             item.issue.project?.name,
                                             item.issue.assignees
                                                 .map((a) => a.name)
-                                                .join(', '),
+                                                .join(", "),
                                         ]
                                             .filter(Boolean)
-                                            .join(' · ')
+                                            .join(" · ")
                                     }}
                                 </span>
                             </span>
