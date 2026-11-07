@@ -5,8 +5,10 @@ import {
     Archive,
     ArrowLeft,
     ArrowRightLeft,
+    CirclePlus,
     Forward,
     Inbox as InboxIcon,
+    Link2,
     Mail,
     MailOpen,
     MessageSquareText,
@@ -19,7 +21,7 @@ import {
     Trash2,
     Users,
 } from '@lucide/vue';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, inject, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import AssigneePicker from '@/components/mail/AssigneePicker.vue';
 import CommentCard from '@/components/shared/CommentCard.vue';
@@ -34,6 +36,10 @@ import ShareDialog from '@/components/mail/ShareDialog.vue';
 import SnoozeMenu from '@/components/mail/SnoozeMenu.vue';
 import StatusControl from '@/components/mail/StatusControl.vue';
 import TagPicker from '@/components/mail/TagPicker.vue';
+import ConfirmDialog from '@/components/projects/dialogs/ConfirmDialog.vue';
+import LinkIssueDialog from '@/components/projects/dialogs/LinkIssueDialog.vue';
+import ShareToIssueDialog from '@/components/projects/dialogs/ShareToIssueDialog.vue';
+import type { ShareToIssuePayload } from '@/components/projects/dialogs/ShareToIssueDialog.vue';
 import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -54,15 +60,18 @@ import { useKeyboard } from '@/composables/useKeyboard';
 import { usePresence } from '@/composables/usePresence';
 import { api, reportError } from '@/lib/http';
 import { chipClass } from '@/lib/mail';
+import { prefillFromConversation } from '@/lib/projects/issuePrefill';
 import { cn } from '@/lib/utils';
 import type {
     Comment,
     Conversation,
     ConversationEvent,
     ConversationStatus,
+    CreateIssuePrefill,
     Draft,
     DraftKind,
     Inbox,
+    IssueListItem,
     Message,
     ShareTarget,
     Tag,
@@ -504,6 +513,92 @@ const destroy = async () => {
     }
 };
 
+// --- Issues -------------------------------------------------------------------------------
+// Linking ties work to this thread; it never copies mail. Sharing content is the separate,
+// explicit step in ShareToIssueDialog.
+const openCreateIssue = inject<(prefill?: CreateIssuePrefill) => void>(
+    'openCreateIssue',
+    () => {},
+);
+const canUseIssues = computed(() => local.value.organization_id !== null);
+const linkIssueOpen = ref(false);
+const shareIssueOpen = ref(false);
+const shareIssueBusy = ref(false);
+const shareMessage = ref<Message | null>(null);
+const shareSelection = ref<string | null>(null);
+const unlinkIdentifier = ref<string | null>(null);
+
+const createIssue = () => {
+    if (!canUseIssues.value) {
+        toast.info('Issues are available for conversations in a team inbox.');
+
+        return;
+    }
+
+    openCreateIssue(prefillFromConversation(local.value));
+};
+
+const linkIssue = (issue: IssueListItem) => {
+    const before = local.value.linked_issues ?? [];
+
+    void actions.linkIssue(local.value.uuid, issue.identifier, () => {
+        local.value.linked_issues = [issue, ...before];
+
+        return () => (local.value.linked_issues = before);
+    });
+};
+
+const unlinkIssue = () => {
+    const identifier = unlinkIdentifier.value;
+
+    if (!identifier) {
+        return;
+    }
+
+    const before = local.value.linked_issues ?? [];
+    unlinkIdentifier.value = null;
+
+    void actions.unlinkIssue(local.value.uuid, identifier, () => {
+        local.value.linked_issues = before.filter(
+            (i) => i.identifier !== identifier,
+        );
+
+        return () => (local.value.linked_issues = before);
+    });
+};
+
+const openShareToIssue = (
+    message: Message | null,
+    selectionHtml: string | null = null,
+) => {
+    shareMessage.value = message;
+    shareSelection.value = selectionHtml;
+    shareIssueOpen.value = true;
+};
+
+const shareToIssue = async (payload: ShareToIssuePayload) => {
+    shareIssueBusy.value = true;
+
+    try {
+        const issue = await actions.shareToIssue(local.value.uuid, payload);
+
+        if (issue) {
+            shareIssueOpen.value = false;
+
+            if (
+                !local.value.linked_issues?.some((i) => i.uuid === issue.uuid)
+            ) {
+                local.value.linked_issues = [
+                    issue,
+                    ...(local.value.linked_issues ?? []),
+                ];
+            }
+        }
+    } finally {
+        shareIssueBusy.value = false;
+    }
+};
+
 useKeyboard(() => [
     { keys: 'r', description: 'Reply', handler: () => startReply('reply') },
     {
@@ -551,6 +646,11 @@ useKeyboard(() => [
         keys: 'i',
         description: 'Assign to me',
         handler: () => isShared.value && assign(me.value.id),
+    },
+    {
+        keys: 'shift+i',
+        description: 'Create issue from conversation',
+        handler: createIssue,
     },
     {
         keys: 'escape',
@@ -749,6 +849,26 @@ const go = (url: string) => router.visit(url);
                                 ><Users class="size-4" /> Share or transfer to a
                                 team</DropdownMenuItem
                             >
+                            <template v-if="canUseIssues">
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    class="gap-2"
+                                    @click="createIssue"
+                                    ><CirclePlus class="size-4" /> Create issue
+                                    from conversation
+                                    <kbd
+                                        class="ml-auto rounded border px-1 text-[10px]"
+                                        >⇧I</kbd
+                                    ></DropdownMenuItem
+                                >
+                                <DropdownMenuItem
+                                    class="gap-2"
+                                    @click="linkIssueOpen = true"
+                                    ><Link2 class="size-4" /> Link to existing
+                                    issue…</DropdownMenuItem
+                                >
+                                <DropdownMenuSeparator />
+                            </template>
                             <DropdownMenuItem
                                 class="gap-2"
                                 @click="
@@ -906,6 +1026,10 @@ const go = (url: string) => router.visit(url);
                             @toggle="toggleMessage(item.message)"
                             @reply="(kind) => startReply(kind, item.message)"
                             @view-source="viewSource(item.message)"
+                            @share-to-issue="
+                                (html) =>
+                                    openShareToIssue(item.message ?? null, html)
+                            "
                         />
                         <CommentCard
                             v-else-if="item.kind === 'comment' && item.comment"
@@ -1097,6 +1221,36 @@ const go = (url: string) => router.visit(url);
             @follow="(f) => actions.follow(local.uuid, f)"
             @unshare="(uuid) => actions.unshare(local.uuid, uuid)"
             @compose="() => {}"
+            @link-issue="linkIssueOpen = true"
+            @create-issue="createIssue"
+            @unlink-issue="(identifier) => (unlinkIdentifier = identifier)"
+        />
+
+        <LinkIssueDialog
+            v-if="canUseIssues"
+            v-model:open="linkIssueOpen"
+            mode="conversation"
+            @pick="linkIssue"
+        />
+
+        <ShareToIssueDialog
+            v-if="canUseIssues"
+            v-model:open="shareIssueOpen"
+            :linked-issues="local.linked_issues ?? []"
+            :message="shareMessage"
+            :selection-html="shareSelection"
+            :busy="shareIssueBusy"
+            @confirm="shareToIssue"
+        />
+
+        <ConfirmDialog
+            :open="unlinkIdentifier !== null"
+            :title="`Unlink ${unlinkIdentifier ?? ''}?`"
+            description="The issue will no longer list this conversation. Anything already shared into the issue stays there."
+            confirm-label="Unlink"
+            destructive
+            @update:open="(v) => !v && (unlinkIdentifier = null)"
+            @confirm="unlinkIssue"
         />
 
         <ShareDialog

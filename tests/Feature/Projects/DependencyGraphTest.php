@@ -42,6 +42,12 @@ test('blocking relations count blockers and resolve when the blocker completes',
 
     expect($blocked->fresh()->blocked_by_count)->toBe(1);
 
+    // An issue with only inverse relations still renders its detail page.
+    $this->actingAs($this->admin)
+        ->get(route('projects.issues.show', ['current_organization' => $this->organization->slug, 'issue' => $blocked->identifier]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('issue.relations.0.kind', 'blocked_by')->etc());
+
     $done = $this->workflows->issueWorkflowFor($this->organization, $this->product)->statusFor(StatusCategory::Completed);
     $this->actions->setStatus($blocker, $done, $this->admin);
 

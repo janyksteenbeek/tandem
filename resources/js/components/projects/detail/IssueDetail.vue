@@ -440,6 +440,7 @@ defineExpose({
                     <LinkedConversations
                         :data="linkedConversations"
                         :can-link="local.can.link_conversations"
+                        :identifier="local.identifier"
                         @link="emit('linkConversation')"
                     />
                     <ActivityTimeline :activity="activity" />

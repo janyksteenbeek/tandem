@@ -32,8 +32,8 @@ class IssueResource extends JsonResource
         $user = $request->user();
         $readiness = app(IssueCompletion::class)->evaluate($this->resource);
 
-        $relations = $this->relations->map(fn (IssueRelation $r) => $this->relationRow($r, $r->relatedIssue, $r->type->value === 'blocks' ? 'blocks' : $r->type->value))
-            ->merge($this->inverseRelations->map(fn (IssueRelation $r) => $this->relationRow($r, $r->issue, $r->type->value === 'blocks' ? 'blocked_by' : $r->type->value)))
+        $relations = $this->relations->toBase()->map(fn (IssueRelation $r) => $this->relationRow($r, $r->relatedIssue, $r->type->value === 'blocks' ? 'blocks' : $r->type->value))
+            ->merge($this->inverseRelations->toBase()->map(fn (IssueRelation $r) => $this->relationRow($r, $r->issue, $r->type->value === 'blocks' ? 'blocked_by' : $r->type->value)))
             ->values()
             ->all();
 

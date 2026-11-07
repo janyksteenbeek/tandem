@@ -5,6 +5,7 @@ import type {
     Conversation,
     ConversationListItem,
     ConversationStatus,
+    IssueListItem,
 } from '@/types';
 
 type Updater = (conversation: Conversation) => void;
@@ -192,6 +193,64 @@ export function useConversationActions(
                     `/conversations/${uuid}/share/${inboxUuid}`,
                 ),
             ),
+
+        /** Link an existing issue by identifier. Rolls back the optimistic card on failure. */
+        linkIssue: (
+            uuid: string,
+            identifier: string,
+            optimistic?: () => () => void,
+        ) =>
+            run(
+                () =>
+                    api.post<ConversationResponse>(
+                        `/conversations/${uuid}/issues`,
+                        { identifier },
+                    ),
+                optimistic,
+                `Linked ${identifier.toUpperCase()}`,
+            ),
+
+        unlinkIssue: (
+            uuid: string,
+            identifier: string,
+            optimistic?: () => () => void,
+        ) =>
+            run(
+                () =>
+                    api.delete<ConversationResponse>(
+                        `/conversations/${uuid}/issues/${identifier}`,
+                    ),
+                optimistic,
+                `Unlinked ${identifier.toUpperCase()}`,
+            ),
+
+        /**
+         * Copy an excerpt and/or attachments into an issue. Content only moves on an explicit
+         * call like this one; linking alone never shares mail.
+         */
+        shareToIssue: async (
+            uuid: string,
+            payload: {
+                identifier: string;
+                message_uuid?: string | null;
+                selection_html?: string | null;
+                attachment_uuids?: string[];
+            },
+        ) => {
+            try {
+                const data = await api.post<{ issue: IssueListItem }>(
+                    `/conversations/${uuid}/issues/share`,
+                    payload,
+                );
+                toast.success(`Shared into ${data.issue.identifier}`);
+
+                return data.issue;
+            } catch (error) {
+                reportError(error);
+
+                return null;
+            }
+        },
 
         destroy: async (uuid: string) => {
             try {

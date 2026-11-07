@@ -1,3 +1,5 @@
+import type { IssueListItem } from './projects';
+
 export type EmailAddress = { name: string | null; email: string };
 
 export type UserSummary = {
@@ -183,6 +185,8 @@ export type Conversation = ConversationListItem & {
     comments: Comment[];
     events: ConversationEvent[];
     drafts: Draft[];
+    /** Issues tied to this conversation that the viewer may see. */
+    linked_issues: IssueListItem[];
     closed_at: string | null;
     first_message_at: string | null;
     can: { act: boolean; share: boolean; move: boolean; delete: boolean };
