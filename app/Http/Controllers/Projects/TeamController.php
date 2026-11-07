@@ -115,12 +115,12 @@ class TeamController extends Controller
             'lookups' => fn () => $this->lookups->for($user, $currentOrganization),
             'filters' => $filters,
             'display' => $display,
-            'overview' => Inertia::optional(fn () => $this->overview($team, $user)),
+            'overview' => $this->tabProp($tab, 'overview', fn () => $this->overview($team, $user)),
             'issues' => in_array($tab, ['issues', 'backlog'], true) ? $this->issuesProp($request, $user, $filters, $display) : Inertia::optional(fn () => null),
-            'board' => Inertia::optional(fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses, $team->id)),
-            'cycles' => Inertia::optional(fn () => CycleResource::collection($team->cycles()->get())->resolve()),
-            'workload' => Inertia::optional(fn () => $this->workload($team)),
-            'projects' => Inertia::optional(fn () => ProjectSummaryResource::collection(
+            'board' => $this->tabProp($tab, 'board', fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses, $team->id)),
+            'cycles' => $this->tabProp($tab, 'cycles', fn () => CycleResource::collection($team->cycles()->get())->resolve()),
+            'workload' => $this->tabProp($tab, 'workload', fn () => $this->workload($team)),
+            'projects' => $this->tabProp($tab, 'overview', fn () => ProjectSummaryResource::collection(
                 $team->projects()->tap(fn ($q) => $this->access->applyProjectVisibility($q, $user, $currentOrganization->id))->with(['lead', 'teams', 'product'])->get()
             )->resolve()),
         ]);

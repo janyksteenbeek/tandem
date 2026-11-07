@@ -40,7 +40,7 @@ class IssueViewController extends Controller
             'filters' => $filters,
             'display' => $display,
             'issues' => $this->issuesProp($request, $user, $filters, $display),
-            'board' => Inertia::optional(fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
+            'board' => $this->tabProp($display['mode'], 'board', fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
             'workflow' => fn () => WorkflowStatusResource::collection($workflow->statuses)->resolve(),
             'lookups' => fn () => $this->lookups->for($user, $currentOrganization),
         ]);

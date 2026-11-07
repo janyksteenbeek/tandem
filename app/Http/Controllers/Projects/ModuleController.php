@@ -51,7 +51,7 @@ class ModuleController extends Controller
             'workflow' => fn () => WorkflowStatusResource::collection($workflow->statuses)->resolve(),
             'lookups' => fn () => $this->lookups->for($user, $currentOrganization),
             'issues' => $this->issuesProp($request, $user, $filters, $display),
-            'board' => Inertia::optional(fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
+            'board' => $this->tabProp($display['mode'], 'board', fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
             'overview' => fn () => [
                 'open' => $module->issues()->visibleTo($user)->whereNotIn('status_category', ['completed', 'canceled'])->count(),
                 'blocked' => $module->issues()->visibleTo($user)->whereNotIn('status_category', ['completed', 'canceled'])->where(fn ($q) => $q->where('blocked_by_count', '>', 0)->orWhere('blocked_workstreams_count', '>', 0))->count(),

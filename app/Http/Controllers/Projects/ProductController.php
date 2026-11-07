@@ -92,18 +92,18 @@ class ProductController extends Controller
             'filters' => $filters,
             'display' => $display,
             'workflow' => fn () => WorkflowResource::make($workflow)->resolve(),
-            'overview' => Inertia::optional(fn () => $this->overview($product, $user)),
+            'overview' => $this->tabProp($tab, 'overview', fn () => $this->overview($product, $user)),
             'issues' => $tab === 'issues' ? $this->issuesProp($request, $user, $filters, $display) : Inertia::optional(fn () => null),
-            'board' => Inertia::optional(fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
-            'projects' => Inertia::optional(fn () => ProjectSummaryResource::collection(
+            'board' => $this->tabProp($display['mode'], 'board', fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
+            'projects' => $this->tabProp($tab, 'projects', fn () => ProjectSummaryResource::collection(
                 $product->projects()->tap(fn ($q) => $this->access->applyProjectVisibility($q, $user, $currentOrganization->id))->with(['lead', 'teams', 'product'])->orderBy('target_date')->get()
             )->resolve()),
-            'releases' => Inertia::optional(fn () => $product->releases()->get()->map(fn ($release) => [
+            'releases' => $this->tabProp($tab, 'releases', fn () => $product->releases()->get()->map(fn ($release) => [
                 'id' => $release->id, 'uuid' => $release->uuid, 'name' => $release->name, 'version' => $release->version, 'status' => $release->status->value,
                 'planned_at' => $release->planned_at?->toDateString(), 'released_at' => $release->released_at?->toISOString(),
                 'issues_count' => $release->issues_count, 'completed_issues_count' => $release->completed_issues_count,
             ])->values()->all()),
-            'activity' => Inertia::optional(fn () => $this->activity($product)),
+            'activity' => $this->tabProp($tab, 'activity', fn () => $this->activity($product)),
         ]);
     }
 

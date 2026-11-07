@@ -93,6 +93,15 @@ trait BuildsIssueLists
     }
 
     /**
+     * Tab payloads resolve eagerly for the active tab and lazily (Inertia::optional) for the rest,
+     * so a tab switch only fetches its own data.
+     */
+    protected function tabProp(string $current, string $tab, \Closure $resolver): mixed
+    {
+        return $current === $tab ? $resolver() : Inertia::optional($resolver);
+    }
+
+    /**
      * The merge-paginated list prop.
      *
      * @param  array<string, mixed>  $filters

@@ -95,11 +95,11 @@ class ProjectController extends Controller
             'filters' => $filters,
             'display' => $display,
             'workflow' => fn () => WorkflowResource::make($workflow)->resolve(),
-            'overview' => Inertia::optional(fn () => $this->overview($project, $user)),
+            'overview' => $this->tabProp($tab, 'overview', fn () => $this->overview($project, $user)),
             'issues' => in_array($tab, ['issues', 'timeline'], true) ? $this->issuesProp($request, $user, $filters, $display, $tab === 'timeline' ? 200 : 50) : Inertia::optional(fn () => null),
-            'board' => Inertia::optional(fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
-            'milestones' => Inertia::optional(fn () => MilestoneResource::collection($project->milestones()->get())->resolve()),
-            'activity' => Inertia::optional(fn () => $this->activity($project)),
+            'board' => $this->tabProp($tab, 'board', fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
+            'milestones' => $this->tabProp($tab, 'milestones', fn () => MilestoneResource::collection($project->milestones()->get())->resolve()),
+            'activity' => $this->tabProp($tab, 'activity', fn () => $this->activity($project)),
         ]);
     }
 

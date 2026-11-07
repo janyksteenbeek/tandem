@@ -402,7 +402,7 @@ defineExpose({
                     <RichTextEditor
                         v-if="local.can.update"
                         v-model="description"
-                        placeholder="Add a description… Type @ to mention, / for formatting."
+                        placeholder="Add a description… Type @ to mention someone."
                         :members="lookups.members"
                         :upload-url="`/${slug}/issues/${local.identifier}/attachments`"
                         min-height="4rem"

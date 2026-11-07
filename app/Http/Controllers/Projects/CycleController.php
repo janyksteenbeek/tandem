@@ -52,7 +52,7 @@ class CycleController extends Controller
             'filters' => $filters,
             'display' => $display,
             'issues' => $this->issuesProp($request, $user, $filters, array_merge($display, ['show_completed' => 'all']), 100),
-            'board' => Inertia::optional(fn () => $this->boardColumns($request, $user, $filters, array_merge($display, ['show_completed' => 'all']), $workflow->statuses, $team->id)),
+            'board' => $this->tabProp($display['mode'], 'board', fn () => $this->boardColumns($request, $user, $filters, array_merge($display, ['show_completed' => 'all']), $workflow->statuses, $team->id)),
             'backlog' => Inertia::optional(fn () => IssueListItemResource::collection(
                 Issue::query()->visibleTo($user)->with(IssueQuery::EAGER)
                     ->whereHas('workstreams', fn (Builder $w) => $w->where('team_id', $team->id)->whereNull('cycle_id')->whereNotIn('status_category', ['completed', 'canceled']))
