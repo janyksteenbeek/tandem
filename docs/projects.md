@@ -48,11 +48,11 @@ There are two kinds of workflow, both built from `workflow_statuses` with a `cat
 
 `IssueCompletion` derives the overall status from the workstreams with one aggregate query and applies **forward-only** transitions:
 
-| Workstreams                                                             | Overall status                             |
-| ----------------------------------------------------------------------- | ------------------------------------------ |
-| Any required workstream started                                         | backlog/unstarted → started (`auto_start`) |
-| Every required workstream completed or canceled, at least one completed | open → completed (`auto_complete`)         |
-| Every required workstream canceled                                      | open → canceled                            |
+| Workstreams                                                             | Overall status                                                         |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Any required workstream started                                         | backlog/unstarted → started (`auto_start`)                             |
+| Every required workstream completed or canceled, at least one completed | open → completed (`auto_complete`)                                     |
+| Every required workstream canceled                                      | suggested as canceled; the owner is asked, nothing moves automatically |
 
 Nothing ever moves an issue backwards automatically. Reopening a required workstream on a completed issue writes a `completion_conflict` activity and notifies the owner instead. Completing an issue by hand while required work is open raises `CompletionBlockedException` (HTTP 422, `code: workstreams_incomplete`, with the readiness breakdown); a manager may **override**, which records `status_overridden` on the issue and an audit log entry. Automations can never override.
 
