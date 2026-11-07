@@ -149,13 +149,11 @@ const virtualizer = useVirtualizer(
 );
 const visibleRows = computed(() =>
     virtual.value
-        ? virtualizer.value
-              .getVirtualItems()
-              .map((item) => ({
-                  row: flat.value[item.index],
-                  index: item.index,
-                  y: item.start,
-              }))
+        ? virtualizer.value.getVirtualItems().map((item) => ({
+              row: flat.value[item.index],
+              index: item.index,
+              y: item.start,
+          }))
         : flat.value.map((row, index) => ({ row, index, y: index * ROW })),
 );
 const canvasHeight = computed(() =>

@@ -51,7 +51,7 @@ test('the command palette searches across inboxes', async ({ page }) => {
     await login(page);
 
     await page.keyboard.press('Meta+K');
-    await page.getByPlaceholder(/Search mail/).fill('export');
+    await page.getByPlaceholder(/Search issues and mail/).fill('export');
     await expect(
         page.getByRole('option', { name: /Export to CSV/ }),
     ).toBeVisible();

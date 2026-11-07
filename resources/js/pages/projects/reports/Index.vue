@@ -1,32 +1,32 @@
 <script setup lang="ts">
-import { Deferred, Head, Link, router, usePage } from "@inertiajs/vue3";
-import { AlertTriangle, ArrowRight, CalendarClock } from "@lucide/vue";
-import { computed, ref } from "vue";
-import { index as reportsIndex } from "@/actions/App/Http/Controllers/Projects/ReportController";
-import ProgressRing from "@/components/projects/charts/ProgressRing.vue";
-import ChartTooltip from "@/components/projects/charts/ChartTooltip.vue";
-import Sparkline from "@/components/projects/charts/Sparkline.vue";
-import VelocityBars from "@/components/projects/charts/VelocityBars.vue";
-import AvatarStack from "@/components/projects/shared/AvatarStack.vue";
-import DueDateBadge from "@/components/projects/shared/DueDateBadge.vue";
-import IssueIdentifier from "@/components/projects/shared/IssueIdentifier.vue";
-import PriorityIcon from "@/components/projects/shared/PriorityIcon.vue";
-import StatusIcon from "@/components/projects/shared/StatusIcon.vue";
-import Breadcrumbs from "@/components/projects/workspace/Breadcrumbs.vue";
-import OverviewSection from "@/components/projects/workspace/OverviewSection.vue";
+import { Deferred, Head, Link, router, usePage } from '@inertiajs/vue3';
+import { AlertTriangle, ArrowRight, CalendarClock } from '@lucide/vue';
+import { computed, ref } from 'vue';
+import { index as reportsIndex } from '@/actions/App/Http/Controllers/Projects/ReportController';
+import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
+import ChartTooltip from '@/components/projects/charts/ChartTooltip.vue';
+import Sparkline from '@/components/projects/charts/Sparkline.vue';
+import VelocityBars from '@/components/projects/charts/VelocityBars.vue';
+import AvatarStack from '@/components/projects/shared/AvatarStack.vue';
+import DueDateBadge from '@/components/projects/shared/DueDateBadge.vue';
+import IssueIdentifier from '@/components/projects/shared/IssueIdentifier.vue';
+import PriorityIcon from '@/components/projects/shared/PriorityIcon.vue';
+import StatusIcon from '@/components/projects/shared/StatusIcon.vue';
+import Breadcrumbs from '@/components/projects/workspace/Breadcrumbs.vue';
+import OverviewSection from '@/components/projects/workspace/OverviewSection.vue';
 import {
     NativeSelect,
     NativeSelectOption,
-} from "@/components/ui/native-select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useKeyboard } from "@/composables/useKeyboard";
-import { PRIORITY } from "@/lib/keyboard";
-import { linearScale, niceTicks } from "@/lib/projects/chartScales";
+} from '@/components/ui/native-select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useKeyboard } from '@/composables/useKeyboard';
+import { PRIORITY } from '@/lib/keyboard';
+import { linearScale, niceTicks } from '@/lib/projects/chartScales';
 import {
     CATEGORY_META,
     PROJECT_HEALTH_META,
     PROJECT_STATUS_META,
-} from "@/lib/projects/meta";
+} from '@/lib/projects/meta';
 import {
     categoryBreakdown,
     formatHours,
@@ -36,8 +36,8 @@ import {
     throughputPerWeek,
     weekLabel,
     type ThroughputWeek,
-} from "@/lib/projects/reportShapes";
-import { cn } from "@/lib/utils";
+} from '@/lib/projects/reportShapes';
+import { cn } from '@/lib/utils';
 import type {
     IssueListItem,
     ProductSummary,
@@ -46,9 +46,9 @@ import type {
     ProjectSummary,
     StatusCategory,
     TeamSummary,
-} from "@/types";
+} from '@/types';
 
-type ScopeType = "organization" | "product" | "project" | "team";
+type ScopeType = 'organization' | 'product' | 'project' | 'team';
 
 type Scope = {
     type: ScopeType;
@@ -190,27 +190,27 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const slug = computed(() => page.props.currentOrganization?.slug ?? "");
+const slug = computed(() => page.props.currentOrganization?.slug ?? '');
 const today = new Date();
 
 /* ---- scope and range controls ------------------------------------------------------- */
 
 const scopeType = ref<ScopeType>(props.scope.type);
-const scopeId = ref<string>(props.scope.id ?? "");
+const scopeId = ref<string>(props.scope.id ?? '');
 
 const entities = computed(() => {
     switch (scopeType.value) {
-        case "product":
+        case 'product':
             return props.options.products.map((p) => ({
                 id: p.slug,
                 label: `${p.key} · ${p.name}`,
             }));
-        case "project":
+        case 'project':
             return props.options.projects.map((p) => ({
                 id: p.slug,
                 label: p.product ? `${p.product.key} · ${p.name}` : p.name,
             }));
-        case "team":
+        case 'team':
             return props.options.teams.map((t) => ({
                 id: t.slug,
                 label: t.name,
@@ -230,7 +230,7 @@ const visit = (
     const type = next.type ?? scopeType.value;
     const id = next.id ?? scopeId.value;
 
-    if (type !== "organization" && !id) {
+    if (type !== 'organization' && !id) {
         return;
     }
 
@@ -240,7 +240,7 @@ const visit = (
             {
                 query: {
                     scope: type,
-                    ...(type !== "organization" ? { id } : {}),
+                    ...(type !== 'organization' ? { id } : {}),
                     days: next.days ?? days.value,
                 },
             },
@@ -256,7 +256,7 @@ const changeType = (event: Event) => {
     const type = selected(event) as ScopeType;
     scopeType.value = type;
     scopeId.value =
-        type === "organization" ? "" : (entities.value[0]?.id ?? "");
+        type === 'organization' ? '' : (entities.value[0]?.id ?? '');
     visit({ type, id: scopeId.value });
 };
 
@@ -278,16 +278,16 @@ useKeyboard(
         RANGE_PRESETS.map((preset, i) => ({
             keys: String(i + 1),
             description: preset.label,
-            group: "Reports",
+            group: 'Reports',
             handler: () => changeRange(preset.key),
         })),
-    { scope: "Reports", priority: PRIORITY.page },
+    { scope: 'Reports', priority: PRIORITY.page },
 );
 
 /* ---- derived figures ---------------------------------------------------------------- */
 
 const report = computed(() => props.report);
-const isTeam = computed(() => props.scope.type === "team");
+const isTeam = computed(() => props.scope.type === 'team');
 
 const figures = computed(() => report.value?.issues ?? null);
 const perWeek = computed(() =>
@@ -334,7 +334,7 @@ type Tile = {
     label: string;
     value: string;
     hint: string;
-    tone?: "warning" | "destructive" | "success";
+    tone?: 'warning' | 'destructive' | 'success';
 };
 
 const tiles = computed<Tile[]>(() => {
@@ -347,37 +347,37 @@ const tiles = computed<Tile[]>(() => {
     if (isTeam.value && r.workstreams) {
         return [
             {
-                key: "open",
-                label: "Open workstreams",
+                key: 'open',
+                label: 'Open workstreams',
                 value: String(r.workstreams.open),
                 hint: `${r.workstreams.started} in progress`,
             },
             {
-                key: "completed",
-                label: "Completed",
+                key: 'completed',
+                label: 'Completed',
                 value: String(r.workstreams.completed_since),
                 hint: `workstreams, ${rangeLabel.value}`,
             },
             {
-                key: "throughput",
-                label: "Throughput",
+                key: 'throughput',
+                label: 'Throughput',
                 value: formatNumber(teamPerWeek.value),
-                hint: "workstreams per week, 8 weeks",
+                hint: 'workstreams per week, 8 weeks',
             },
             {
-                key: "cycle",
-                label: "Cycle time",
-                value: formatHours(r.cycle_time_hours) ?? "—",
+                key: 'cycle',
+                label: 'Cycle time',
+                value: formatHours(r.cycle_time_hours) ?? '—',
                 hint: r.lead_time_hours
                     ? `lead time ${formatHours(r.lead_time_hours)}`
-                    : "started to completed",
+                    : 'started to completed',
             },
             {
-                key: "blocked",
-                label: "Blocked",
+                key: 'blocked',
+                label: 'Blocked',
                 value: String(r.workstreams.blocked),
-                hint: "waiting on another team",
-                tone: r.workstreams.blocked > 0 ? "warning" : undefined,
+                hint: 'waiting on another team',
+                tone: r.workstreams.blocked > 0 ? 'warning' : undefined,
             },
         ];
     }
@@ -392,50 +392,50 @@ const tiles = computed<Tile[]>(() => {
 
     return [
         {
-            key: "open",
-            label: "Open issues",
+            key: 'open',
+            label: 'Open issues',
             value: String(f.open),
             hint: `${f.started} in progress`,
         },
         {
-            key: "completed",
-            label: "Completed",
+            key: 'completed',
+            label: 'Completed',
             value: String(f.completed_since),
             hint: `issues, ${rangeLabel.value}`,
         },
         {
-            key: "throughput",
-            label: "Throughput",
+            key: 'throughput',
+            label: 'Throughput',
             value: formatNumber(perWeek.value),
-            hint: "issues per week, 8 weeks",
+            hint: 'issues per week, 8 weeks',
         },
         {
-            key: "created",
-            label: "Created",
+            key: 'created',
+            label: 'Created',
             value: String(f.created_since),
             hint: `issues, ${rangeLabel.value}`,
         },
         overdue !== null
             ? {
-                  key: "overdue",
-                  label: "Overdue",
+                  key: 'overdue',
+                  label: 'Overdue',
                   value: String(overdue),
-                  hint: "past their due date",
-                  tone: overdue > 0 ? "destructive" : undefined,
+                  hint: 'past their due date',
+                  tone: overdue > 0 ? 'destructive' : undefined,
               }
             : r.blockers !== undefined
               ? {
-                    key: "blocked",
-                    label: "Blocked",
+                    key: 'blocked',
+                    label: 'Blocked',
                     value: String(r.blockers),
-                    hint: "issues waiting on a blocker",
-                    tone: r.blockers > 0 ? "warning" : undefined,
+                    hint: 'issues waiting on a blocker',
+                    tone: r.blockers > 0 ? 'warning' : undefined,
                 }
               : {
-                    key: "multi",
-                    label: "Cross-team",
+                    key: 'multi',
+                    label: 'Cross-team',
                     value: String(r.cross_team?.multi_team_open ?? 0),
-                    hint: "open issues with 2+ teams",
+                    hint: 'open issues with 2+ teams',
                 },
     ];
 });
@@ -574,7 +574,7 @@ const categoryLabel = (category: StatusCategory) =>
                             :value="preset.key"
                             class="h-7 px-2 text-[12px]"
                             >{{
-                                preset.label.replace("Last ", "")
+                                preset.label.replace('Last ', '')
                             }}</ToggleGroupItem
                         >
                     </ToggleGroup>
@@ -1070,8 +1070,8 @@ const categoryLabel = (category: StatusCategory) =>
                                             to target ·
                                             {{
                                                 report.target.on_track
-                                                    ? "on track"
-                                                    : "behind"
+                                                    ? 'on track'
+                                                    : 'behind'
                                             }}</template
                                         >
                                     </p>
@@ -1410,7 +1410,7 @@ const categoryLabel = (category: StatusCategory) =>
                                     >
                                     <span
                                         class="text-[11px] text-muted-foreground"
-                                        >{{ r.planned_at ?? "" }}</span
+                                        >{{ r.planned_at ?? '' }}</span
                                     >
                                 </div>
                                 <p
@@ -1647,7 +1647,7 @@ const categoryLabel = (category: StatusCategory) =>
                                             formatHours(
                                                 report.cross_team
                                                     .avg_handoff_hours,
-                                            ) ?? "—"
+                                            ) ?? '—'
                                         }}
                                         <span
                                             class="text-[11.5px] font-normal text-muted-foreground"

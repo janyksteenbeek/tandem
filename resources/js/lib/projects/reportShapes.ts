@@ -1,9 +1,9 @@
-import type { StatusCategory } from "@/types";
+import type { StatusCategory } from '@/types';
 
 /** Pure helpers behind the reports page: range presets, derived figures and chart shapes. */
 
 export type RangePreset = {
-    key: "2w" | "4w" | "12w" | "quarter";
+    key: '2w' | '4w' | '12w' | 'quarter';
     label: string;
     days: (today: Date) => number;
 };
@@ -42,17 +42,17 @@ export function quarterDays(today: Date): number {
 }
 
 export const RANGE_PRESETS: RangePreset[] = [
-    { key: "2w", label: "Last 2 weeks", days: () => 14 },
-    { key: "4w", label: "Last 4 weeks", days: () => 28 },
-    { key: "12w", label: "Last 12 weeks", days: () => 84 },
-    { key: "quarter", label: "This quarter", days: quarterDays },
+    { key: '2w', label: 'Last 2 weeks', days: () => 14 },
+    { key: '4w', label: 'Last 4 weeks', days: () => 28 },
+    { key: '12w', label: 'Last 12 weeks', days: () => 84 },
+    { key: 'quarter', label: 'This quarter', days: quarterDays },
 ];
 
 /** The preset whose day count matches, so the toggle reflects the URL. */
 export function presetForDays(
     days: number,
     today: Date,
-): RangePreset["key"] | null {
+): RangePreset['key'] | null {
     return RANGE_PRESETS.find((p) => p.days(today) === days)?.key ?? null;
 }
 
@@ -68,11 +68,11 @@ export function throughputPerWeek(weeks: ThroughputWeek[]): number {
 /** Segments for a stacked category bar, in workflow order, skipping empty categories. */
 export function categoryBreakdown(counts: CategoryCounts): BreakdownSegment[] {
     const order: StatusCategory[] = [
-        "backlog",
-        "unstarted",
-        "started",
-        "completed",
-        "canceled",
+        'backlog',
+        'unstarted',
+        'started',
+        'completed',
+        'canceled',
     ];
     const total = order.reduce((sum, c) => sum + (counts[c] ?? 0), 0);
 
@@ -106,12 +106,12 @@ export function formatHours(hours: number | null | undefined): string | null {
 
 /** Short "12 Jan" label for a week's start date. */
 export function weekLabel(isoDate: string): string {
-    const [y, m, d] = isoDate.split("-").map(Number);
+    const [y, m, d] = isoDate.split('-').map(Number);
 
     return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, {
-        day: "numeric",
-        month: "short",
-        timeZone: "UTC",
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'UTC',
     });
 }
 
@@ -162,5 +162,5 @@ export function yearWeek(date: Date): string {
                 (7 * 86_400_000),
         );
 
-    return `${year}${String(week).padStart(2, "0")}`;
+    return `${year}${String(week).padStart(2, '0')}`;
 }

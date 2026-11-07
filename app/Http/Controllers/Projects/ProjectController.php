@@ -13,8 +13,8 @@ use App\Http\Resources\Projects\ProjectResource;
 use App\Http\Resources\Projects\ProjectSummaryResource;
 use App\Http\Resources\Projects\WorkflowResource;
 use App\Models\Organization;
+use App\Models\Projects\Issue;
 use App\Models\Projects\IssueActivity;
-use App\Models\Projects\IssueRelation;
 use App\Models\Projects\Milestone;
 use App\Models\Projects\Project;
 use App\Models\User;
@@ -28,6 +28,7 @@ use App\Services\Projects\WorkflowActions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -263,14 +264,18 @@ class ProjectController extends Controller
      */
     protected function dependencies(Project $project): array
     {
-        return IssueRelation::query()
-            ->where('type', IssueRelationType::Blocks->value)
-            ->whereIn('issue_id', fn ($q) => $q->select('id')->from('issues')->where('project_id', $project->id)->whereNull('deleted_at'))
-            ->whereIn('related_issue_id', fn ($q) => $q->select('id')->from('issues')->where('project_id', $project->id)->whereNull('deleted_at'))
+        $issueIds = Issue::query()->where('project_id', $project->id)->select('id');
+
+        return DB::table('issue_relations')
             ->join('issues as blocker', 'blocker.id', '=', 'issue_relations.issue_id')
             ->join('issues as blocked', 'blocked.id', '=', 'issue_relations.related_issue_id')
+            ->where('issue_relations.type', IssueRelationType::Blocks->value)
+            ->whereIn('issue_relations.issue_id', $issueIds)
+            ->whereIn('issue_relations.related_issue_id', $issueIds)
+            ->whereNull('blocker.deleted_at')
+            ->whereNull('blocked.deleted_at')
             ->get(['blocker.uuid as from_uuid', 'blocked.uuid as to_uuid'])
-            ->map(fn ($row) => ['from' => $row->from_uuid, 'to' => $row->to_uuid])
+            ->map(fn (object $row) => ['from' => (string) $row->from_uuid, 'to' => (string) $row->to_uuid])
             ->all();
     }
 }

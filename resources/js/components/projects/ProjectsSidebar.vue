@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, usePage } from "@inertiajs/vue3";
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     Bookmark,
     ChartColumnBig,
@@ -12,19 +12,19 @@ import {
     Plus,
     Star,
     Users,
-} from "@lucide/vue";
-import { computed } from "vue";
-import SidebarEntityRow from "@/components/projects/SidebarEntityRow.vue";
-import SidebarGroup from "@/components/projects/SidebarGroup.vue";
-import ShellColumn from "@/components/shell/ShellColumn.vue";
-import ShellNavItem from "@/components/shell/ShellNavItem.vue";
-import { Button } from "@/components/ui/button";
-import { Kbd } from "@/components/ui/kbd";
-import { useSidebarPreferences } from "@/composables/projects/useSidebarPreferences";
-import { useBranding } from "@/composables/useBranding";
-import { useCurrentUrl } from "@/composables/useCurrentUrl";
-import { cn } from "@/lib/utils";
-import type { ProjectsNav } from "@/types";
+} from '@lucide/vue';
+import { computed } from 'vue';
+import SidebarEntityRow from '@/components/projects/SidebarEntityRow.vue';
+import SidebarGroup from '@/components/projects/SidebarGroup.vue';
+import ShellColumn from '@/components/shell/ShellColumn.vue';
+import ShellNavItem from '@/components/shell/ShellNavItem.vue';
+import { Button } from '@/components/ui/button';
+import { Kbd } from '@/components/ui/kbd';
+import { useSidebarPreferences } from '@/composables/projects/useSidebarPreferences';
+import { useBranding } from '@/composables/useBranding';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { cn } from '@/lib/utils';
+import type { ProjectsNav } from '@/types';
 
 const emit = defineEmits<{ create: [] }>();
 
@@ -34,7 +34,7 @@ const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
 const prefs = useSidebarPreferences();
 
 const organization = computed(() => page.props.currentOrganization);
-const slug = computed(() => organization.value?.slug ?? "");
+const slug = computed(() => organization.value?.slug ?? '');
 const nav = computed<ProjectsNav | null>(() => page.props.projectsNav ?? null);
 const canManage = computed(() => Boolean(page.props.canManageOrganization));
 
@@ -44,7 +44,7 @@ const subtitle = computed(() => {
     const counts = nav.value?.counts;
 
     if (!counts) {
-        return "Products, projects and issues";
+        return 'Products, projects and issues';
     }
 
     if (counts.due_today > 0) {
@@ -55,7 +55,7 @@ const subtitle = computed(() => {
         return `${counts.assigned} assigned to you`;
     }
 
-    return "Nothing waiting on you";
+    return 'Nothing waiting on you';
 });
 
 const myTeams = computed(() =>
@@ -66,27 +66,27 @@ const otherTeams = computed(() =>
 );
 
 const productTabs = [
-    "overview",
-    "issues",
-    "modules",
-    "projects",
-    "releases",
+    'overview',
+    'issues',
+    'modules',
+    'projects',
+    'releases',
 ] as const;
 const projectTabs = [
-    "overview",
-    "issues",
-    "board",
-    "timeline",
-    "milestones",
+    'overview',
+    'issues',
+    'board',
+    'timeline',
+    'milestones',
 ] as const;
-const teamTabs = ["overview", "issues", "backlog", "board", "cycles"] as const;
+const teamTabs = ['overview', 'issues', 'backlog', 'board', 'cycles'] as const;
 
 const tabLabel = (tab: string) => tab.charAt(0).toUpperCase() + tab.slice(1);
 
 const tabRowClass =
-    "flex h-6 items-center gap-2 rounded-md px-2 text-[12px] text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground";
+    'flex h-6 items-center gap-2 rounded-md px-2 text-[12px] text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground';
 const activeTabClass =
-    "bg-brand-soft/60 font-medium text-brand-soft-foreground hover:bg-brand-soft hover:text-brand-soft-foreground";
+    'bg-brand-soft/60 font-medium text-brand-soft-foreground hover:bg-brand-soft hover:text-brand-soft-foreground';
 </script>
 
 <template>
