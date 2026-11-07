@@ -2,6 +2,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import ProjectsLayout from '@/layouts/projects/Layout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { registerServiceWorker } from '@/composables/usePwa';
 import { initializeFlashToast } from '@/lib/flashToast';
@@ -31,6 +32,8 @@ void createInertiaApp({
             case name.startsWith('settings/'):
             case name.startsWith('organizations/'):
                 return [AppLayout, SettingsLayout];
+            case name.startsWith('projects/'):
+                return [AppLayout, ProjectsLayout];
             default:
                 return AppLayout;
         }

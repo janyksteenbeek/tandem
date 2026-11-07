@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
+import PriorityIcon from '@/components/projects/shared/PriorityIcon.vue';
+import StatusIcon from '@/components/projects/shared/StatusIcon.vue';
 import {
+    Box,
+    CircleDot,
+    FolderKanban,
     Inbox,
     Layers,
     Mail,
     PenLine,
+    Plus,
     Search,
     Settings,
     Users,
@@ -24,7 +30,13 @@ import { api } from '@/lib/http';
 import { displayName } from '@/lib/mail';
 import { listTime } from '@/lib/time';
 import { cn } from '@/lib/utils';
-import type { ConversationListItem, MailNav } from '@/types';
+import { IDENTIFIER_PATTERN } from '@/lib/projects/meta';
+import type {
+    ConversationListItem,
+    IssueListItem,
+    MailNav,
+    ProjectsNav,
+} from '@/types';
 
 type Item = {
     id: string;
@@ -35,19 +47,24 @@ type Item = {
     icon?: unknown;
     color?: string;
     conversation?: ConversationListItem;
+    issue?: IssueListItem;
     run: () => void;
 };
 
 const open = defineModel<boolean>('open', { default: false });
-const emit = defineEmits<{ compose: [] }>();
+const emit = defineEmits<{ compose: []; createIssue: [] }>();
 
 const page = usePage();
 const nav = computed<MailNav | null>(() => page.props.mailNav ?? null);
+const projectsNav = computed<ProjectsNav | null>(
+    () => page.props.projectsNav ?? null,
+);
 const organization = computed(() => page.props.currentOrganization);
 const slug = computed(() => organization.value?.slug ?? '');
 
 const query = ref('');
 const results = ref<ConversationListItem[]>([]);
+const issueResults = ref<IssueListItem[]>([]);
 const searching = ref(false);
 const highlighted = ref(0);
 const input = ref<HTMLInputElement | null>(null);
@@ -61,6 +78,7 @@ const go = (url: string) => {
 const search = useDebounceFn(async (term: string) => {
     if (term.trim().length < 2) {
         results.value = [];
+        issueResults.value = [];
 
         return;
     }
@@ -68,13 +86,24 @@ const search = useDebounceFn(async (term: string) => {
     searching.value = true;
 
     try {
-        const data = await api.get<{ conversations: ConversationListItem[] }>(
-            '/search',
-            { q: term, limit: 8 },
-        );
+        const [mail, issues] = await Promise.all([
+            api.get<{ conversations: ConversationListItem[] }>('/search', {
+                q: term,
+                limit: 6,
+            }),
+            organization.value
+                ? api
+                      .get<{ issues: IssueListItem[] }>(
+                          `/${slug.value}/issues/search`,
+                          { q: term, limit: 6 },
+                      )
+                      .catch(() => ({ issues: [] as IssueListItem[] }))
+                : Promise.resolve({ issues: [] as IssueListItem[] }),
+        ]);
 
         if (query.value === term) {
-            results.value = data.conversations;
+            results.value = mail.conversations;
+            issueResults.value = issues.issues;
         }
     } finally {
         searching.value = false;
@@ -90,6 +119,7 @@ watch(open, async (value) => {
     if (!value) {
         query.value = '';
         results.value = [];
+        issueResults.value = [];
 
         return;
     }
@@ -123,6 +153,93 @@ const staticItems = computed<Item[]>(() => {
     ];
 
     if (organization.value) {
+        items.push({
+            id: 'create-issue',
+            group: 'Actions',
+            label: 'Create issue',
+            hint: 'C',
+            keywords: 'new issue task bug create project',
+            icon: Plus,
+            run: () => {
+                open.value = false;
+                emit('createIssue');
+            },
+        });
+        items.push({
+            id: 'my-issues',
+            group: 'Jump to',
+            label: 'My issues',
+            keywords: 'issues assigned mine projects',
+            icon: CircleDot,
+            run: () => go(`/${slug.value}/my-issues`),
+        });
+        items.push({
+            id: 'products',
+            group: 'Jump to',
+            label: 'Products',
+            keywords: 'products modules',
+            icon: Box,
+            run: () => go(`/${slug.value}/products`),
+        });
+        items.push({
+            id: 'projects',
+            group: 'Jump to',
+            label: 'Projects',
+            keywords: 'projects initiatives roadmap',
+            icon: FolderKanban,
+            run: () => go(`/${slug.value}/projects/all`),
+        });
+        items.push({
+            id: 'teams',
+            group: 'Jump to',
+            label: 'Teams',
+            keywords: 'teams cycles workload',
+            icon: Users,
+            run: () => go(`/${slug.value}/teams`),
+        });
+
+        projectsNav.value?.products.forEach((product) =>
+            items.push({
+                id: `product-${product.uuid}`,
+                group: 'Products',
+                label: product.name,
+                hint: product.key,
+                keywords: `${product.name} ${product.key} product`,
+                color: product.color,
+                run: () => go(`/${slug.value}/products/${product.slug}`),
+            }),
+        );
+        projectsNav.value?.projects.forEach((project) =>
+            items.push({
+                id: `project-${project.uuid}`,
+                group: 'Projects',
+                label: project.name,
+                hint: project.product?.key,
+                keywords: `${project.name} project`,
+                color: project.color,
+                run: () => go(`/${slug.value}/projects/${project.slug}`),
+            }),
+        );
+        projectsNav.value?.teams.forEach((team) =>
+            items.push({
+                id: `team-${team.id}`,
+                group: 'Teams',
+                label: team.name,
+                keywords: `${team.name} team`,
+                color: team.color,
+                run: () => go(`/${slug.value}/teams/${team.slug}`),
+            }),
+        );
+        projectsNav.value?.views.forEach((view) =>
+            items.push({
+                id: `view-${view.uuid}`,
+                group: 'Views',
+                label: view.name,
+                keywords: `${view.name} view saved`,
+                run: () => go(`/${slug.value}/views/${view.uuid}`),
+            }),
+        );
+
         items.push({
             id: 'inboxes',
             group: 'Actions',
@@ -196,13 +313,44 @@ const visible = computed<Item[]>(() => {
             ),
     }));
 
+    const issues: Item[] = issueResults.value.map((issue) => ({
+        id: `i-${issue.uuid}`,
+        group: 'Issues',
+        label: issue.title,
+        hint: issue.identifier,
+        keywords: '',
+        issue,
+        run: () => go(`/${slug.value}/issues/${issue.identifier}`),
+    }));
+
+    if (
+        term &&
+        IDENTIFIER_PATTERN.test(term) &&
+        issues.length === 0 &&
+        !searching.value
+    ) {
+        issues.push({
+            id: `open-${term}`,
+            group: 'Issues',
+            label: `Open ${term.toUpperCase()}`,
+            keywords: '',
+            icon: CircleDot,
+            run: () => go(`/${slug.value}/issues/${term.toUpperCase()}`),
+        });
+    }
+
     const statics = term
         ? staticItems.value.filter((item) =>
               `${item.label} ${item.keywords}`.toLowerCase().includes(term),
           )
-        : staticItems.value;
+        : staticItems.value.filter(
+              (item) =>
+                  !['Products', 'Projects', 'Teams', 'Views'].includes(
+                      item.group,
+                  ),
+          );
 
-    return [...conversations, ...statics];
+    return [...issues, ...conversations, ...statics];
 });
 
 const groups = computed(() => {
@@ -263,7 +411,7 @@ const indexOf = (item: Item) => visible.value.indexOf(item);
                     ref="input"
                     v-model="query"
                     type="text"
-                    placeholder="Search mail, jump to an inbox, or run a command…"
+                    placeholder="Search issues and mail, jump anywhere, or run a command…"
                     class="h-12 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                     autocomplete="off"
                     spellcheck="false"
@@ -284,11 +432,12 @@ const indexOf = (item: Item) => visible.value.indexOf(item);
                     v-if="
                         query.trim().length >= 2 &&
                         results.length === 0 &&
+                        issueResults.length === 0 &&
                         !searching
                     "
                     class="px-3 py-2 text-xs text-muted-foreground"
                 >
-                    No conversations match “{{ query }}”.
+                    Nothing matches “{{ query }}”.
                 </p>
 
                 <template v-for="[group, items] in groups" :key="group">
@@ -315,7 +464,40 @@ const indexOf = (item: Item) => visible.value.indexOf(item);
                         @mouseenter="highlighted = indexOf(item)"
                         @click="item.run()"
                     >
-                        <template v-if="item.conversation">
+                        <template v-if="item.issue">
+                            <StatusIcon
+                                :status="item.issue.status"
+                                :size="14"
+                            />
+                            <span class="min-w-0 flex-1">
+                                <span class="flex items-center gap-2">
+                                    <span
+                                        class="shrink-0 font-mono text-[11px] text-muted-foreground"
+                                        >{{ item.issue.identifier }}</span
+                                    >
+                                    <span class="truncate">{{
+                                        item.issue.title
+                                    }}</span>
+                                </span>
+                                <span
+                                    class="block truncate text-xs text-muted-foreground"
+                                >
+                                    {{
+                                        [
+                                            item.issue.product?.name,
+                                            item.issue.project?.name,
+                                            item.issue.assignees
+                                                .map((a) => a.name)
+                                                .join(', '),
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' · ')
+                                    }}
+                                </span>
+                            </span>
+                            <PriorityIcon :priority="item.issue.priority" />
+                        </template>
+                        <template v-else-if="item.conversation">
                             <UserAvatar
                                 :name="item.conversation.counterpart?.name"
                                 :email="item.conversation.counterpart?.email"

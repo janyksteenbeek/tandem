@@ -305,6 +305,11 @@ export type AppNotification = {
         body: string | null;
         conversation_uuid?: string;
         inbox_uuid?: string;
+        issue_uuid?: string;
+        issue_identifier?: string;
+        issue_title?: string;
+        team_slug?: string;
+        cycle_uuid?: string;
         actor?: { id: number; name: string } | null;
     };
     read_at: string | null;

@@ -28,4 +28,6 @@ enum ConversationEventType: string
     case FollowerAdded = 'follower_added';
     case FollowerRemoved = 'follower_removed';
     case AutomationRan = 'automation_ran';
+    case IssueLinked = 'issue_linked';
+    case IssueUnlinked = 'issue_unlinked';
 }

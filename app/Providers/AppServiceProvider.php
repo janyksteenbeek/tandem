@@ -31,12 +31,29 @@ use App\Models\Mail\SyncRun;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Models\Projects\Cycle;
+use App\Models\Projects\EntityLink;
+use App\Models\Projects\Initiative;
+use App\Models\Projects\Issue;
+use App\Models\Projects\IssueAttachment;
+use App\Models\Projects\IssueComment;
+use App\Models\Projects\IssueLabel;
+use App\Models\Projects\IssueView;
+use App\Models\Projects\IssueWorkstream;
+use App\Models\Projects\Milestone;
+use App\Models\Projects\Module;
+use App\Models\Projects\Product;
+use App\Models\Projects\Project;
+use App\Models\Projects\Release;
+use App\Models\Projects\Workflow;
+use App\Models\Projects\WorkflowStatus;
 use App\Models\SsoIdentity;
 use App\Models\Tag;
 use App\Models\Team;
 use App\Models\TeamMember;
 use App\Models\User;
 use App\Models\WebhookReceipt;
+use App\Services\Projects\Access\IssueAccess;
 use App\Services\Sso\Sso;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -58,7 +75,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(IssueAccess::class);
     }
 
     /**
@@ -118,6 +135,22 @@ class AppServiceProvider extends ServiceProvider
             'automation_rule' => AutomationRule::class,
             'automation_run' => AutomationRun::class,
             'autoresponder_send' => AutoresponderSend::class,
+            'workflow' => Workflow::class,
+            'workflow_status' => WorkflowStatus::class,
+            'product' => Product::class,
+            'module' => Module::class,
+            'project' => Project::class,
+            'initiative' => Initiative::class,
+            'milestone' => Milestone::class,
+            'release' => Release::class,
+            'cycle' => Cycle::class,
+            'issue_label' => IssueLabel::class,
+            'entity_link' => EntityLink::class,
+            'issue' => Issue::class,
+            'issue_workstream' => IssueWorkstream::class,
+            'issue_comment' => IssueComment::class,
+            'issue_attachment' => IssueAttachment::class,
+            'issue_view' => IssueView::class,
         ];
     }
 

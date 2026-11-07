@@ -8,6 +8,7 @@ use App\Enums\Automations\AutomationConditionOperator;
 use App\Enums\Automations\AutomationTrigger;
 use App\Enums\Mail\ConversationPriority;
 use App\Enums\Mail\ConversationStatus;
+use App\Http\Requests\OrganizationScopedRequest;
 use App\Models\Mail\Inbox;
 use App\Models\Mail\MessageTemplate;
 use App\Models\Tag;

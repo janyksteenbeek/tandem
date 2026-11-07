@@ -4,6 +4,7 @@ namespace App\Notifications\Concerns;
 
 use App\Enums\PushTopic;
 use App\Models\Mail\Inbox;
+use App\Models\Projects\Issue;
 use App\Models\User;
 use App\Services\Branding;
 use Illuminate\Notifications\Notification;
@@ -46,6 +47,8 @@ trait PushesToDevices
 
         if (! empty($data['conversation_uuid'])) {
             $message->tag('conversation-'.$data['conversation_uuid']);
+        } elseif (! empty($data['issue_uuid'])) {
+            $message->tag('issue-'.$data['issue_uuid']);
         }
 
         return $message;
@@ -56,12 +59,19 @@ trait PushesToDevices
      */
     protected function pushUrl(object $notifiable, array $data): string
     {
+        if (! empty($data['issue_identifier'])) {
+            $issue = Issue::query()->where('uuid', $data['issue_uuid'] ?? '')->with('organization')->first();
+            $slug = $issue?->organization->slug ?? ($notifiable instanceof User ? $notifiable->currentOrganization?->slug : null);
+
+            return $slug ? route('projects.issues.show', ['current_organization' => $slug, 'issue' => $data['issue_identifier']]) : route('home');
+        }
+
         if (empty($data['inbox_uuid']) || empty($data['conversation_uuid'])) {
             return route('home');
         }
 
         $inbox = Inbox::query()->where('uuid', $data['inbox_uuid'])->with('organization')->first();
-        $slug = $inbox?->organization?->slug
+        $slug = $inbox?->organization->slug
             ?? ($notifiable instanceof User ? $notifiable->currentOrganization?->slug : null);
 
         if ($slug === null) {

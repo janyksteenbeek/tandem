@@ -4,6 +4,7 @@ namespace App\Http\Requests\Automations;
 
 use App\Enums\Automations\AutomationConditionField;
 use App\Enums\Automations\AutomationConditionOperator;
+use App\Http\Requests\OrganizationScopedRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 

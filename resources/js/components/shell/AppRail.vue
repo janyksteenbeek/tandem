@@ -3,7 +3,6 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import {
     Bell,
     Download,
-    Inbox,
     Keyboard,
     LogOut,
     Moon,
@@ -35,6 +34,7 @@ import { useBranding } from '@/composables/useBranding';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { forgetPushSubscription } from '@/composables/usePushNotifications';
 import { useInstallPrompt } from '@/composables/usePwa';
+import { homeFor, railItems, sectionForPath } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
@@ -47,42 +47,32 @@ const page = usePage();
 const user = computed(() => page.props.auth.user);
 const organization = computed(() => page.props.currentOrganization);
 const organizations = computed(() => page.props.organizations ?? []);
-const { isCurrentOrParentUrl } = useCurrentUrl();
+const { currentUrl } = useCurrentUrl();
 const { appearance, updateAppearance } = useAppearance();
 const { canInstall, install } = useInstallPrompt();
 
-const mailUrl = computed(() =>
-    organization.value ? `/${organization.value.slug}/mail` : '/',
-);
-const orgSettingsUrl = computed(() =>
-    organization.value ? `/${organization.value.slug}/settings` : null,
+const slug = computed(() => organization.value?.slug ?? null);
+const mailUrl = computed(() => (slug.value ? `/${slug.value}/mail` : '/'));
+const activeSection = computed(() =>
+    sectionForPath(currentUrl.value, slug.value),
 );
 
-/** Two places to be: your mail, or the settings behind it. Everything else is a shortcut inside one of those. */
-const items = computed(() => [
-    {
-        title: 'Mail',
-        href: mailUrl.value,
-        icon: Inbox,
-        active: isCurrentOrParentUrl(mailUrl.value),
-    },
-    {
-        title: 'Settings',
-        href: '/settings/mail-accounts',
-        icon: Settings,
-        active:
-            isCurrentOrParentUrl('/settings') ||
-            (orgSettingsUrl.value !== null &&
-                isCurrentOrParentUrl(orgSettingsUrl.value)),
-    },
-]);
+/** Mail, the project sections and settings. Everything else is a shortcut inside one of those. */
+const items = computed(() =>
+    railItems(slug.value, page.props.projectsNav?.counts ?? null).map(
+        (item) => ({
+            ...item,
+            active: activeSection.value === item.section,
+        }),
+    ),
+);
 
 const switchOrganization = (slug: string) => {
     router.post(
         `/settings/organizations/${slug}/switch`,
         {},
         {
-            onFinish: () => router.visit(`/${slug}/mail`),
+            onFinish: () => router.visit(homeFor(activeSection.value, slug)),
         },
     );
 };
@@ -136,6 +126,11 @@ const cycleAppearance = () => {
                                 class="absolute top-1/2 -left-2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
                             />
                             <component :is="item.icon" class="size-[18px]" />
+                            <span
+                                v-if="item.badge"
+                                class="absolute top-1.5 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-brand-foreground"
+                                >{{ item.badge > 9 ? '9+' : item.badge }}</span
+                            >
                         </Link>
                     </TooltipTrigger>
                     <TooltipContent side="right">{{

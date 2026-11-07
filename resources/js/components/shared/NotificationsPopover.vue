@@ -4,10 +4,15 @@ import { useEchoNotification } from '@laravel/echo-vue';
 import {
     AtSign,
     CheckCheck,
+    CircleCheck,
+    CircleDot,
     Inbox,
+    Link2Off,
     MessageSquareText,
     Reply,
+    Repeat,
     UserCheck,
+    Users,
     Workflow,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -37,6 +42,20 @@ const icons: Record<string, unknown> = {
     comment: MessageSquareText,
     reply: Reply,
     automation: Workflow,
+    issue_assigned: UserCheck,
+    issue_owner: UserCheck,
+    issue_mention: AtSign,
+    issue_comment: MessageSquareText,
+    issue_status: CircleDot,
+    issue_ready: CircleCheck,
+    issue_conflict: Repeat,
+    blocker_resolved: Link2Off,
+    handoff: Repeat,
+    team_added: Users,
+    issue_due_soon: CircleDot,
+    issue_overdue: CircleDot,
+    cycle_started: Repeat,
+    issue_from_email: CircleDot,
 };
 
 const load = async () => {
@@ -64,28 +83,47 @@ useEchoNotification<AppNotification['data']>(
 
         toast(notification.title, {
             description: notification.body ?? undefined,
-            action: notification.conversation_uuid
-                ? {
-                      label: 'Open',
-                      onClick: () =>
-                          go(
-                              notification.inbox_uuid,
-                              notification.conversation_uuid,
-                          ),
-                  }
-                : undefined,
+            action:
+                notification.conversation_uuid || notification.issue_identifier
+                    ? {
+                          label: 'Open',
+                          onClick: () => go(notification),
+                      }
+                    : undefined,
         });
     },
 );
 
-const go = (inboxUuid?: string, conversationUuid?: string) => {
-    if (!organization.value || !inboxUuid || !conversationUuid) {
+const go = (data: AppNotification['data']) => {
+    if (!organization.value) {
+        return;
+    }
+
+    if (data.issue_identifier) {
+        open.value = false;
+        router.visit(
+            `/${organization.value.slug}/issues/${data.issue_identifier}`,
+        );
+
+        return;
+    }
+
+    if (data.team_slug && data.cycle_uuid) {
+        open.value = false;
+        router.visit(
+            `/${organization.value.slug}/teams/${data.team_slug}/cycles/${data.cycle_uuid}`,
+        );
+
+        return;
+    }
+
+    if (!data.inbox_uuid || !data.conversation_uuid) {
         return;
     }
 
     open.value = false;
     router.visit(
-        `/${organization.value.slug}/mail/${inboxUuid}/all/${conversationUuid}`,
+        `/${organization.value.slug}/mail/${data.inbox_uuid}/all/${data.conversation_uuid}`,
     );
 };
 
@@ -96,7 +134,7 @@ const openItem = async (item: AppNotification) => {
         void api.post(`/notifications/${item.id}/read`);
     }
 
-    go(item.data.inbox_uuid, item.data.conversation_uuid);
+    go(item.data);
 };
 
 const readAll = async () => {

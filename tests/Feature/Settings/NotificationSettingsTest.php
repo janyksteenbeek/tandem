@@ -17,7 +17,7 @@ test('the notifications page shows the key, the defaults and the device count', 
         ->assertInertia(fn (Assert $page) => $page
             ->component('settings/Notifications')
             ->where('publicKey', 'BPublicKey')
-            ->where('topics', ['direct' => true, 'follows' => true, 'shared' => false])
+            ->where('topics', ['direct' => true, 'follows' => true, 'shared' => false, 'teams' => false])
             ->where('deviceCount', 1));
 });
 
@@ -30,7 +30,7 @@ test('topics can be switched and unknown keys are ignored', function () {
         ->assertRedirect(route('notification-settings.edit'));
 
     expect($this->user->fresh()->pushPreferences())
-        ->toBe(['direct' => false, 'follows' => true, 'shared' => true]);
+        ->toBe(['direct' => false, 'follows' => true, 'shared' => true, 'teams' => false]);
 });
 
 test('a device subscription can be stored, refreshed and removed', function () {

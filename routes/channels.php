@@ -2,6 +2,11 @@
 
 use App\Models\Mail\Conversation;
 use App\Models\Mail\Inbox;
+use App\Models\Organization;
+use App\Models\Projects\Issue;
+use App\Models\Projects\Product;
+use App\Models\Projects\Project;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -33,4 +38,46 @@ Broadcast::channel('presence.conversation.{uuid}', function (User $user, string 
     }
 
     return ['id' => $user->id, 'name' => $user->name, 'initials' => $user->initials(), 'avatar' => $user->avatarUrl()];
+});
+
+// --- Projects ---------------------------------------------------------------------------
+
+Broadcast::channel('issue.{uuid}', function (User $user, string $uuid) {
+    $issue = Issue::query()->where('uuid', $uuid)->first();
+
+    return $issue !== null && $user->can('view', $issue);
+});
+
+Broadcast::channel('presence.issue.{uuid}', function (User $user, string $uuid) {
+    $issue = Issue::query()->where('uuid', $uuid)->first();
+
+    if ($issue === null || ! $user->can('view', $issue)) {
+        return false;
+    }
+
+    return ['id' => $user->id, 'name' => $user->name, 'initials' => $user->initials(), 'avatar' => $user->avatarUrl()];
+});
+
+Broadcast::channel('project.{uuid}', function (User $user, string $uuid) {
+    $project = Project::query()->where('uuid', $uuid)->first();
+
+    return $project !== null && $user->can('view', $project);
+});
+
+Broadcast::channel('product.{uuid}', function (User $user, string $uuid) {
+    $product = Product::query()->where('uuid', $uuid)->first();
+
+    return $product !== null && $user->can('view', $product);
+});
+
+Broadcast::channel('team.{teamId}', function (User $user, int $teamId) {
+    $team = Team::query()->find($teamId);
+
+    return $team !== null && $user->can('view', $team);
+});
+
+Broadcast::channel('organization.{organizationId}.issues', function (User $user, int $organizationId) {
+    $organization = Organization::query()->find($organizationId);
+
+    return $organization !== null && $user->belongsToOrganization($organization);
 });

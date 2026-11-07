@@ -9,6 +9,8 @@ use App\Enums\PushTopic;
 use App\Models\Mail\Conversation;
 use App\Models\Mail\Inbox;
 use App\Models\Mail\MailAccount;
+use App\Models\Projects\Issue;
+use App\Models\Projects\IssueWorkstream;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -94,6 +96,30 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function mailAccounts(): HasMany
     {
         return $this->hasMany(MailAccount::class);
+    }
+
+    /**
+     * @return HasMany<Issue, $this>
+     */
+    public function ownedIssues(): HasMany
+    {
+        return $this->hasMany(Issue::class, 'owner_id');
+    }
+
+    /**
+     * @return BelongsToMany<IssueWorkstream, $this>
+     */
+    public function workstreamAssignments(): BelongsToMany
+    {
+        return $this->belongsToMany(IssueWorkstream::class, 'issue_workstream_assignees', 'user_id', 'workstream_id')->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<Issue, $this>
+     */
+    public function followedIssues(): BelongsToMany
+    {
+        return $this->belongsToMany(Issue::class, 'issue_followers')->withTimestamps();
     }
 
     /**

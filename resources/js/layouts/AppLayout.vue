@@ -4,6 +4,7 @@ import { useEcho } from '@laravel/echo-vue';
 import { Menu } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue';
 import CommandPalette from '@/components/shared/CommandPalette.vue';
+import CreateIssueDialog from '@/components/projects/dialogs/CreateIssueDialog.vue';
 import KeyboardShortcutsDialog from '@/components/shared/KeyboardShortcutsDialog.vue';
 import PendingInvitationsModal from '@/components/PendingInvitationsModal.vue';
 import AppRail from '@/components/shell/AppRail.vue';
@@ -15,6 +16,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { provideAppShell } from '@/composables/useAppShell';
 import { useKeyboard } from '@/composables/useKeyboard';
 import { playNotificationSound } from '@/lib/notificationSound';
+import type { CreateIssuePrefill } from '@/types';
 
 /**
  * The one shell every signed-in page lives in: rail, an optional page-owned
@@ -27,6 +29,8 @@ const column = provideAppShell();
 const paletteOpen = ref(false);
 const shortcutsOpen = ref(false);
 const mobileNavOpen = ref(false);
+const createIssueOpen = ref(false);
+const createIssuePrefill = ref<CreateIssuePrefill | null>(null);
 
 const userId = computed(() => page.props.auth.user.id);
 const mailUrl = computed(() =>
@@ -48,6 +52,10 @@ const compose = () => {
 
 provide('openCommandPalette', () => (paletteOpen.value = true));
 provide('openShortcuts', () => (shortcutsOpen.value = true));
+provide('openCreateIssue', (prefill?: CreateIssuePrefill) => {
+    createIssuePrefill.value = prefill ?? null;
+    createIssueOpen.value = true;
+});
 
 useEcho<{ inbound?: boolean }>(
     `user.${userId.value}`,
@@ -60,6 +68,10 @@ useEcho<{ inbound?: boolean }>(
         router.reload({ only: ['mailNav', 'counts'] });
     },
 );
+
+useEcho(`user.${userId.value}`, '.user.issues', () => {
+    router.reload({ only: ['projectsNav'] });
+});
 
 useKeyboard(() => [
     {
@@ -76,14 +88,28 @@ useKeyboard(() => [
 ]);
 
 let stopListening: (() => void) | undefined;
+let stopFlash: (() => void) | undefined;
 
 onMounted(() => {
     stopListening = router.on('navigate', () => {
         mobileNavOpen.value = false;
     });
+    stopFlash = router.on('flash', (event) => {
+        const prefill = (
+            event.detail.flash as { createIssue?: CreateIssuePrefill }
+        ).createIssue;
+
+        if (prefill) {
+            createIssuePrefill.value = prefill;
+            createIssueOpen.value = true;
+        }
+    });
 });
 
-onBeforeUnmount(() => stopListening?.());
+onBeforeUnmount(() => {
+    stopListening?.();
+    stopFlash?.();
+});
 </script>
 
 <template>
@@ -138,8 +164,17 @@ onBeforeUnmount(() => stopListening?.());
                 <slot />
             </main>
 
-            <CommandPalette v-model:open="paletteOpen" @compose="compose" />
+            <CommandPalette
+                v-model:open="paletteOpen"
+                @compose="compose"
+                @create-issue="createIssueOpen = true"
+            />
             <KeyboardShortcutsDialog v-model:open="shortcutsOpen" />
+            <CreateIssueDialog
+                v-if="page.props.currentOrganization"
+                v-model:open="createIssueOpen"
+                :prefill="createIssuePrefill"
+            />
             <PendingInvitationsModal
                 v-if="page.props.pendingInvitations.length > 0"
                 :invitations="page.props.pendingInvitations"

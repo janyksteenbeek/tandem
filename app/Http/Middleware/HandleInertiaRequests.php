@@ -6,6 +6,7 @@ use App\Models\OrganizationInvitation;
 use App\Models\User;
 use App\Services\Branding;
 use App\Services\Mail\MailNavigation;
+use App\Services\Projects\ProjectsNavigation;
 use App\Services\Sso\Sso;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -58,6 +59,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'mailNav' => fn () => $user ? app(MailNavigation::class)->for($user, $user->currentOrganization) : null,
+            'projectsNav' => fn () => $user && $user->currentOrganization ? app(ProjectsNavigation::class)->for($user, $user->currentOrganization) : null,
             'unreadNotifications' => fn () => $user ? $user->unreadNotifications()->count() : 0,
             'canManageOrganization' => fn () => $user && $user->currentOrganization ? $user->can('manage', $user->currentOrganization) : false,
             'currentOrganization' => fn () => $user?->currentOrganization ? $user->toUserOrganization($user->currentOrganization) : null,

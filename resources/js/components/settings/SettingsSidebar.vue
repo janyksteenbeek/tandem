@@ -7,9 +7,11 @@ import {
     Bell,
     Building2,
     FileText,
+    FolderKanban,
     Keyboard,
     LayoutGrid,
     Mailbox,
+    Package,
     Palette,
     Plug,
     Search,
@@ -210,6 +212,27 @@ const groups = computed<SettingsGroup[]>(() => {
         ],
     };
 
+    const projects: SettingsGroup = {
+        label: 'Projects',
+        items: [
+            {
+                title: 'Products',
+                href: `/${slug}/products`,
+                icon: Package,
+                keywords: 'products modules releases issue key',
+            },
+        ],
+    };
+
+    if (canManage.value) {
+        projects.items.push({
+            title: 'Project settings',
+            href: `/${slug}/settings/projects`,
+            icon: FolderKanban,
+            keywords: 'workflows issue key cycles estimates statuses',
+        });
+    }
+
     if (canManage.value) {
         workspace.items.push(
             {
@@ -233,7 +256,7 @@ const groups = computed<SettingsGroup[]>(() => {
         );
     }
 
-    result.push(workspace);
+    result.push(workspace, projects);
 
     return result;
 });

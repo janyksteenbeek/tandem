@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Automations;
+namespace App\Http\Requests;
 
 use App\Models\Membership;
 use App\Models\Organization;

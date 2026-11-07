@@ -30,3 +30,5 @@ Schedule::command('conversations:wake-snoozed')->everyMinute()->withoutOverlappi
 
 // Housekeeping
 Schedule::command('tandem:prune')->daily()->description('Prune old sync runs, webhook receipts and automation runs');
+
+Schedule::command('projects:cycles')->hourly()->withoutOverlapping()->description('Start, complete and schedule team cycles');
