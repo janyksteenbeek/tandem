@@ -136,6 +136,7 @@ const crumbs = computed(() => [
         <WorkspaceHeader
             :title="project.name"
             :color="project.color"
+            :icon-name="project.icon"
             :breadcrumbs="crumbs"
             :tabs="tabs"
             :active-tab="tab"

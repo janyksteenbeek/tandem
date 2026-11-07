@@ -126,6 +126,7 @@ const container = computed(() => ({
             :title="product.name"
             :subtitle="`${product.key} · ${product.open_issues_count} open issues`"
             :color="product.color"
+            :icon-name="product.icon"
             :breadcrumbs="[
                 { label: 'Products', href: `/${slug}/products` },
                 { label: product.name },

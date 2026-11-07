@@ -9,7 +9,7 @@ import { Star } from '@lucide/vue';
 import { computed, ref, useSlots, watch } from 'vue';
 import WorkspaceTabs from '@/components/projects/workspace/WorkspaceTabs.vue';
 import type { WorkspaceTab } from '@/components/projects/workspace/WorkspaceTabs.vue';
-import InboxDot from '@/components/shared/InboxDot.vue';
+import EntityGlyph from '@/components/shell/EntityGlyph.vue';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -41,6 +41,8 @@ const props = withDefaults(
         subtitle?: string | null;
         color?: string | null;
         icon?: LucideIcon;
+        /** The entity's stored lucide id; with `color` it renders the same tile as the sidebar. */
+        iconName?: string | null;
         tabs?: WorkspaceTab[];
         activeTab?: string | null;
         favoriteType?:
@@ -58,6 +60,7 @@ const props = withDefaults(
         title: null,
         subtitle: null,
         color: null,
+        iconName: null,
         tabs: () => [],
         activeTab: null,
         favoriteType: null,
@@ -194,11 +197,12 @@ const changeTab = (key: string) => {
                     class="flex size-7 items-center justify-center rounded-md bg-muted text-muted-foreground"
                     ><component :is="icon" class="size-4"
                 /></span>
-                <InboxDot
+                <EntityGlyph
                     v-else-if="color"
+                    :name="title ?? ''"
                     :color="color"
-                    size="md"
-                    class="size-3"
+                    :icon="iconName"
+                    size="lg"
                 />
                 <div class="min-w-0">
                     <div class="flex min-w-0 items-center gap-2">

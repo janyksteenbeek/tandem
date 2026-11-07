@@ -673,6 +673,7 @@ export type ProjectsNav = {
             slug: string;
             name: string;
             color: string | null;
+            icon: string | null;
             parent_id: number | null;
         }[];
     })[];

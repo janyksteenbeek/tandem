@@ -281,7 +281,12 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                     <template v-for="inbox in nav.shared" :key="inbox.uuid">
                         <SidebarRow
                             :href="inboxUrl(inbox)"
-                            :color="inbox.color"
+                            :entity="{
+                                name: inbox.name,
+                                color: inbox.color,
+                                icon: inbox.icon,
+                            }"
+                            :icon="Inbox"
                             variant="heading"
                             :active="isActive(inbox)"
                         >

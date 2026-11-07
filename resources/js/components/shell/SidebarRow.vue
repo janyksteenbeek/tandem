@@ -3,17 +3,24 @@ import type { InertiaLinkProps } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import type { LucideIcon } from '@lucide/vue';
 import { ChevronRight, Lock } from '@lucide/vue';
+import EntityGlyph from '@/components/shell/EntityGlyph.vue';
 import InboxDot from '@/components/shared/InboxDot.vue';
 import { cn } from '@/lib/utils';
 
 /**
- * One row of any sidebar: an icon or coloured dot, a label, and whatever trails it.
- * Rows that can expand swap the dot for a chevron on hover; `depth` indents nested rows.
- * `heading` rows (a mailbox) only gain weight when open, never a fill.
+ * One row of any sidebar: an entity tile, an icon or a coloured dot, a label, and whatever
+ * trails it. Rows that can expand swap the leading mark for a chevron on hover; `depth`
+ * indents nested rows. `heading` rows (a mailbox) only gain weight when open, never a fill.
  */
 withDefaults(
     defineProps<{
         href: NonNullable<InertiaLinkProps['href']>;
+        /** A team, product, project, module or view: renders its tinted tile. */
+        entity?: {
+            name: string;
+            color?: string | null;
+            icon?: string | null;
+        } | null;
         icon?: LucideIcon | null;
         color?: string | null;
         identifier?: string | null;
@@ -27,6 +34,7 @@ withDefaults(
         title?: string | null;
     }>(),
     {
+        entity: null,
         icon: null,
         color: null,
         identifier: null,
@@ -71,8 +79,8 @@ const emit = defineEmits<{ toggle: [] }>();
             :aria-current="active ? 'page' : undefined"
         >
             <span
-                v-if="icon || color || expandable"
-                class="relative flex size-4 shrink-0 items-center justify-center"
+                v-if="entity || icon || color || expandable"
+                class="relative flex size-[18px] shrink-0 items-center justify-center"
             >
                 <span
                     :class="
@@ -82,9 +90,22 @@ const emit = defineEmits<{ toggle: [] }>();
                         )
                     "
                 >
+                    <EntityGlyph
+                        v-if="entity"
+                        :name="entity.name"
+                        :color="entity.color"
+                        :icon="entity.icon"
+                        :fallback="icon"
+                        :class="
+                            cn(
+                                'transition-transform group-hover/row:scale-105',
+                                active && 'shadow-xs',
+                            )
+                        "
+                    />
                     <component
                         :is="icon"
-                        v-if="icon"
+                        v-else-if="icon"
                         :class="
                             cn(
                                 'size-4 text-muted-foreground transition-colors group-hover/row:text-sidebar-foreground',

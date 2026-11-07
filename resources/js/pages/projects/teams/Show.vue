@@ -121,6 +121,7 @@ const leads = computed(() =>
             :title="team.name"
             :subtitle="team.description"
             :color="team.color"
+            :icon-name="team.icon"
             :breadcrumbs="[
                 { label: 'Teams', href: `/${slug}/teams` },
                 { label: team.name },

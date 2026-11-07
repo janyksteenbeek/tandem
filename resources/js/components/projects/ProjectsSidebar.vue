@@ -12,6 +12,7 @@ import {
     Users,
 } from '@lucide/vue';
 import { computed } from 'vue';
+import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
 import SidebarRow from '@/components/shell/SidebarRow.vue';
 import SidebarSearchRow from '@/components/shell/SidebarSearchRow.vue';
 import SidebarSection from '@/components/shell/SidebarSection.vue';
@@ -20,7 +21,9 @@ import WorkspaceSwitcher from '@/components/shell/WorkspaceSwitcher.vue';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { useSidebarPreferences } from '@/composables/projects/useSidebarPreferences';
+import { cn } from '@/lib/utils';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { daysUntil } from '@/lib/time';
 import type { NavEntity, ProjectsNav } from '@/types';
 
 /**
@@ -85,6 +88,12 @@ const favoriteIcon = (item: NavEntity) =>
               : null;
 
 const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
+
+const viewIcon = (scope: string) =>
+    scope === 'personal' ? Bookmark : scope === 'team' ? Users : Star;
+
+const pillClass =
+    'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10.5px] font-semibold tabular-nums';
 </script>
 
 <template>
@@ -115,20 +124,29 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
                     My issues
                     <template v-if="nav && nav.counts.assigned > 0" #trailing>
                         <span
-                            class="text-[11px] font-semibold text-brand tabular-nums"
+                            :class="
+                                cn(
+                                    pillClass,
+                                    'bg-brand/10 text-brand dark:bg-brand/20',
+                                )
+                            "
                             >{{ nav.counts.assigned }}</span
                         >
                     </template>
                 </SidebarRow>
-                <SidebarRow
-                    :href="triageUrl"
-                    :icon="Inbox"
-                    :active="onTriage"
-                    :trailing="
-                        nav && nav.counts.triage > 0 ? nav.counts.triage : null
-                    "
-                >
+                <SidebarRow :href="triageUrl" :icon="Inbox" :active="onTriage">
                     Triage
+                    <template v-if="nav && nav.counts.triage > 0" #trailing>
+                        <span
+                            :class="
+                                cn(
+                                    pillClass,
+                                    'bg-sidebar-accent font-medium text-muted-foreground',
+                                )
+                            "
+                            >{{ nav.counts.triage }}</span
+                        >
+                    </template>
                 </SidebarRow>
                 <SidebarRow
                     :href="url('/issues')"
@@ -157,7 +175,7 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
                         v-for="item in nav.favorites"
                         :key="item.key"
                         :href="item.url"
-                        :color="item.color"
+                        :entity="item.type === 'issue' ? null : item"
                         :icon="favoriteIcon(item)"
                         :identifier="item.identifier"
                         :active="isCurrentOrParentUrl(item.url)"
@@ -187,7 +205,7 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
                                     url(`/teams/${team.slug}`),
                                 )
                             "
-                            :color="team.color"
+                            :entity="team"
                             :active="
                                 isCurrentOrParentUrl(
                                     url(`/teams/${team.slug}`),
@@ -220,10 +238,27 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
                                     ),
                                 )
                             "
-                            :trailing="percent(team.active_cycle.progress)"
-                            :title="`Active cycle · ${team.active_cycle.name}`"
+                            :title="`Active cycle · ${team.active_cycle.name} · ${percent(team.active_cycle.progress)} done`"
                         >
                             {{ team.active_cycle.name }}
+                            <template #trailing>
+                                <span
+                                    class="flex items-center gap-1.5 text-[10.5px] text-muted-foreground tabular-nums"
+                                >
+                                    <span
+                                        >{{
+                                            daysUntil(
+                                                team.active_cycle.ends_at,
+                                            )
+                                        }}d</span
+                                    >
+                                    <ProgressRing
+                                        :value="team.active_cycle.progress"
+                                        :size="14"
+                                        :stroke="2.5"
+                                    />
+                                </span>
+                            </template>
                         </SidebarRow>
                     </template>
                 </SidebarSection>
@@ -252,25 +287,37 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
                                 url(`/projects/${project.slug}`),
                             )
                         "
-                        :color="project.color"
+                        :entity="project"
                         :active="
                             isCurrentOrParentUrl(
                                 url(`/projects/${project.slug}`),
                             )
                         "
                         :locked="project.visibility === 'private'"
-                        :trailing="
-                            project.progress > 0
-                                ? percent(project.progress)
-                                : null
-                        "
                         :title="
-                            project.product
-                                ? `${project.product.name} · ${project.name}`
-                                : project.name
+                            [
+                                project.product?.name,
+                                project.name,
+                                `${percent(project.progress)} done`,
+                            ]
+                                .filter(Boolean)
+                                .join(' · ')
                         "
                     >
                         {{ project.name }}
+                        <template v-if="project.progress > 0" #trailing>
+                            <ProgressRing
+                                :value="project.progress"
+                                :size="14"
+                                :stroke="2.5"
+                                :tone="
+                                    project.health === 'at_risk' ||
+                                    project.health === 'off_track'
+                                        ? 'warning'
+                                        : 'brand'
+                                "
+                            />
+                        </template>
                     </SidebarRow>
                     <SidebarRow
                         v-if="projects.length > MAX_ROWS"
@@ -309,7 +356,7 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
                                     url(`/products/${product.slug}`),
                                 )
                             "
-                            :color="product.color"
+                            :entity="product"
                             :active="
                                 isCurrentOrParentUrl(
                                     url(`/products/${product.slug}`),
@@ -342,7 +389,11 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
                                         `/products/${product.slug}/modules/${module.slug}`,
                                     )
                                 "
-                                :color="module.color ?? product.color"
+                                :entity="{
+                                    name: module.name,
+                                    color: module.color ?? product.color,
+                                    icon: module.icon,
+                                }"
                                 :depth="1"
                                 :active="
                                     isCurrentOrParentUrl(
@@ -377,13 +428,12 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
                         v-for="view in nav.views"
                         :key="view.uuid"
                         :href="url(`/views/${view.uuid}`)"
-                        :icon="
-                            view.scope === 'personal'
-                                ? Bookmark
-                                : view.scope === 'team'
-                                  ? Users
-                                  : Star
-                        "
+                        :entity="{
+                            name: view.name,
+                            color: view.color,
+                            icon: view.icon,
+                        }"
+                        :icon="viewIcon(view.scope)"
                         :active="
                             isCurrentOrParentUrl(url(`/views/${view.uuid}`))
                         "

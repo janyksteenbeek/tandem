@@ -113,9 +113,9 @@ class DemoSeeder extends Seeder
         ];
         $organization->save();
 
-        $support = Team::create(['organization_id' => $organization->id, 'name' => 'Support', 'color' => 'teal', 'description' => 'Keeps customers happy.']);
-        $sales = Team::create(['organization_id' => $organization->id, 'name' => 'Sales', 'color' => 'amber', 'description' => 'Finds the next ones.']);
-        $finance = Team::create(['organization_id' => $organization->id, 'name' => 'Finance', 'color' => 'emerald', 'description' => 'Counts the beans.']);
+        $support = Team::create(['organization_id' => $organization->id, 'name' => 'Support', 'color' => 'teal', 'icon' => 'headphones', 'description' => 'Keeps customers happy.']);
+        $sales = Team::create(['organization_id' => $organization->id, 'name' => 'Sales', 'color' => 'amber', 'icon' => 'megaphone', 'description' => 'Finds the next ones.']);
+        $finance = Team::create(['organization_id' => $organization->id, 'name' => 'Finance', 'color' => 'emerald', 'icon' => 'wallet', 'description' => 'Counts the beans.']);
 
         $support->members()->attach([$owner->id => ['role' => TeamRole::Lead->value], $priya->id => ['role' => TeamRole::Member->value], $sam->id => ['role' => TeamRole::Member->value]]);
         $sales->members()->attach([$sam->id => ['role' => TeamRole::Lead->value], $lars->id => ['role' => TeamRole::Member->value]]);

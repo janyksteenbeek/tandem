@@ -104,9 +104,11 @@ const signOut = async () => {
 };
 
 const itemClass =
-    'relative flex h-12 w-14 flex-col items-center justify-center gap-1 rounded-xl text-sidebar-foreground/70 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-[0.97]';
+    'group/rail relative flex h-12 w-14 flex-col items-center justify-center gap-1 rounded-xl text-sidebar-foreground/65 transition-[background-color,color,transform] hover:bg-foreground/[0.06] hover:text-sidebar-accent-foreground active:scale-[0.97]';
 const activeClass =
-    'vt-rail-active bg-foreground/[0.08] text-sidebar-accent-foreground';
+    'vt-rail-active rail-active-surface text-brand-soft-foreground hover:bg-transparent hover:text-brand-soft-foreground';
+const iconClass =
+    'size-5 transition-transform duration-200 group-hover/rail:-translate-y-px';
 const labelClass = 'text-[10px] leading-none font-medium tracking-[0.01em]';
 const badgeClass =
     'absolute top-1 right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-brand-foreground tabular-nums';
@@ -165,8 +167,14 @@ const badgeClass =
                     v-if="item.active"
                     class="absolute top-1/2 -left-1 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
                 />
-                <component :is="item.icon" class="size-5" />
-                <span :class="labelClass">{{ item.title }}</span>
+                <component
+                    :is="item.icon"
+                    :class="iconClass"
+                    :stroke-width="item.active ? 2.25 : 2"
+                />
+                <span :class="cn(labelClass, item.active && 'font-semibold')">{{
+                    item.title
+                }}</span>
                 <span v-if="item.badge" :class="badgeClass">{{
                     item.badge > 99 ? '99+' : item.badge
                 }}</span>
@@ -185,8 +193,15 @@ const badgeClass =
                     v-if="settings.active"
                     class="absolute top-1/2 -left-1 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-brand"
                 />
-                <component :is="settings.icon" class="size-5" />
-                <span :class="labelClass">{{ settings.title }}</span>
+                <component
+                    :is="settings.icon"
+                    :class="iconClass"
+                    :stroke-width="settings.active ? 2.25 : 2"
+                />
+                <span
+                    :class="cn(labelClass, settings.active && 'font-semibold')"
+                    >{{ settings.title }}</span
+                >
             </Link>
 
             <NotificationsPopover>
@@ -196,7 +211,7 @@ const badgeClass =
                         :class="itemClass"
                         aria-label="Notifications"
                     >
-                        <Bell class="size-5" />
+                        <Bell :class="iconClass" />
                         <span :class="labelClass">Alerts</span>
                         <span v-if="unread > 0" :class="badgeClass">{{
                             unread > 99 ? '99+' : unread

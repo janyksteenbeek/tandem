@@ -96,7 +96,7 @@ class ProjectsNavigation
             'recent' => $this->recent->forUser($user, $organization)->map(fn (RecentView $r) => $this->entity($r->viewable, $organization))->filter()->values()->all(),
             'products' => $products->map(fn (Product $product) => [
                 ...ProductSummaryResource::make($product)->resolve(),
-                'modules' => $product->modules->map(fn (Module $m) => ['id' => $m->id, 'slug' => $m->slug, 'name' => $m->name, 'color' => $m->color, 'parent_id' => $m->parent_id])->values()->all(),
+                'modules' => $product->modules->map(fn (Module $m) => ['id' => $m->id, 'slug' => $m->slug, 'name' => $m->name, 'color' => $m->color, 'icon' => $m->icon, 'parent_id' => $m->parent_id])->values()->all(),
             ])->values()->all(),
             'projects' => ProjectSummaryResource::collection($projects)->resolve(),
             'teams' => $teams->map(fn (Team $team) => [

@@ -98,6 +98,7 @@ const container = computed(() => ({
                     :title="module.name"
                     :subtitle="module.description"
                     :color="module.color ?? product.color"
+                    :icon-name="module.icon ?? product.icon"
                 >
                     <template #meta>
                         <span
