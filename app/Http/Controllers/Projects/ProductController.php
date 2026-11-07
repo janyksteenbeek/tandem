@@ -53,6 +53,7 @@ class ProductController extends Controller
 
         $products = Product::query()->where('organization_id', $currentOrganization->id)->with(['owner', 'teams', 'modules'])->orderBy('name')->get()
             ->filter(fn (Product $p) => $this->access->productLevelFor($user, $p) !== null)
+            ->each(fn (Product $p) => $this->progress->recomputeProduct($p))
             ->values();
 
         return Inertia::render('projects/products/Index', [
@@ -80,6 +81,7 @@ class ProductController extends Controller
         }
 
         $this->recent->touch($user, $currentOrganization, $product);
+        $this->progress->recomputeProduct($product);
 
         $display = $this->display($request, ['group_by' => 'status']);
         $filters = $this->filters($request, [['field' => 'product', 'op' => 'in', 'value' => [$product->id]]]);

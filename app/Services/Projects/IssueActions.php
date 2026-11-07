@@ -19,6 +19,7 @@ use App\Events\Projects\TeamAddedToIssue;
 use App\Events\Projects\TeamRemovedFromIssue;
 use App\Events\Projects\WorkstreamStatusChanged;
 use App\Exceptions\Projects\CompletionBlockedException;
+use App\Jobs\Projects\RecomputeProductCounts;
 use App\Models\Organization;
 use App\Models\Projects\Cycle;
 use App\Models\Projects\Issue;
@@ -155,6 +156,7 @@ class IssueActions
         }
 
         IssueCreated::dispatch($issue, $actor, $source);
+        $this->recountProduct($issue->product_id);
         $this->broadcast($issue, 'created');
 
         return $issue->refresh();
@@ -299,6 +301,7 @@ class IssueActions
         $issue->setRelation('status', $to);
 
         IssueStatusChanged::dispatch($issue, $from, $to, $actor, $source);
+        $this->recountProduct($issue->product_id);
 
         if ($to->category === StatusCategory::Completed) {
             IssueCompleted::dispatch($issue, $actor, $source);
@@ -505,6 +508,8 @@ class IssueActions
 
         $issue->unsetRelation('product')->unsetRelation('project');
         IssueMoved::dispatch($issue, $fromProduct, $product, $fromProject, $project, $actor);
+        $this->recountProduct($fromProduct?->id);
+        $this->recountProduct($product?->id);
         $this->broadcast($issue, 'moved');
 
         return $issue;
@@ -958,6 +963,7 @@ class IssueActions
         });
 
         $this->audit->record('issue.deleted', $issue->organization, $actor, $issue, ['identifier' => $issue->identifier]);
+        $this->recountProduct($issue->product_id);
         $this->broadcast($issue, 'deleted');
     }
 
@@ -965,6 +971,7 @@ class IssueActions
     {
         $issue->restore();
         $this->record($issue, IssueActivityType::Restored, $actor);
+        $this->recountProduct($issue->product_id);
         $this->broadcast($issue, 'restored');
 
         return $issue;
@@ -988,6 +995,16 @@ class IssueActions
         IssueActivityAdded::dispatch($activity);
 
         return $activity;
+    }
+
+    /**
+     * Queue a product counter recompute; the job is unique so a burst of changes runs it once.
+     */
+    protected function recountProduct(?int $productId): void
+    {
+        if ($productId !== null) {
+            RecomputeProductCounts::dispatch($productId);
+        }
     }
 
     public function broadcast(Issue $issue, string $reason): void
