@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { Head, usePage } from '@inertiajs/vue3';
-import { Plus, Settings } from '@lucide/vue';
-import { computed, defineAsyncComponent, inject, ref, watch } from 'vue';
-import IssueWorkspaceBody from '@/components/projects/IssueWorkspaceBody.vue';
-import ActivityFeed from '@/components/projects/workspace/ActivityFeed.vue';
-import ProjectRows from '@/components/projects/workspace/ProjectRows.vue';
-import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
-import { workspaceTabs } from '@/components/projects/workspace/useWorkspaceTabs';
-import OverviewTab from '@/components/projects/workspace/product/OverviewTab.vue';
-import type { ProductOverview } from '@/components/projects/workspace/product/OverviewTab.vue';
-import ReleasesTab from '@/components/projects/workspace/product/ReleasesTab.vue';
-import RoadmapTab from '@/components/projects/workspace/product/RoadmapTab.vue';
-import { Button } from '@/components/ui/button';
-import { Kbd } from '@/components/ui/kbd';
-import { useIssueLookups } from '@/composables/projects/useIssueLookups';
+import { Head, usePage } from "@inertiajs/vue3";
+import { Plus, Settings } from "@lucide/vue";
+import { computed, defineAsyncComponent, inject, ref, watch } from "vue";
+import IssueWorkspaceBody from "@/components/projects/IssueWorkspaceBody.vue";
+import ActivityFeed from "@/components/projects/workspace/ActivityFeed.vue";
+import ProjectRows from "@/components/projects/workspace/ProjectRows.vue";
+import WorkspaceHeader from "@/components/projects/workspace/WorkspaceHeader.vue";
+import { workspaceTabs } from "@/components/projects/workspace/useWorkspaceTabs";
+import OverviewTab from "@/components/projects/workspace/product/OverviewTab.vue";
+import type { ProductOverview } from "@/components/projects/workspace/product/OverviewTab.vue";
+import ReleasesTab from "@/components/projects/workspace/product/ReleasesTab.vue";
+import RoadmapTab from "@/components/projects/workspace/product/RoadmapTab.vue";
+import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
+import { useIssueLookups } from "@/composables/projects/useIssueLookups";
 import type {
     Activity,
     BoardColumn,
@@ -27,26 +27,26 @@ import type {
     ProjectSummary,
     Release,
     Workflow,
-} from '@/types';
+} from "@/types";
 
 const ModulesTab = defineAsyncComponent(
-    () => import('@/components/projects/workspace/product/ModulesTab.vue'),
+    () => import("@/components/projects/workspace/product/ModulesTab.vue"),
 );
 const SettingsTab = defineAsyncComponent(
-    () => import('@/components/projects/workspace/product/SettingsTab.vue'),
+    () => import("@/components/projects/workspace/product/SettingsTab.vue"),
 );
 
 const props = defineProps<{
     product: Product;
     tab:
-        | 'overview'
-        | 'issues'
-        | 'modules'
-        | 'projects'
-        | 'roadmap'
-        | 'releases'
-        | 'activity'
-        | 'settings';
+        | "overview"
+        | "issues"
+        | "modules"
+        | "projects"
+        | "roadmap"
+        | "releases"
+        | "activity"
+        | "settings";
     lookups: IssueLookups;
     filters: IssueFilters;
     display: IssueDisplay;
@@ -60,11 +60,11 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const slug = computed(() => page.props.currentOrganization?.slug ?? '');
+const slug = computed(() => page.props.currentOrganization?.slug ?? "");
 const base = computed(() => `/${slug.value}/products/${props.product.slug}`);
 const { lookups } = useIssueLookups(() => props.lookups);
 const openCreateIssue = inject<(prefill?: CreateIssuePrefill) => void>(
-    'openCreateIssue',
+    "openCreateIssue",
     () => {},
 );
 
@@ -81,29 +81,29 @@ watch(
 
 const tabs = computed(() =>
     workspaceTabs(base.value, [
-        { key: 'overview', label: 'Overview' },
+        { key: "overview", label: "Overview" },
         {
-            key: 'issues',
-            label: 'Issues',
-            props: ['issues', 'board', 'workflow'],
+            key: "issues",
+            label: "Issues",
+            props: ["issues", "board", "workflow"],
             count: product.value.open_issues_count,
         },
         {
-            key: 'modules',
-            label: 'Modules',
-            props: ['product'],
+            key: "modules",
+            label: "Modules",
+            props: ["product"],
             count: product.value.modules.length,
         },
-        { key: 'projects', label: 'Projects' },
-        { key: 'roadmap', label: 'Roadmap', props: ['projects', 'releases'] },
-        { key: 'releases', label: 'Releases' },
-        { key: 'activity', label: 'Activity' },
+        { key: "projects", label: "Projects" },
+        { key: "roadmap", label: "Roadmap", props: ["projects", "releases"] },
+        { key: "releases", label: "Releases" },
+        { key: "activity", label: "Activity" },
         ...(product.value.can.update
             ? [
                   {
-                      key: 'settings',
-                      label: 'Settings',
-                      props: ['product', 'workflow'],
+                      key: "settings",
+                      label: "Settings",
+                      props: ["product", "workflow"],
                   },
               ]
             : []),
@@ -111,7 +111,7 @@ const tabs = computed(() =>
 );
 
 const container = computed(() => ({
-    type: 'product' as const,
+    type: "product" as const,
     id: product.value.id,
     name: product.value.name,
     url: `${base.value}/issues`,
@@ -215,6 +215,7 @@ const container = computed(() => ({
                 />
                 <ReleasesTab
                     v-else-if="tab === 'releases'"
+                    :product="product"
                     :releases="releases"
                 />
                 <div v-else-if="tab === 'activity'" class="max-w-3xl">

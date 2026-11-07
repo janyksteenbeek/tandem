@@ -3,9 +3,11 @@ import { router, usePage } from '@inertiajs/vue3';
 import {
     computed,
     defineAsyncComponent,
+    inject,
     onBeforeUnmount,
     onMounted,
     ref,
+    useAttrs,
     watch,
 } from 'vue';
 import BulkActionBar from '@/components/projects/list/BulkActionBar.vue';
@@ -28,7 +30,11 @@ import {
 } from '@/composables/projects/useIssueActions';
 import { useIssueView } from '@/composables/projects/useIssueView';
 import { useSidebarPreferences } from '@/composables/projects/useSidebarPreferences';
+import { api, reportError } from '@/lib/http';
 import { toQuery } from '@/lib/projects/issueFilters';
+import { issueRows } from '@/lib/projects/timelineRows';
+import type { Dependency } from '@/lib/projects/timelineRows';
+import type { TimelineRow } from '@/lib/projects/timelineScale';
 import type {
     BoardColumn,
     CompletionReadiness,
@@ -40,11 +46,19 @@ import type {
     IssueListItem,
     IssueLookups,
     IssueViewMode,
+    Milestone,
+    ProjectSummary,
     WorkflowStatus,
 } from '@/types';
 
 const IssueBoard = defineAsyncComponent(
     () => import('@/components/projects/board/IssueBoard.vue'),
+);
+const IssueCalendar = defineAsyncComponent(
+    () => import('@/components/projects/calendar/IssueCalendar.vue'),
+);
+const Timeline = defineAsyncComponent(
+    () => import('@/components/projects/timeline/Timeline.vue'),
 );
 
 /**
@@ -75,23 +89,35 @@ const props = withDefaults(
         query?: Record<string, string | number | null | undefined>;
         propKeys?: string[];
         selectable?: boolean;
+        /** Gives the timeline a project row, its milestones and date editing endpoints. */
+        project?: (ProjectSummary & { milestones?: Milestone[] }) | null;
+        /** Known blocking relations between loaded issues, drawn as arrows on the timeline. */
+        dependencies?: Dependency[];
     }>(),
     {
         board: null,
         focusTeamId: null,
-        allowModes: () => ['list', 'board'],
+        allowModes: () => ['list', 'board', 'calendar', 'timeline'],
         emptyKey: 'default',
         showFilterBar: true,
         query: () => ({}),
         propKeys: () => ['issues', 'filters', 'display', 'board'],
         selectable: true,
+        project: null,
+        dependencies: () => [],
     },
 );
 
 const emit = defineEmits<{ open: [issue: IssueListItem] }>();
+const attrs = useAttrs();
+const useAttrsSafe = () => attrs as { onOpen?: unknown };
 
 const page = usePage();
 const slug = computed(() => page.props.currentOrganization?.slug ?? '');
+const openCreateIssue = inject<(prefill?: CreateIssuePrefill) => void>(
+    'openCreateIssue',
+    () => {},
+);
 const prefs = useSidebarPreferences();
 const containerKey = computed(
     () => `${props.container.type}:${props.container.id ?? 'all'}`,
@@ -229,6 +255,137 @@ const moveOnBoard = async ({
 const total = computed(() =>
     props.issues && !view.nextCursor.value ? view.items.value.length : null,
 );
+
+/* --- calendar & timeline ---------------------------------------------------------------------- */
+
+const reschedule = ({
+    issue,
+    start_date,
+    due_date,
+}: {
+    issue: IssueListItem;
+    start_date: string | null;
+    due_date: string | null;
+}) => void actions.setDates(issue, { start_date, due_date });
+
+const timelineRows = computed<TimelineRow[]>(() =>
+    issueRows(view.items.value, {
+        project: props.project,
+        milestones: props.project?.milestones ?? null,
+        dependencies: props.dependencies,
+        orgSlug: slug.value,
+    }),
+);
+
+const issueByUuid = computed(
+    () => new Map(view.items.value.map((issue) => [issue.uuid, issue])),
+);
+
+const shiftRow = async ({
+    kind,
+    start,
+    end,
+    row,
+}: {
+    id: string;
+    kind: TimelineRow['kind'];
+    start: string | null;
+    end: string | null;
+    row: TimelineRow;
+}) => {
+    const meta = row.meta ?? {};
+
+    if (kind === 'issue') {
+        const issue = issueByUuid.value.get(String(meta.uuid));
+
+        if (issue) {
+            await actions.setDates(issue, { start_date: start, due_date: end });
+        }
+
+        return;
+    }
+
+    if (!props.project) {
+        return;
+    }
+
+    try {
+        if (kind === 'milestone') {
+            await api.patch(
+                `/${slug.value}/projects/${props.project.slug}/milestones/${String(meta.uuid)}`,
+                { target_date: end ?? start },
+            );
+        } else if (kind === 'project') {
+            await api.patch(`/${slug.value}/projects/${props.project.slug}`, {
+                start_date: start,
+                target_date: end,
+            });
+        }
+
+        router.reload({ only: ['project', 'milestones'] });
+    } catch (error) {
+        reportError(error);
+    }
+};
+
+const openRow = (row: TimelineRow) => {
+    if (row.kind === 'issue') {
+        const issue = issueByUuid.value.get(String(row.meta?.uuid));
+
+        if (issue) {
+            $attrsHasOpen() ? open(issue) : defaultOpen(issue);
+        }
+
+        return;
+    }
+
+    if (row.url) {
+        router.visit(row.url);
+    }
+};
+
+const $attrsHasOpen = () => Boolean(useAttrsSafe().onOpen);
+
+/** Load every remaining page so the timeline shows the whole set. */
+const loadingAll = ref(false);
+
+const loadAll = async () => {
+    if (loadingAll.value) {
+        return;
+    }
+
+    loadingAll.value = true;
+
+    const step = (): Promise<void> =>
+        new Promise((resolve) => {
+            if (!view.nextCursor.value) {
+                resolve();
+
+                return;
+            }
+
+            const stop = watch(
+                () => view.loadingMore.value,
+                (busy) => {
+                    if (!busy) {
+                        stop();
+                        resolve();
+                    }
+                },
+            );
+            view.loadMore(props.query);
+        });
+
+    try {
+        let guard = 0;
+
+        while (view.nextCursor.value && guard++ < 50) {
+            await step();
+        }
+    } finally {
+        loadingAll.value = false;
+    }
+};
 </script>
 
 <template>
@@ -302,15 +459,58 @@ const total = computed(() =>
             Loading board…
         </div>
 
+        <IssueCalendar
+            v-else-if="mode === 'calendar'"
+            :issues="view.items.value"
+            :lookups="lookups"
+            :workflow="workflow"
+            :focus-team-id="focusTeamId"
+            :container-key="containerKey"
+            @open="$attrs.onOpen ? open($event) : defaultOpen($event)"
+            @reschedule="reschedule"
+            @create="
+                (date) =>
+                    openCreateIssue({ ...(prefill ?? {}), due_date: date })
+            "
+        />
+
+        <template v-else-if="mode === 'timeline'">
+            <div
+                v-if="view.nextCursor.value"
+                class="flex items-center gap-3 border-b bg-surface px-4 py-1.5 text-[12px] text-muted-foreground"
+            >
+                <span
+                    >Showing the first
+                    {{ view.items.value.length }} issues.</span
+                >
+                <Button
+                    variant="link"
+                    size="sm"
+                    class="h-auto p-0 text-[12px]"
+                    :disabled="loadingAll"
+                    @click="loadAll"
+                >
+                    {{
+                        loadingAll
+                            ? 'Loading…'
+                            : 'Load all issues for the timeline'
+                    }}
+                </Button>
+            </div>
+            <Timeline
+                :rows="timelineRows"
+                :container-key="containerKey"
+                :can-edit="true"
+                @shift="shiftRow"
+                @open="openRow"
+            />
+        </template>
+
         <EmptyState
             v-else
             view="issues"
-            :title="
-                mode === 'calendar'
-                    ? 'Calendar is on its way.'
-                    : 'Timeline is on its way.'
-            "
-            body="This view arrives in the planning slice. Use list or board for now."
+            title="This view isn't available here."
+            body="Switch to list or board."
         />
 
         <SavedViewDialog

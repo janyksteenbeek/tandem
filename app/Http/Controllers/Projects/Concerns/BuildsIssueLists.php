@@ -96,9 +96,12 @@ trait BuildsIssueLists
      * Tab payloads resolve eagerly for the active tab and lazily (Inertia::optional) for the rest,
      * so a tab switch only fetches its own data.
      */
-    protected function tabProp(string $current, string $tab, \Closure $resolver): mixed
+    /**
+     * @param  string|array<int, string>  $tab
+     */
+    protected function tabProp(string $current, string|array $tab, \Closure $resolver): mixed
     {
-        return $current === $tab ? $resolver() : Inertia::optional($resolver);
+        return in_array($current, (array) $tab, true) ? $resolver() : Inertia::optional($resolver);
     }
 
     /**

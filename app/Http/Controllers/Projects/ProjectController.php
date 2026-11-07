@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Projects;
 
+use App\Enums\Projects\IssueRelationType;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Projects\Concerns\BuildsIssueLists;
 use App\Http\Requests\Projects\SaveProjectRequest;
@@ -13,6 +14,7 @@ use App\Http\Resources\Projects\ProjectSummaryResource;
 use App\Http\Resources\Projects\WorkflowResource;
 use App\Models\Organization;
 use App\Models\Projects\IssueActivity;
+use App\Models\Projects\IssueRelation;
 use App\Models\Projects\Milestone;
 use App\Models\Projects\Project;
 use App\Models\User;
@@ -98,7 +100,8 @@ class ProjectController extends Controller
             'overview' => $this->tabProp($tab, 'overview', fn () => $this->overview($project, $user)),
             'issues' => in_array($tab, ['issues', 'timeline'], true) ? $this->issuesProp($request, $user, $filters, $display, $tab === 'timeline' ? 200 : 50) : Inertia::optional(fn () => null),
             'board' => $this->tabProp($tab, 'board', fn () => $this->boardColumns($request, $user, $filters, $display, $workflow->statuses)),
-            'milestones' => $this->tabProp($tab, 'milestones', fn () => MilestoneResource::collection($project->milestones()->get())->resolve()),
+            'milestones' => $this->tabProp($tab, ['milestones', 'timeline'], fn () => MilestoneResource::collection($project->milestones()->get())->resolve()),
+            'dependencies' => $this->tabProp($tab, 'timeline', fn () => $this->dependencies($project)),
             'activity' => $this->tabProp($tab, 'activity', fn () => $this->activity($project)),
         ]);
     }
@@ -251,5 +254,23 @@ class ProjectController extends Controller
     protected function ensureBelongs(Organization $organization, Project $project): void
     {
         abort_unless($project->organization_id === $organization->id, 404);
+    }
+
+    /**
+     * Blocking relations between issues of the project, for the timeline's dependency arrows.
+     *
+     * @return array<int, array{from: string, to: string}>
+     */
+    protected function dependencies(Project $project): array
+    {
+        return IssueRelation::query()
+            ->where('type', IssueRelationType::Blocks->value)
+            ->whereIn('issue_id', fn ($q) => $q->select('id')->from('issues')->where('project_id', $project->id)->whereNull('deleted_at'))
+            ->whereIn('related_issue_id', fn ($q) => $q->select('id')->from('issues')->where('project_id', $project->id)->whereNull('deleted_at'))
+            ->join('issues as blocker', 'blocker.id', '=', 'issue_relations.issue_id')
+            ->join('issues as blocked', 'blocked.id', '=', 'issue_relations.related_issue_id')
+            ->get(['blocker.uuid as from_uuid', 'blocked.uuid as to_uuid'])
+            ->map(fn ($row) => ['from' => $row->from_uuid, 'to' => $row->to_uuid])
+            ->all();
     }
 }

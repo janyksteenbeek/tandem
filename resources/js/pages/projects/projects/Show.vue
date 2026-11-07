@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { Head, usePage } from '@inertiajs/vue3';
-import { Plus } from '@lucide/vue';
-import { computed, defineAsyncComponent, inject, ref, watch } from 'vue';
-import IssueWorkspaceBody from '@/components/projects/IssueWorkspaceBody.vue';
-import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
-import ActivityFeed from '@/components/projects/workspace/ActivityFeed.vue';
-import WorkspaceHeader from '@/components/projects/workspace/WorkspaceHeader.vue';
-import { workspaceTabs } from '@/components/projects/workspace/useWorkspaceTabs';
-import OverviewTab from '@/components/projects/workspace/project/OverviewTab.vue';
-import type { ProjectOverview } from '@/components/projects/workspace/project/OverviewTab.vue';
-import UserAvatar from '@/components/shared/UserAvatar.vue';
-import { Button } from '@/components/ui/button';
-import { Kbd } from '@/components/ui/kbd';
-import { useIssueLookups } from '@/composables/projects/useIssueLookups';
-import { PROJECT_HEALTH_META, PROJECT_STATUS_META } from '@/lib/projects/meta';
-import { cn } from '@/lib/utils';
+import { Head, usePage } from "@inertiajs/vue3";
+import { Plus } from "@lucide/vue";
+import { computed, defineAsyncComponent, inject, ref, watch } from "vue";
+import IssueWorkspaceBody from "@/components/projects/IssueWorkspaceBody.vue";
+import ProgressRing from "@/components/projects/charts/ProgressRing.vue";
+import ActivityFeed from "@/components/projects/workspace/ActivityFeed.vue";
+import WorkspaceHeader from "@/components/projects/workspace/WorkspaceHeader.vue";
+import { workspaceTabs } from "@/components/projects/workspace/useWorkspaceTabs";
+import OverviewTab from "@/components/projects/workspace/project/OverviewTab.vue";
+import type { ProjectOverview } from "@/components/projects/workspace/project/OverviewTab.vue";
+import UserAvatar from "@/components/shared/UserAvatar.vue";
+import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
+import { useIssueLookups } from "@/composables/projects/useIssueLookups";
+import { PROJECT_HEALTH_META, PROJECT_STATUS_META } from "@/lib/projects/meta";
+import { cn } from "@/lib/utils";
 import type {
     Activity,
     BoardColumn,
@@ -27,25 +27,25 @@ import type {
     Milestone,
     Project,
     Workflow,
-} from '@/types';
+} from "@/types";
 
 const MilestonesTab = defineAsyncComponent(
-    () => import('@/components/projects/workspace/project/MilestonesTab.vue'),
+    () => import("@/components/projects/workspace/project/MilestonesTab.vue"),
 );
 const SettingsTab = defineAsyncComponent(
-    () => import('@/components/projects/workspace/project/SettingsTab.vue'),
+    () => import("@/components/projects/workspace/project/SettingsTab.vue"),
 );
 
 const props = defineProps<{
     project: Project;
     tab:
-        | 'overview'
-        | 'issues'
-        | 'board'
-        | 'timeline'
-        | 'milestones'
-        | 'activity'
-        | 'settings';
+        | "overview"
+        | "issues"
+        | "board"
+        | "timeline"
+        | "milestones"
+        | "activity"
+        | "settings";
     lookups: IssueLookups;
     filters: IssueFilters;
     display: IssueDisplay;
@@ -54,15 +54,20 @@ const props = defineProps<{
     issues?: CursorPage<IssueListItem> | null;
     board?: BoardColumn[] | null;
     milestones?: Milestone[] | null;
+    dependencies?: { from: string; to: string }[] | null;
     activity?: Activity[] | null;
 }>();
 
 const page = usePage();
-const slug = computed(() => page.props.currentOrganization?.slug ?? '');
+const slug = computed(() => page.props.currentOrganization?.slug ?? "");
 const base = computed(() => `/${slug.value}/projects/${props.project.slug}`);
+const timelineProject = computed(() => ({
+    ...props.project,
+    milestones: props.milestones ?? props.project.milestones ?? [],
+}));
 const { lookups } = useIssueLookups(() => props.lookups);
 const openCreateIssue = inject<(prefill?: CreateIssuePrefill) => void>(
-    'openCreateIssue',
+    "openCreateIssue",
     () => {},
 );
 
@@ -74,48 +79,48 @@ watch(
 
 const tabs = computed(() =>
     workspaceTabs(base.value, [
-        { key: 'overview', label: 'Overview' },
+        { key: "overview", label: "Overview" },
         {
-            key: 'issues',
-            label: 'Issues',
-            props: ['issues', 'workflow'],
+            key: "issues",
+            label: "Issues",
+            props: ["issues", "workflow"],
             count:
                 project.value.counts.issues -
                 project.value.counts.completed -
                 project.value.counts.canceled,
         },
         {
-            key: 'board',
-            label: 'Board',
-            props: ['board', 'workflow'],
-            query: '?mode=board',
+            key: "board",
+            label: "Board",
+            props: ["board", "workflow"],
+            query: "?mode=board",
         },
         {
-            key: 'timeline',
-            label: 'Timeline',
-            props: ['issues', 'workflow'],
-            query: '?mode=timeline',
+            key: "timeline",
+            label: "Timeline",
+            props: ["issues", "workflow"],
+            query: "?mode=timeline",
         },
         {
-            key: 'milestones',
-            label: 'Milestones',
+            key: "milestones",
+            label: "Milestones",
             count: project.value.milestones.length || null,
         },
-        { key: 'activity', label: 'Activity' },
+        { key: "activity", label: "Activity" },
         ...(project.value.can.update
-            ? [{ key: 'settings', label: 'Settings', props: ['project'] }]
+            ? [{ key: "settings", label: "Settings", props: ["project"] }]
             : []),
     ]),
 );
 
 const container = computed(() => ({
-    type: 'project' as const,
+    type: "project" as const,
     id: project.value.id,
     name: project.value.name,
     url: `${base.value}/issues`,
 }));
 const listTab = computed(() =>
-    ['issues', 'board', 'timeline'].includes(props.tab),
+    ["issues", "board", "timeline"].includes(props.tab),
 );
 const crumbs = computed(() => [
     ...(project.value.product
@@ -125,7 +130,7 @@ const crumbs = computed(() => [
                   href: `/${slug.value}/products/${project.value.product.slug}`,
               },
           ]
-        : [{ label: 'Projects', href: `/${slug.value}/projects/all` }]),
+        : [{ label: "Projects", href: `/${slug.value}/projects/all` }]),
     { label: project.value.name },
 ]);
 </script>
@@ -222,6 +227,8 @@ const crumbs = computed(() => [
                 :allow-modes="
                     tab === 'timeline' ? ['timeline', 'list'] : undefined
                 "
+                :project="timelineProject"
+                :dependencies="dependencies ?? []"
                 empty-key="project"
             />
         </div>
