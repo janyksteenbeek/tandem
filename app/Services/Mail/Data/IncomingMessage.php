@@ -2,6 +2,7 @@
 
 namespace App\Services\Mail\Data;
 
+use App\Models\Mail\Message;
 use Carbon\CarbonInterface;
 
 /**

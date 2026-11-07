@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands\Automations;
 
-use App\Enums\AutomationTrigger;
-use App\Enums\ConversationStatus;
-use App\Models\AutomationRule;
-use App\Models\Conversation;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\ConversationStatus;
+use App\Models\Automations\AutomationRule;
+use App\Models\Mail\Conversation;
 use App\Models\Organization;
 use App\Services\Automations\AutomationEngine;
 use App\Services\Automations\BusinessHours;

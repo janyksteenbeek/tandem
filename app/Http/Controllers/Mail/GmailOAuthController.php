@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\InboxRole;
+use App\Enums\Mail\InboxRole;
 use App\Http\Controllers\Controller;
-use App\Models\Inbox;
+use App\Models\Mail\Inbox;
 use App\Services\Mail\Exceptions\ProviderException;
 use App\Services\Mail\Providers\Gmail\GmailOAuth;
 use Illuminate\Http\RedirectResponse;

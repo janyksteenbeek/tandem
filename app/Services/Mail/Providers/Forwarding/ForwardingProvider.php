@@ -2,10 +2,11 @@
 
 namespace App\Services\Mail\Providers\Forwarding;
 
-use App\Enums\MailAccountStatus;
-use App\Enums\MailProvider as ProviderType;
-use App\Models\MailAccount;
-use App\Models\SyncRun;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\MailProvider as ProviderType;
+use App\Http\Controllers\Mail\Webhooks\CloudflareInboundController;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\SyncRun;
 use App\Services\Mail\Data\ConnectionTestResult;
 use App\Services\Mail\Data\OutgoingMessage;
 use App\Services\Mail\Data\SentMessageResult;

@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\InboxRole;
-use App\Enums\InboxType;
-use App\Enums\MailAccountStatus;
-use App\Enums\MailProvider;
-use App\Enums\SyncRunType;
+use App\Enums\Mail\InboxRole;
+use App\Enums\Mail\InboxType;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\MailProvider;
+use App\Enums\Mail\SyncRunType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mail\StoreImapAccountRequest;
 use App\Http\Requests\Mail\TestImapConnectionRequest;
 use App\Http\Requests\Mail\UpdateImapAccountRequest;
 use App\Jobs\Mail\SyncMailAccount;
-use App\Models\Inbox;
-use App\Models\MailAccount;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
 use App\Models\User;
 use App\Services\Mail\Data\ConnectionTestResult;
 use App\Services\Mail\MailProviderManager;

@@ -2,10 +2,10 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\AutomationConditionField;
-use App\Enums\AutomationConditionOperator;
-use App\Models\Conversation;
-use App\Models\Message;
+use App\Enums\Automations\AutomationConditionField;
+use App\Enums\Automations\AutomationConditionOperator;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Message;
 use Illuminate\Support\Str;
 use Throwable;
 

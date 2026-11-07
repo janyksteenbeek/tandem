@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Conversation;
-use App\Models\Inbox;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 

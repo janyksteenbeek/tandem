@@ -2,17 +2,17 @@
 
 namespace App\Services\Mail\Outbound;
 
-use App\Enums\ConversationEventType;
-use App\Enums\ConversationStatus;
-use App\Enums\DeliveryStatus;
-use App\Enums\DraftKind;
-use App\Enums\MessageDirection;
+use App\Enums\Mail\ConversationEventType;
+use App\Enums\Mail\ConversationStatus;
+use App\Enums\Mail\DeliveryStatus;
+use App\Enums\Mail\DraftKind;
+use App\Enums\Mail\MessageDirection;
 use App\Jobs\Mail\SendOutgoingMessage;
-use App\Models\Conversation;
-use App\Models\Draft;
-use App\Models\Inbox;
-use App\Models\MailAccount;
-use App\Models\Message;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Draft;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
 use App\Models\User;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Ingestion\HtmlSanitizer;

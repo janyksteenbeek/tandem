@@ -3,7 +3,7 @@
 namespace App\Notifications\Concerns;
 
 use App\Enums\PushTopic;
-use App\Models\Inbox;
+use App\Models\Mail\Inbox;
 use App\Models\User;
 use App\Services\Branding;
 use Illuminate\Notifications\Notification;

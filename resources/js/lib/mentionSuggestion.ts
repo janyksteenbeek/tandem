@@ -1,7 +1,7 @@
 import type { MentionNodeAttrs } from '@tiptap/extension-mention';
 import type { SuggestionOptions } from '@tiptap/suggestion';
 import { VueRenderer } from '@tiptap/vue-3';
-import MentionList from '@/components/mail/MentionList.vue';
+import MentionList from '@/components/shared/MentionList.vue';
 import type { UserSummary } from '@/types';
 
 export function mentionSuggestion(

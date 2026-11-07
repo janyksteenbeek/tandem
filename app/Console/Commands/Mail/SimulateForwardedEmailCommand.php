@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands\Mail;
 
-use App\Http\Controllers\Webhooks\CloudflareInboundController;
+use App\Http\Controllers\Mail\Webhooks\CloudflareInboundController;
 use App\Jobs\Mail\IngestForwardedEmail;
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Models\WebhookReceipt;
 use App\Services\Mail\Providers\Forwarding\ForwardingAddressGenerator;
 use App\Services\Mail\Providers\Forwarding\WebhookSignature;

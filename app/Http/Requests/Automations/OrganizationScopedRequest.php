@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Automations;
 
+use App\Models\Membership;
 use App\Models\Organization;
 use Illuminate\Foundation\Http\FormRequest;
 

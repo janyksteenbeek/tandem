@@ -2,15 +2,46 @@
 
 namespace App\Providers;
 
-use App\Events\Conversations\ConversationAssigned;
-use App\Events\Conversations\ConversationMoved;
-use App\Events\Conversations\ConversationStatusChanged;
-use App\Events\Conversations\ConversationTagged;
+use App\Events\Mail\ConversationAssigned;
+use App\Events\Mail\ConversationMoved;
+use App\Events\Mail\ConversationStatusChanged;
+use App\Events\Mail\ConversationTagged;
 use App\Events\Mail\MessageIngested;
 use App\Listeners\Automations\RunAutomations;
+use App\Models\AuditLog;
+use App\Models\Automations\AutomationRule;
+use App\Models\Automations\AutomationRun;
+use App\Models\Mail\Attachment;
+use App\Models\Mail\AutoresponderSend;
+use App\Models\Mail\Comment;
+use App\Models\Mail\Contact;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\ConversationEvent;
+use App\Models\Mail\ConversationShare;
+use App\Models\Mail\Draft;
+use App\Models\Mail\DraftAttachment;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\MailFolder;
+use App\Models\Mail\Message;
+use App\Models\Mail\MessageTemplate;
+use App\Models\Mail\SavedView;
+use App\Models\Mail\SenderIdentity;
+use App\Models\Mail\SyncRun;
+use App\Models\Membership;
+use App\Models\Organization;
+use App\Models\OrganizationInvitation;
+use App\Models\SsoIdentity;
+use App\Models\Tag;
+use App\Models\Team;
+use App\Models\TeamMember;
+use App\Models\User;
+use App\Models\WebhookReceipt;
 use App\Services\Sso\Sso;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
@@ -36,9 +67,58 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureMorphMap();
         $this->configureTrustedProxies();
         $this->registerAutomationListeners();
         Sso::registerDrivers();
+    }
+
+    /**
+     * Polymorphic columns (audit logs, notifications, push subscriptions) store these aliases
+     * instead of class names, so classes can move between namespaces without touching data.
+     * Every model that can be the target of a morph relation must be listed here.
+     */
+    protected function configureMorphMap(): void
+    {
+        Relation::enforceMorphMap(self::morphMap());
+    }
+
+    /**
+     * @return array<string, class-string<Model>>
+     */
+    public static function morphMap(): array
+    {
+        return [
+            'organization' => Organization::class,
+            'organization_invitation' => OrganizationInvitation::class,
+            'membership' => Membership::class,
+            'team' => Team::class,
+            'team_member' => TeamMember::class,
+            'user' => User::class,
+            'sso_identity' => SsoIdentity::class,
+            'tag' => Tag::class,
+            'audit_log' => AuditLog::class,
+            'webhook_receipt' => WebhookReceipt::class,
+            'inbox' => Inbox::class,
+            'mail_account' => MailAccount::class,
+            'mail_folder' => MailFolder::class,
+            'sender_identity' => SenderIdentity::class,
+            'sync_run' => SyncRun::class,
+            'conversation' => Conversation::class,
+            'conversation_event' => ConversationEvent::class,
+            'conversation_share' => ConversationShare::class,
+            'message' => Message::class,
+            'attachment' => Attachment::class,
+            'draft' => Draft::class,
+            'draft_attachment' => DraftAttachment::class,
+            'comment' => Comment::class,
+            'contact' => Contact::class,
+            'saved_view' => SavedView::class,
+            'message_template' => MessageTemplate::class,
+            'automation_rule' => AutomationRule::class,
+            'automation_run' => AutomationRun::class,
+            'autoresponder_send' => AutoresponderSend::class,
+        ];
     }
 
     /**

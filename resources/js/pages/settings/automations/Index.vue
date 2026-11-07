@@ -14,7 +14,7 @@ import {
     Zap,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
-import EmptyState from '@/components/mail/EmptyState.vue';
+import EmptyState from '@/components/shared/EmptyState.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import {

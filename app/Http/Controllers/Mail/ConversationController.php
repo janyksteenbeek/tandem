@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\ConversationPriority;
-use App\Enums\ConversationStatus;
+use App\Enums\Mail\ConversationPriority;
+use App\Enums\Mail\ConversationStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ConversationListItemResource;
-use App\Http\Resources\ConversationResource;
-use App\Models\Conversation;
-use App\Models\Inbox;
+use App\Http\Resources\Mail\ConversationListItemResource;
+use App\Http\Resources\Mail\ConversationResource;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
 use App\Models\Tag;
 use App\Models\User;
-use App\Services\Conversations\ConversationActions;
-use App\Services\Conversations\ConversationSharing;
+use App\Services\Mail\Conversations\ConversationActions;
+use App\Services\Mail\Conversations\ConversationSharing;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

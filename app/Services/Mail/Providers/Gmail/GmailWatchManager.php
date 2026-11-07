@@ -2,9 +2,9 @@
 
 namespace App\Services\Mail\Providers\Gmail;
 
-use App\Enums\MailAccountStatus;
-use App\Enums\MailProvider;
-use App\Models\MailAccount;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\MailProvider;
+use App\Models\Mail\MailAccount;
 use App\Services\Mail\Exceptions\AuthenticationRequiredException;
 use App\Services\Mail\Exceptions\ProviderException;
 use Carbon\CarbonImmutable;

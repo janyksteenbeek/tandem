@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Bell, BellOff, ExternalLink, Share2, X } from '@lucide/vue';
 import { computed } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     Tooltip,

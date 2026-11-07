@@ -1,13 +1,13 @@
 <?php
 
-use App\Enums\ConversationPriority;
-use App\Enums\ConversationStatus;
+use App\Enums\Mail\ConversationPriority;
+use App\Enums\Mail\ConversationStatus;
 use App\Enums\OrganizationRole;
 use App\Enums\TeamRole;
-use App\Models\AutomationRule;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\Message;
+use App\Models\Automations\AutomationRule;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\Message;
 use App\Models\Organization;
 use App\Models\Tag;
 use App\Models\Team;

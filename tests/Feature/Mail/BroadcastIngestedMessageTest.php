@@ -1,13 +1,13 @@
 <?php
 
-use App\Events\Broadcast\ConversationUpdated;
-use App\Events\Broadcast\MessageAdded;
 use App\Events\Broadcast\UserNotified;
+use App\Events\Mail\Broadcast\ConversationUpdated;
+use App\Events\Mail\Broadcast\MessageAdded;
 use App\Events\Mail\MessageIngested;
 use App\Listeners\Mail\BroadcastIngestedMessage;
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Models\User;
-use App\Notifications\Conversations\NewReplyNotification;
+use App\Notifications\Mail\NewReplyNotification;
 use App\Services\Mail\Ingestion\MessageIngestor;
 use App\Services\Mail\Ingestion\MimeMessageParser;
 use Illuminate\Support\Facades\Event;

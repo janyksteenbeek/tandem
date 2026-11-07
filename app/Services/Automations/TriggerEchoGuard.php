@@ -2,8 +2,8 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\AutomationTrigger;
-use App\Models\Conversation;
+use App\Enums\Automations\AutomationTrigger;
+use App\Models\Mail\Conversation;
 use Illuminate\Support\Facades\Cache;
 
 /**

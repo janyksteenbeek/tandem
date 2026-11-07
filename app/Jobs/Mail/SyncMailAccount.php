@@ -2,10 +2,10 @@
 
 namespace App\Jobs\Mail;
 
-use App\Enums\MailAccountStatus;
-use App\Enums\SyncRunType;
-use App\Models\MailAccount;
-use App\Models\SyncRun;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\SyncRunType;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\SyncRun;
 use App\Services\Mail\Exceptions\AuthenticationRequiredException;
 use App\Services\Mail\Exceptions\RateLimitedException;
 use App\Services\Mail\MailProviderManager;

@@ -2,8 +2,8 @@
 
 namespace App\Services\Mail\Ingestion;
 
-use App\Models\Conversation;
-use App\Models\Message;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Message;
 
 final readonly class IngestResult
 {

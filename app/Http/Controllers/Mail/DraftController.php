@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\ConversationStatus;
-use App\Enums\DraftKind;
+use App\Enums\Mail\ConversationStatus;
+use App\Enums\Mail\DraftKind;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\DraftResource;
-use App\Http\Resources\MessageResource;
-use App\Models\Conversation;
-use App\Models\Draft;
-use App\Models\Inbox;
-use App\Models\MailAccount;
-use App\Models\Message;
-use App\Models\SenderIdentity;
-use App\Services\Conversations\ConversationActions;
+use App\Http\Resources\Mail\DraftResource;
+use App\Http\Resources\Mail\MessageResource;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Draft;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
+use App\Models\Mail\SenderIdentity;
+use App\Services\Mail\Conversations\ConversationActions;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Outbound\MessageSender;
 use Illuminate\Http\JsonResponse;

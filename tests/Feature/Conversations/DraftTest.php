@@ -1,15 +1,15 @@
 <?php
 
-use App\Enums\DeliveryStatus;
-use App\Enums\InboxRole;
-use App\Enums\MailProvider;
+use App\Enums\Mail\DeliveryStatus;
+use App\Enums\Mail\InboxRole;
+use App\Enums\Mail\MailProvider;
 use App\Enums\OrganizationRole;
 use App\Jobs\Mail\SendOutgoingMessage;
-use App\Models\Conversation;
-use App\Models\Draft;
-use App\Models\Inbox;
-use App\Models\MailAccount;
-use App\Models\Message;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Draft;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\Mail\Data\OutgoingMessage;

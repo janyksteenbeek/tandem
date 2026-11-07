@@ -2,12 +2,12 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\AutomationActionType;
-use App\Enums\AutomationConditionField;
-use App\Enums\AutomationConditionOperator;
-use App\Enums\AutomationTrigger;
-use App\Enums\ConversationPriority;
-use App\Enums\ConversationStatus;
+use App\Enums\Automations\AutomationActionType;
+use App\Enums\Automations\AutomationConditionField;
+use App\Enums\Automations\AutomationConditionOperator;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\ConversationPriority;
+use App\Enums\Mail\ConversationStatus;
 
 /**
  * Everything the rule builder UI needs to render triggers, conditions, actions and variables.

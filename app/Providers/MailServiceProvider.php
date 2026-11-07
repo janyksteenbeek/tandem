@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Enums\MailProvider;
+use App\Enums\Mail\MailProvider;
 use App\Services\Mail\MailProviderManager;
 use App\Services\Mail\Providers\Gmail\GmailClientFactory;
 use Illuminate\Support\ServiceProvider;

@@ -9,7 +9,7 @@ import {
     UserCheck,
     X,
 } from '@lucide/vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

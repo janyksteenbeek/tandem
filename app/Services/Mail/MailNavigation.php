@@ -2,10 +2,10 @@
 
 namespace App\Services\Mail;
 
-use App\Enums\ConversationStatus;
-use App\Enums\InboxType;
-use App\Models\Conversation;
-use App\Models\Inbox;
+use App\Enums\Mail\ConversationStatus;
+use App\Enums\Mail\InboxType;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Support\Collection;

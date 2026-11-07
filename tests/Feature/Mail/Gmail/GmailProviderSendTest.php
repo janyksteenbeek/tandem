@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\MailAccount;
-use App\Models\Message;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Data\OutgoingMessage;
 use App\Services\Mail\Exceptions\RateLimitedException;

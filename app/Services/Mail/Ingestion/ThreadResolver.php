@@ -2,9 +2,9 @@
 
 namespace App\Services\Mail\Ingestion;
 
-use App\Models\Conversation;
-use App\Models\MailAccount;
-use App\Models\Message;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
 use App\Services\Mail\Data\IncomingMessage;
 use Illuminate\Support\Str;
 

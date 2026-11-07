@@ -2,7 +2,7 @@
 
 namespace App\Services\Mail\Outbound;
 
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Services\Mail\Data\OutgoingMessage;
 use App\Services\Mail\Data\SentMessageResult;
 use Illuminate\Support\Facades\Mail;

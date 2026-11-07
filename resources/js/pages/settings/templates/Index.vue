@@ -12,8 +12,8 @@ import {
     Trash2,
 } from '@lucide/vue';
 import { computed, nextTick, ref, watch } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import EmptyState from '@/components/mail/EmptyState.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import EmptyState from '@/components/shared/EmptyState.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {

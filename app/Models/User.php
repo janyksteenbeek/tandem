@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use App\Concerns\HasOrganizations;
-use App\Enums\InboxType;
+use App\Enums\Mail\InboxType;
 use App\Enums\OrganizationRole;
 use App\Enums\PushTopic;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

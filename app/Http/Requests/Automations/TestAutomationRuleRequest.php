@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Automations;
 
-use App\Enums\AutomationConditionField;
-use App\Enums\AutomationConditionOperator;
+use App\Enums\Automations\AutomationConditionField;
+use App\Enums\Automations\AutomationConditionOperator;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 

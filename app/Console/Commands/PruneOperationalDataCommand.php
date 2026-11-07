@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\AutomationRun;
-use App\Models\SyncRun;
+use App\Models\Automations\AutomationRun;
+use App\Models\Mail\SyncRun;
 use App\Models\WebhookReceipt;
 use Illuminate\Console\Command;
 

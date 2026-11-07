@@ -2,13 +2,13 @@
 
 namespace App\Services\Mail\Contracts;
 
-use App\Enums\MailProvider as ProviderType;
-use App\Enums\ProviderCapability;
-use App\Models\Attachment;
-use App\Models\MailAccount;
-use App\Models\MailFolder;
-use App\Models\Message;
-use App\Models\SyncRun;
+use App\Enums\Mail\MailProvider as ProviderType;
+use App\Enums\Mail\ProviderCapability;
+use App\Models\Mail\Attachment;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\MailFolder;
+use App\Models\Mail\Message;
+use App\Models\Mail\SyncRun;
 use App\Services\Mail\Data\ConnectionTestResult;
 use App\Services\Mail\Data\FolderInfo;
 use App\Services\Mail\Data\OutgoingMessage;

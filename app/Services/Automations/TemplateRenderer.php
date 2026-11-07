@@ -2,8 +2,8 @@
 
 namespace App\Services\Automations;
 
-use App\Models\Conversation;
-use App\Models\Message;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Message;
 use App\Services\Mail\Data\Address;
 use Illuminate\Support\Str;
 

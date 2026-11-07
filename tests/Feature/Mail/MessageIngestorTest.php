@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\ConversationStatus;
-use App\Enums\MessageDirection;
+use App\Enums\Mail\ConversationStatus;
+use App\Enums\Mail\MessageDirection;
 use App\Events\Mail\MessageIngested;
-use App\Models\Attachment;
-use App\Models\Conversation;
-use App\Models\MailAccount;
-use App\Models\Message;
+use App\Models\Mail\Attachment;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
 use App\Services\Mail\Data\MailboxState;
 use App\Services\Mail\Ingestion\MessageIngestor;
 use App\Services\Mail\Ingestion\MimeMessageParser;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Check, ChevronsUpDown, Plus, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {

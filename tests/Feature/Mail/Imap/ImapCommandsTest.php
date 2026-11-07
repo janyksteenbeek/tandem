@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\MailAccountStatus;
-use App\Enums\SyncRunType;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\SyncRunType;
 use App\Jobs\Mail\SyncMailAccount;
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Services\Mail\Providers\Imap\ImapClientFactory;
 use Illuminate\Support\Facades\Queue;
 use Tests\Support\Mail\FakeImapSession;

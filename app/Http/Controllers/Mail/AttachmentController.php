@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Mail;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attachment;
+use App\Models\Mail\Attachment;
 use App\Services\Mail\Ingestion\AttachmentStore;
 use App\Services\Mail\MailProviderManager;
 use Illuminate\Http\Request;

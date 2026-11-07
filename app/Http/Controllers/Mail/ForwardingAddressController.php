@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\InboxRole;
+use App\Enums\Mail\InboxRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mail\StoreForwardingAddressRequest;
-use App\Models\Inbox;
-use App\Models\MailAccount;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
 use App\Models\User;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Data\OutgoingMessage;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
 import InputError from '@/components/InputError.vue';
 import { Label } from '@/components/ui/label';
 import {

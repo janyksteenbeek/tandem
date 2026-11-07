@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Webhooks\CloudflareInboundController;
-use App\Http\Controllers\Webhooks\GmailPushController;
+use App\Http\Controllers\Mail\Webhooks\CloudflareInboundController;
+use App\Http\Controllers\Mail\Webhooks\GmailPushController;
 use App\Http\Middleware\VerifyCloudflareWorkerSignature;
 use Illuminate\Support\Facades\Route;
 

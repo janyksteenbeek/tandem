@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowDownUp, Check, Filter, Paperclip, Search, X } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

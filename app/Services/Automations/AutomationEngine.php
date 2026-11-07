@@ -2,12 +2,12 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\AutomationTrigger;
-use App\Enums\ConversationEventType;
-use App\Models\AutomationRule;
-use App\Models\AutomationRun;
-use App\Models\Conversation;
-use App\Models\Message;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\ConversationEventType;
+use App\Models\Automations\AutomationRule;
+use App\Models\Automations\AutomationRun;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Message;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;

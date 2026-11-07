@@ -2,14 +2,14 @@
 
 namespace App\Http\Requests\Automations;
 
-use App\Enums\AutomationActionType;
-use App\Enums\AutomationConditionField;
-use App\Enums\AutomationConditionOperator;
-use App\Enums\AutomationTrigger;
-use App\Enums\ConversationPriority;
-use App\Enums\ConversationStatus;
-use App\Models\Inbox;
-use App\Models\MessageTemplate;
+use App\Enums\Automations\AutomationActionType;
+use App\Enums\Automations\AutomationConditionField;
+use App\Enums\Automations\AutomationConditionOperator;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\ConversationPriority;
+use App\Enums\Mail\ConversationStatus;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MessageTemplate;
 use App\Models\Tag;
 use App\Models\Team;
 use App\Services\Automations\TeamAssigner;

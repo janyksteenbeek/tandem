@@ -2,8 +2,8 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\ConversationStatus;
-use App\Models\Conversation;
+use App\Enums\Mail\ConversationStatus;
+use App\Models\Mail\Conversation;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;

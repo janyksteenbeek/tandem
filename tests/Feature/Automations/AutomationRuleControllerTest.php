@@ -1,13 +1,13 @@
 <?php
 
-use App\Enums\AutomationTrigger;
+use App\Enums\Automations\AutomationTrigger;
 use App\Enums\OrganizationRole;
-use App\Models\AutomationRule;
-use App\Models\AutomationRun;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\Message;
-use App\Models\MessageTemplate;
+use App\Models\Automations\AutomationRule;
+use App\Models\Automations\AutomationRun;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\Message;
+use App\Models\Mail\MessageTemplate;
 use App\Models\Organization;
 use App\Models\Tag;
 use App\Models\Team;

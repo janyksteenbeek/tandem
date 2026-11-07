@@ -15,8 +15,8 @@ import {
 } from '@lucide/vue';
 import { computed } from 'vue';
 import BrandMark from '@/components/BrandMark.vue';
-import NotificationsPopover from '@/components/mail/NotificationsPopover.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import NotificationsPopover from '@/components/shared/NotificationsPopover.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import {
     DropdownMenu,
     DropdownMenuContent,

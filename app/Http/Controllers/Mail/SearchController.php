@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\MailboxView;
+use App\Enums\Mail\MailboxView;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ConversationListItemResource;
-use App\Models\Inbox;
-use App\Services\Conversations\ConversationQuery;
+use App\Http\Resources\Mail\ConversationListItemResource;
+use App\Models\Mail\Inbox;
+use App\Services\Mail\Conversations\ConversationQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

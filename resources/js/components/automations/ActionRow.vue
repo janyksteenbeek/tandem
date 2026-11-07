@@ -2,8 +2,8 @@
 import { Check, ChevronsUpDown, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import TemplatePicker from '@/components/automations/TemplatePicker.vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

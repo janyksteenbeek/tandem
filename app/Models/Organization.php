@@ -4,6 +4,10 @@ namespace App\Models;
 
 use App\Concerns\GeneratesUniqueOrganizationSlugs;
 use App\Enums\OrganizationRole;
+use App\Models\Automations\AutomationRule;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\MessageTemplate;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;

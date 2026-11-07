@@ -22,7 +22,7 @@ import {
 } from '@lucide/vue';
 import { computed } from 'vue';
 import Collapse from '@/components/Collapse.vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
 import ShellColumn from '@/components/shell/ShellColumn.vue';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';

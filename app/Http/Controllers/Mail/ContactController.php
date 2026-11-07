@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Mail;
 
 use App\Http\Controllers\Controller;
-use App\Models\Contact;
+use App\Models\Mail\Contact;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

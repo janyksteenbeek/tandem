@@ -2,7 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Inbox, Mail, Plus, Server } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
 import ConnectAccountDialog from '@/components/settings/ConnectAccountDialog.vue';
 import MailAccountCard from '@/components/settings/MailAccountCard.vue';
 import SettingsEmpty from '@/components/settings/SettingsEmpty.vue';

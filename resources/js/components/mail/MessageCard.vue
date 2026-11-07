@@ -11,10 +11,10 @@ import {
     Star,
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import AttachmentChip from '@/components/mail/AttachmentChip.vue';
+import AttachmentChip from '@/components/shared/AttachmentChip.vue';
 import MessageFrame from '@/components/mail/MessageFrame.vue';
 import Collapse from '@/components/Collapse.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

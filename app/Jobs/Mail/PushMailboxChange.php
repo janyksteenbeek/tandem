@@ -2,11 +2,11 @@
 
 namespace App\Jobs\Mail;
 
-use App\Enums\MailAccountStatus;
-use App\Enums\ProviderCapability;
-use App\Models\MailAccount;
-use App\Models\MailFolder;
-use App\Models\Message;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\ProviderCapability;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\MailFolder;
+use App\Models\Mail\Message;
 use App\Services\Mail\Exceptions\AuthenticationRequiredException;
 use App\Services\Mail\Exceptions\RateLimitedException;
 use App\Services\Mail\Exceptions\UnsupportedOperationException;

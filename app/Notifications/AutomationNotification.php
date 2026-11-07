@@ -3,8 +3,8 @@
 namespace App\Notifications;
 
 use App\Enums\PushTopic;
-use App\Models\AutomationRule;
-use App\Models\Conversation;
+use App\Models\Automations\AutomationRule;
+use App\Models\Mail\Conversation;
 use App\Notifications\Concerns\PushesToDevices;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;

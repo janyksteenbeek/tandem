@@ -2,7 +2,7 @@
 
 namespace App\Services\Mail\Providers\Imap;
 
-use App\Enums\FolderType;
+use App\Enums\Mail\FolderType;
 use App\Services\Mail\Data\FolderInfo;
 use App\Services\Mail\Data\MailboxState;
 use App\Services\Mail\Providers\Imap\Data\RemoteFolder;

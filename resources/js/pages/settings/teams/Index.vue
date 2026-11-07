@@ -2,8 +2,8 @@
 import { Head, router } from '@inertiajs/vue3';
 import { Crown, Inbox, Pencil, Plus, Trash2, Users } from '@lucide/vue';
 import { ref } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import ConfirmDialog from '@/components/settings/ConfirmDialog.vue';
 import SettingsEmpty from '@/components/settings/SettingsEmpty.vue';
 import SettingsSection from '@/components/settings/SettingsSection.vue';

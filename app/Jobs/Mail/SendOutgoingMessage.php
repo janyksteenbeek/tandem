@@ -2,11 +2,11 @@
 
 namespace App\Jobs\Mail;
 
-use App\Enums\ConversationEventType;
-use App\Enums\DeliveryStatus;
-use App\Enums\ProviderCapability;
+use App\Enums\Mail\ConversationEventType;
+use App\Enums\Mail\DeliveryStatus;
+use App\Enums\Mail\ProviderCapability;
 use App\Events\Mail\MessageSent;
-use App\Models\Message;
+use App\Models\Mail\Message;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Data\OutgoingAttachment;
 use App\Services\Mail\Data\OutgoingMessage;

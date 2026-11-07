@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\MailboxView;
+use App\Enums\Mail\MailboxView;
 use App\Http\Controllers\Controller;
+use App\Models\Mail\Inbox;
 use App\Services\Mail\MailNavigation;
 use App\Services\Mail\MailtoLink;
 use Illuminate\Http\RedirectResponse;

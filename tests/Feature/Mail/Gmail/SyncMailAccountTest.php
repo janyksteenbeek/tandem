@@ -1,11 +1,11 @@
 <?php
 
-use App\Enums\MailAccountStatus;
-use App\Enums\SyncRunStatus;
-use App\Enums\SyncRunType;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\SyncRunStatus;
+use App\Enums\Mail\SyncRunType;
 use App\Jobs\Mail\SyncMailAccount;
-use App\Models\MailAccount;
-use App\Models\SyncRun;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\SyncRun;
 use App\Services\Mail\MailProviderManager;
 use Illuminate\Support\Facades\Queue;
 use Tests\Support\FakeGmailApi;

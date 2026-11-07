@@ -1,10 +1,10 @@
 <?php
 
 use App\Enums\OrganizationRole;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\Message;
-use App\Models\MessageTemplate;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\Message;
+use App\Models\Mail\MessageTemplate;
 use App\Models\Organization;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;

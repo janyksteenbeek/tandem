@@ -2,9 +2,9 @@
 
 namespace App\Jobs\Mail;
 
-use App\Enums\MailAccountStatus;
-use App\Http\Controllers\Webhooks\CloudflareInboundController;
-use App\Models\MailAccount;
+use App\Enums\Mail\MailAccountStatus;
+use App\Http\Controllers\Mail\Webhooks\CloudflareInboundController;
+use App\Models\Mail\MailAccount;
 use App\Models\WebhookReceipt;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Data\IncomingMessage;

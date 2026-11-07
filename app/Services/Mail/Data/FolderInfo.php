@@ -2,7 +2,7 @@
 
 namespace App\Services\Mail\Data;
 
-use App\Enums\FolderType;
+use App\Enums\Mail\FolderType;
 
 final readonly class FolderInfo
 {

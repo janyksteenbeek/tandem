@@ -2,7 +2,7 @@
 
 namespace App\Services\Mail\Providers\Gmail;
 
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Models\Organization;
 use App\Services\Mail\Exceptions\AuthenticationRequiredException;
 use App\Services\Mail\Exceptions\ProviderException;

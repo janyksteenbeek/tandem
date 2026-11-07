@@ -22,19 +22,19 @@ import {
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import AssigneePicker from '@/components/mail/AssigneePicker.vue';
-import CommentCard from '@/components/mail/CommentCard.vue';
-import CommentComposer from '@/components/mail/CommentComposer.vue';
+import CommentCard from '@/components/shared/CommentCard.vue';
+import CommentComposer from '@/components/shared/CommentComposer.vue';
 import Composer from '@/components/mail/Composer.vue';
 import ContextSidebar from '@/components/mail/ContextSidebar.vue';
 import EventRow from '@/components/mail/EventRow.vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
 import MessageCard from '@/components/mail/MessageCard.vue';
 import PriorityPicker from '@/components/mail/PriorityPicker.vue';
 import ShareDialog from '@/components/mail/ShareDialog.vue';
 import SnoozeMenu from '@/components/mail/SnoozeMenu.vue';
 import StatusControl from '@/components/mail/StatusControl.vue';
 import TagPicker from '@/components/mail/TagPicker.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -48,8 +48,8 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useConversationActions } from '@/composables/useConversationActions';
-import { useDraft } from '@/composables/useDraft';
+import { useConversationActions } from '@/composables/mail/useConversationActions';
+import { useDraft } from '@/composables/mail/useDraft';
 import { useKeyboard } from '@/composables/useKeyboard';
 import { usePresence } from '@/composables/usePresence';
 import { api, reportError } from '@/lib/http';

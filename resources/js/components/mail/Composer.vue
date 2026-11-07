@@ -15,10 +15,10 @@ import {
     Users,
 } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import AttachmentChip from '@/components/mail/AttachmentChip.vue';
+import AttachmentChip from '@/components/shared/AttachmentChip.vue';
 import RecipientInput from '@/components/mail/RecipientInput.vue';
-import RichTextToolbar from '@/components/mail/RichTextToolbar.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import RichTextToolbar from '@/components/shared/RichTextToolbar.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -33,7 +33,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useDraft, type DraftPatch } from '@/composables/useDraft';
+import { useDraft, type DraftPatch } from '@/composables/mail/useDraft';
 import { cn } from '@/lib/utils';
 import type { Draft, EmailAddress, InboxAccount } from '@/types';
 

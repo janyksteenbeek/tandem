@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Mail\Conversation;
 use Database\Factories\TagFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;

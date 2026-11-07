@@ -1,17 +1,17 @@
 <?php
 
-use App\Enums\AutomationTrigger;
-use App\Enums\DeliveryStatus;
-use App\Enums\MessageDirection;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\DeliveryStatus;
+use App\Enums\Mail\MessageDirection;
 use App\Enums\OrganizationRole;
 use App\Jobs\Mail\SendOutgoingMessage;
-use App\Models\AutomationRule;
-use App\Models\AutoresponderSend;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\MailAccount;
-use App\Models\Message;
-use App\Models\MessageTemplate;
+use App\Models\Automations\AutomationRule;
+use App\Models\Mail\AutoresponderSend;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
+use App\Models\Mail\MessageTemplate;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\Automations\AutomationEngine;

@@ -2,19 +2,20 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\AutomationActionType;
-use App\Enums\AutomationTrigger;
-use App\Enums\ConversationEventType;
-use App\Enums\ConversationPriority;
-use App\Enums\ConversationStatus;
-use App\Events\Conversations\ConversationAssigned;
-use App\Events\Conversations\ConversationMoved;
-use App\Events\Conversations\ConversationStatusChanged;
-use App\Events\Conversations\ConversationTagged;
-use App\Models\AutomationRule;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\Message;
+use App\Enums\Automations\AutomationActionType;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\ConversationEventType;
+use App\Enums\Mail\ConversationPriority;
+use App\Enums\Mail\ConversationStatus;
+use App\Events\Mail\ConversationAssigned;
+use App\Events\Mail\ConversationMoved;
+use App\Events\Mail\ConversationStatusChanged;
+use App\Events\Mail\ConversationTagged;
+use App\Models\Automations\AutomationRule;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\ConversationEvent;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\Message;
 use App\Models\Tag;
 use App\Models\Team;
 use App\Models\User;

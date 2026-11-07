@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\OrganizationRole;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\Message;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\Message;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\Automations\TemplateRenderer;
