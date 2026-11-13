@@ -33,12 +33,12 @@ someone asks for a single-file download.
 
 ### Why this stack
 
-| Option | Verdict |
-| --- | --- |
-| **LiveKit, self-hosted** | Chosen. One Go binary, about 45 MB idle, simulcast, dynacast, adaptive stream, active speakers, reconnection and a built-in TURN server. Mature browser SDK. |
+| Option                       | Verdict                                                                                                                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **LiveKit, self-hosted**     | Chosen. One Go binary, about 45 MB idle, simulcast, dynacast, adaptive stream, active speakers, reconnection and a built-in TURN server. Mature browser SDK.            |
 | LiveKit Egress for recording | Rejected. Its room recording renders the meeting in headless Chrome and encodes with GStreamer: hundreds of MB and a busy core per recording, the opposite of the goal. |
-| A custom Pion SFU | Rejected. It would mean rebuilding congestion control, simulcast layer selection and reconnection that LiveKit already does well. |
-| mediasoup / Janus | Workable SFUs, but a Node/C++ or C runtime plus separate signalling to write, and no lighter than LiveKit for small meetings. |
+| A custom Pion SFU            | Rejected. It would mean rebuilding congestion control, simulcast layer selection and reconnection that LiveKit already does well.                                       |
+| mediasoup / Janus            | Workable SFUs, but a Node/C++ or C runtime plus separate signalling to write, and no lighter than LiveKit for small meetings.                                           |
 
 The recorder is the one custom media component, because nothing light existed: it joins a room
 as a hidden participant (LiveKit's own Go SDK, Pion underneath) and stores what it receives.
@@ -124,11 +124,11 @@ Starting a recording (`POST /meet/{code}/recordings`) creates a `call_recordings
 the recorder to join the room. The recorder mints its own hidden, subscribe-only token, subscribes
 to the tracks the chosen mode includes, and writes **one WebM file per track**:
 
-| Mode | Captures |
-| --- | --- |
-| Full meeting | every microphone, camera, shared screen and its audio |
-| Screen and audio | shared screens and all audio, no cameras |
-| Audio only | microphones and shared-screen audio |
+| Mode             | Captures                                              |
+| ---------------- | ----------------------------------------------------- |
+| Full meeting     | every microphone, camera, shared screen and its audio |
+| Screen and audio | shared screens and all audio, no cameras              |
+| Audio only       | microphones and shared-screen audio                   |
 
 Per track the recorder reassembles RTP packets into frames and appends them to the file. Video is
 never decoded or re-encoded; the bytes on disk are the bytes the browser's encoder produced, at
@@ -157,13 +157,13 @@ duration and a seek index (Cues) written into space reserved at the start, so it
 in a browser without a second pass over the data. The manifest is rewritten atomically whenever
 a track starts or ends, so there is always a valid one on disk.
 
-| Event | Outcome |
-| --- | --- |
-| Stop requested, room closed, 6 h limit, disk below 512 MiB | files finalised, `recording.finished` |
-| `tandem-media` stopped gracefully (SIGTERM) | every open file is finalised and reported **before** the SFU stops; status `ready` |
-| `tandem-media` killed (`kill -9`, power loss) | on the next start the partial files are repaired in place (truncated to the last whole frame, index and duration written) and reported as `partial`. Measured loss: 0.5 to 1.9 s of tail |
-| A panic inside the recorder | contained: that recording is reported `failed` with whatever reached disk, the SFU and the calls keep running |
-| The recorder cannot be reached when starting | the start is refused with the reason; no recording indicator is shown |
+| Event                                                      | Outcome                                                                                                                                                                                  |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stop requested, room closed, 6 h limit, disk below 512 MiB | files finalised, `recording.finished`                                                                                                                                                    |
+| `tandem-media` stopped gracefully (SIGTERM)                | every open file is finalised and reported **before** the SFU stops; status `ready`                                                                                                       |
+| `tandem-media` killed (`kill -9`, power loss)              | on the next start the partial files are repaired in place (truncated to the last whole frame, index and duration written) and reported as `partial`. Measured loss: 0.5 to 1.9 s of tail |
+| A panic inside the recorder                                | contained: that recording is reported `failed` with whatever reached disk, the SFU and the calls keep running                                                                            |
+| The recorder cannot be reached when starting               | the start is refused with the reason; no recording indicator is shown                                                                                                                    |
 
 The recorder reports through signed webhooks (`POST /webhooks/calls/recorder`, the same
 timestamped HMAC as the other Tandem webhooks): started, a progress heartbeat every 15 s,
@@ -189,11 +189,11 @@ recorder that bypasses this: its API needs a secret only the application holds.
   priority, long-timeout queue (`calls-media` on the `redis-long` connection), so encoding never
   competes with live calls:
 
-| Export | What it is | Cost |
-| --- | --- | --- |
-| Audio only (`.m4a`) | every voice mixed at its place on the timeline, AAC 160 kbit/s | audio encode only |
-| Screen recording (`.webm`) | the shared screen **stream-copied** (same pixels as recorded) with the mixed audio in Opus | audio encode only |
-| Combined video (`.mp4`) | the screen (or a camera grid) with camera thumbnails, H.264 + AAC | a full video encode; slow on a small VPS, but it runs after the call |
+| Export                     | What it is                                                                                 | Cost                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| Audio only (`.m4a`)        | every voice mixed at its place on the timeline, AAC 160 kbit/s                             | audio encode only                                                    |
+| Screen recording (`.webm`) | the shared screen **stream-copied** (same pixels as recorded) with the mixed audio in Opus | audio encode only                                                    |
+| Combined video (`.mp4`)    | the screen (or a camera grid) with camera thumbnails, H.264 + AAC                          | a full video encode; slow on a small VPS, but it runs after the call |
 
 On this machine the three exports of a 35 s, six-track recording took 4, 4 and 8 seconds.
 Without FFmpeg, playback and per-track downloads keep working and the export menu says why it
@@ -265,7 +265,10 @@ device needs TLS in front and `rtc.node_ip` set to the machine's LAN address.
 ### Docker Compose
 
 `compose.yaml` adds one service, `media`, built from `media/tandem-media/Dockerfile` (static
-binary on a distroless base, runs as uid 33 like the application). Set in `.env`:
+binary on a distroless base, runs as uid 33 like the application). CI publishes the same image
+as `ghcr.io/<owner>/<repo>-media` for `linux/amd64` and `linux/arm64`; set `TANDEM_MEDIA_IMAGE`
+to use it. `docs/deployment.md` has the step-by-step checklist for a server, with and without
+Docker. Set in `.env`:
 
 ```
 LIVEKIT_API_KEY=<name>
@@ -277,12 +280,12 @@ CALLS_RECORDER_SECRET=<random>          # leave empty to run calls without recor
 `docker compose --profile tls up -d` adds Caddy with automatic certificates for `APP_DOMAIN` and
 `MEET_DOMAIN` (`media/caddy/Caddyfile`). Open these ports on the host firewall:
 
-| Port | Purpose |
-| --- | --- |
-| 443/tcp | the app, Reverb and WebRTC signalling, through the TLS proxy |
-| 7882/udp | media (all participants share this one port) |
-| 7881/tcp | media fallback when UDP is blocked |
-| 3478/udp | built-in TURN relay |
+| Port     | Purpose                                                      |
+| -------- | ------------------------------------------------------------ |
+| 443/tcp  | the app, Reverb and WebRTC signalling, through the TLS proxy |
+| 7882/udp | media (all participants share this one port)                 |
+| 7881/tcp | media fallback when UDP is blocked                           |
+| 3478/udp | built-in TURN relay                                          |
 
 Port 7880 (signalling without TLS) is bound to loopback and 7890 (recorder API) is not published
 at all. The media container has a memory limit (512 MiB by default), bounded logs, a health check
@@ -295,15 +298,15 @@ recordings are closed cleanly.
 environment is the whole media deployment; `media/livekit/livekit.yaml` is the annotated
 production configuration. Cross-compiled static Linux builds are about 55 MB.
 
-| Variable | Meaning |
-| --- | --- |
-| `LIVEKIT_CONFIG` / `--config` | the SFU configuration (upstream LiveKit YAML) |
-| `RECORDER_SECRET` | shared with `CALLS_RECORDER_SECRET`; unset disables recording, calls still work |
-| `RECORDINGS_DIR` | where track files are written; must be the application's `calls/recordings` directory |
-| `RECORDER_WEBHOOK_URL` | `https://app.example.com/webhooks/calls/recorder` |
-| `RECORDER_LISTEN` | recorder API address, default `:7890`; keep it private |
-| `RECORDER_MIN_FREE_BYTES` | refuse and stop recordings below this much free disk (512 MiB) |
-| `RECORDER_MAX_DURATION` | safety stop, default 6 h |
+| Variable                      | Meaning                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------- |
+| `LIVEKIT_CONFIG` / `--config` | the SFU configuration (upstream LiveKit YAML)                                         |
+| `RECORDER_SECRET`             | shared with `CALLS_RECORDER_SECRET`; unset disables recording, calls still work       |
+| `RECORDINGS_DIR`              | where track files are written; must be the application's `calls/recordings` directory |
+| `RECORDER_WEBHOOK_URL`        | `https://app.example.com/webhooks/calls/recorder`                                     |
+| `RECORDER_LISTEN`             | recorder API address, default `:7890`; keep it private                                |
+| `RECORDER_MIN_FREE_BYTES`     | refuse and stop recordings below this much free disk (512 MiB)                        |
+| `RECORDER_MAX_DURATION`       | safety stop, default 6 h                                                              |
 
 Application settings are in `config/calls.php` (`CALLS_MAX_PARTICIPANTS`, token lifetime, upload
 limit, retention, FFmpeg binary).
@@ -321,27 +324,27 @@ machine: headless Chromium with its synthetic camera and microphone, joining thr
 UI. CPU is the media process's CPU time over 30 s, as a share of one M2 core. **These are not
 VPS numbers**; no VPS was tested.
 
-| Scenario | Media process RSS | CPU (one M2 core) | Per-participant traffic |
-| --- | --- | --- | --- |
-| Idle, fresh start | 43 MiB | 0.1 % | |
-| 1:1, audio only | 85 MiB | 1.5 % | 75 kbit/s each way |
-| 1:1, audio only, recorded | 98 MiB | 2.1 % | 75 kbit/s each way |
-| 1:1 video (720p) | 95 MiB (max 101) | 2.9 % | 1.3 Mbit/s up (three simulcast layers), 0.8 Mbit/s down |
-| 4 people, video (720p grid) | 87 MiB (max 99) | 10.5 % | 1.3 Mbit/s up, 2.3 Mbit/s down |
-| 2 people + 1080p screen share | 121 MiB | 2.9 % | sharer 1.6 Mbit/s up; viewer 1.3 Mbit/s screen + 0.15 camera |
-| 2 people + 1080p screen, full recording | 129 MiB (max 132) | 7.1 % | as above; cameras stay at 720p up for the recorder |
-| 4 people + 1080p screen, full recording | 135 MiB (max 142) | 15.1 % | viewer 1.3 Mbit/s screen + three small cameras |
+| Scenario                                | Media process RSS | CPU (one M2 core) | Per-participant traffic                                      |
+| --------------------------------------- | ----------------- | ----------------- | ------------------------------------------------------------ |
+| Idle, fresh start                       | 43 MiB            | 0.1 %             |                                                              |
+| 1:1, audio only                         | 85 MiB            | 1.5 %             | 75 kbit/s each way                                           |
+| 1:1, audio only, recorded               | 98 MiB            | 2.1 %             | 75 kbit/s each way                                           |
+| 1:1 video (720p)                        | 95 MiB (max 101)  | 2.9 %             | 1.3 Mbit/s up (three simulcast layers), 0.8 Mbit/s down      |
+| 4 people, video (720p grid)             | 87 MiB (max 99)   | 10.5 %            | 1.3 Mbit/s up, 2.3 Mbit/s down                               |
+| 2 people + 1080p screen share           | 121 MiB           | 2.9 %             | sharer 1.6 Mbit/s up; viewer 1.3 Mbit/s screen + 0.15 camera |
+| 2 people + 1080p screen, full recording | 129 MiB (max 132) | 7.1 %             | as above; cameras stay at 720p up for the recorder           |
+| 4 people + 1080p screen, full recording | 135 MiB (max 142) | 15.1 %            | viewer 1.3 Mbit/s screen + three small cameras               |
 
 Audio in every run: 0 packets lost, jitter at or below 1 ms (loopback network). The process does
 not hand memory back quickly: after these runs it idled at 121 MiB.
 
 Recording disk use, from the files written:
 
-| Recording | Disk |
-| --- | --- |
-| Audio, per microphone | about 0.4 MiB per minute |
+| Recording                                          | Disk                                 |
+| -------------------------------------------------- | ------------------------------------ |
+| Audio, per microphone                              | about 0.4 MiB per minute             |
 | 2 people (720p cameras) + 1080p screen share, full | 20 MiB per minute (1.2 GiB per hour) |
-| 4 people + 1080p screen share, full | 30 MiB per minute (1.8 GiB per hour) |
+| 4 people + 1080p screen share, full                | 30 MiB per minute (1.8 GiB per hour) |
 
 The synthetic camera and a mostly static shared tab compress very well; real cameras and busy
 screens will use more bandwidth and disk than this.
@@ -390,7 +393,8 @@ bitrate is not a tuning knob here and is never lowered to save resources.
   commands.
 - `media/tandem-media`: Go unit tests (`go test -race ./...`) for the WebM writer and repair,
   frame assembly, silence filling, manifest writes, the API and the webhook signature, which is
-  pinned to the same test vector as the PHP side.
+  pinned to the same test vector as the PHP side. CI runs them with `gofmt` and `go vet` in the
+  `media` job of `.github/workflows/tests.yml`.
 - `resources/js/lib/{meet,calls}`: Vitest for layout, linkify, optimistic chat merge, device
   fallback, and the player's timeline and drift maths.
 - `tests/e2e/calls.spec.ts`: a real two-browser meeting (host and guest, fake camera and
@@ -403,8 +407,10 @@ Stated plainly, because none of this should be assumed to work until it has been
 
 - **No real VPS and no Docker.** Docker is not installed on the development machine, so the
   `media` image, the application image change (static FFmpeg) and the compose stack were never
-  built or run. The generated LiveKit configuration from `compose.yaml` was started with the real
-  binary outside Docker.
+  built or run there; the images are only built by CI. The binaries were cross-compiled for
+  `linux/amd64` and `linux/arm64` with the Dockerfile's build command, and the generated LiveKit
+  configuration from `compose.yaml` was started with the real binary outside Docker. The systemd
+  unit in `docs/deployment.md` is an untested example.
 - **Only Chromium, only synthetic devices.** No real camera, microphone or speaker; no Safari
   or Firefox, in the room or in the player; no phone.
 - **No lossy or constrained network.** Loss concealment, the audio-first degradation and the
