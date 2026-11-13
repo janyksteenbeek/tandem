@@ -28,6 +28,13 @@ const go = (path: string) => router.visit(`/${slug.value}${path}`);
 
 useKeyboard(
     () => [
+        // Listed before "c": shortcuts match in order, and "g c" must win over "c" after a "g".
+        {
+            keys: 'g c',
+            description: 'Go to calls',
+            group: 'Navigate',
+            handler: () => go('/calls'),
+        },
         {
             keys: 'c',
             description: 'Create issue',

@@ -10,13 +10,16 @@ import {
     CircleDot,
     FolderKanban,
     Inbox,
+    Clapperboard,
     Layers,
+    LogIn,
     Mail,
     PenLine,
     Plus,
     Search,
     Settings,
     Users,
+    Video,
     Workflow,
 } from '@lucide/vue';
 import { computed, nextTick, ref, watch } from 'vue';
@@ -54,7 +57,12 @@ type Item = {
 };
 
 const open = defineModel<boolean>('open', { default: false });
-const emit = defineEmits<{ compose: []; createIssue: [] }>();
+const emit = defineEmits<{
+    compose: [];
+    createIssue: [];
+    startMeeting: [];
+    joinMeeting: [];
+}>();
 
 const page = usePage();
 const nav = computed<MailNav | null>(() => page.props.mailNav ?? null);
@@ -167,6 +175,28 @@ const staticItems = computed<Item[]>(() => {
                 emit('createIssue');
             },
         });
+        items.push({
+            id: 'start-meeting',
+            group: 'Actions',
+            label: 'Start a meeting',
+            keywords: 'start new meeting call video instant meet',
+            icon: Video,
+            run: () => {
+                open.value = false;
+                emit('startMeeting');
+            },
+        });
+        items.push({
+            id: 'join-meeting',
+            group: 'Actions',
+            label: 'Join a meeting',
+            keywords: 'join meeting call code link meet',
+            icon: LogIn,
+            run: () => {
+                open.value = false;
+                emit('joinMeeting');
+            },
+        });
         projectsNav.value?.recent.slice(0, 6).forEach((entity) =>
             items.push({
                 id: `recent-${entity.key}`,
@@ -244,6 +274,22 @@ const staticItems = computed<Item[]>(() => {
             keywords: 'initiatives strategy goals',
             icon: FolderKanban,
             run: () => go(`/${slug.value}/initiatives`),
+        });
+        items.push({
+            id: 'calls',
+            group: 'Jump to',
+            label: 'Recent meetings',
+            keywords: 'calls meetings history video recent',
+            icon: Video,
+            run: () => go(`/${slug.value}/calls`),
+        });
+        items.push({
+            id: 'recordings',
+            group: 'Jump to',
+            label: 'Recordings',
+            keywords: 'calls recordings recorded meetings playback',
+            icon: Clapperboard,
+            run: () => go(`/${slug.value}/calls?tab=recordings`),
         });
         items.push({
             id: 'settings',

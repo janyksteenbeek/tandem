@@ -18,6 +18,7 @@ export type ProjectOverview = {
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
+import LinkedCalls from '@/components/calls/LinkedCalls.vue';
 import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
 import RichTextEditor from '@/components/projects/editor/RichTextEditor.vue';
 import ActivityFeed from '@/components/projects/workspace/ActivityFeed.vue';
@@ -179,6 +180,8 @@ const maxTeam = computed(() =>
                     </li>
                 </ul>
             </OverviewSection>
+
+            <LinkedCalls type="project" :link-key="project.slug" />
 
             <OverviewSection label="Recent activity">
                 <template #action

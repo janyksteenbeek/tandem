@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Plus } from '@lucide/vue';
+import { Plus, Video } from '@lucide/vue';
 import { computed, defineAsyncComponent, inject, ref, watch } from 'vue';
 import IssueWorkspaceBody from '@/components/projects/IssueWorkspaceBody.vue';
 import ProgressRing from '@/components/projects/charts/ProgressRing.vue';
@@ -13,6 +13,12 @@ import InboxDot from '@/components/shared/InboxDot.vue';
 import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useCallStarter } from '@/composables/calls/useCallStarter';
 import { useIssueLookups } from '@/composables/projects/useIssueLookups';
 import { PROJECT_HEALTH_META, PROJECT_STATUS_META } from '@/lib/projects/meta';
 import { cn } from '@/lib/utils';
@@ -71,6 +77,7 @@ const openCreateIssue = inject<(prefill?: CreateIssuePrefill) => void>(
     'openCreateIssue',
     () => {},
 );
+const { startInNewTab: startCall, starting: startingCall } = useCallStarter();
 
 const project = ref(props.project);
 watch(
@@ -197,6 +204,26 @@ const crumbs = computed(() => [
                 >
             </template>
             <template #actions>
+                <Tooltip>
+                    <TooltipTrigger as-child>
+                        <Button
+                            size="icon-sm"
+                            variant="ghost"
+                            aria-label="Start a call about this project"
+                            :disabled="startingCall"
+                            @click="
+                                startCall({
+                                    link_type: 'project',
+                                    link_key: project.slug,
+                                })
+                            "
+                            ><Video class="size-4"
+                        /></Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                        >Start a call about this project</TooltipContent
+                    >
+                </Tooltip>
                 <Button
                     size="sm"
                     variant="outline"

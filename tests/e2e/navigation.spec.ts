@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('navigation shell', () => {
-    test('the rail switches between mail, projects and settings', async ({
+    test('the rail switches between mail, projects, calls and settings', async ({
         page,
     }) => {
         await page.goto('/northwind-labs/mail');
@@ -12,7 +12,8 @@ test.describe('navigation shell', () => {
             'aria-current',
             'page',
         );
-        await expect(rail.getByRole('link')).toHaveCount(4);
+        // Home, Mail, Projects, Calls and Settings.
+        await expect(rail.getByRole('link')).toHaveCount(5);
 
         await rail.getByRole('link', { name: 'Projects' }).click();
         await page.waitForURL(/\/my-issues$/);
@@ -25,6 +26,18 @@ test.describe('navigation shell', () => {
         await page.screenshot({
             path: 'tests/e2e/screenshots/nav-projects.png',
         });
+
+        await rail.getByRole('link', { name: 'Calls' }).click();
+        await page.waitForURL(/\/calls$/);
+        await expect(rail.getByRole('link', { name: 'Calls' })).toHaveAttribute(
+            'aria-current',
+            'page',
+        );
+        await expect(
+            page
+                .getByRole('main')
+                .getByRole('button', { name: 'Start meeting', exact: true }),
+        ).toBeVisible();
 
         await rail.getByRole('link', { name: 'Settings' }).click();
         await page.waitForURL(/\/settings\/profile$/);

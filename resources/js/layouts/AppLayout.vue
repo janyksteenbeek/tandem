@@ -3,6 +3,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import { Menu } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue';
+import JoinMeetingDialog from '@/components/calls/JoinMeetingDialog.vue';
 import CommandPalette from '@/components/shared/CommandPalette.vue';
 import CreateIssueDialog from '@/components/projects/dialogs/CreateIssueDialog.vue';
 import KeyboardShortcutsDialog from '@/components/shared/KeyboardShortcutsDialog.vue';
@@ -13,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { useCallStarter } from '@/composables/calls/useCallStarter';
 import { provideAppShell } from '@/composables/useAppShell';
 import { provideSidebarState } from '@/composables/useSidebarState';
 import { useKeyboard } from '@/composables/useKeyboard';
@@ -34,6 +36,8 @@ const shortcutsOpen = ref(false);
 const mobileNavOpen = ref(false);
 const createIssueOpen = ref(false);
 const createIssuePrefill = ref<CreateIssuePrefill | null>(null);
+const joinMeetingOpen = ref(false);
+const { start: startMeeting } = useCallStarter();
 
 const userId = computed(() => page.props.auth.user.id);
 const slug = computed(() => page.props.currentOrganization?.slug ?? null);
@@ -177,6 +181,12 @@ onBeforeUnmount(() => {
                 v-model:open="paletteOpen"
                 @compose="compose"
                 @create-issue="createIssueOpen = true"
+                @start-meeting="startMeeting()"
+                @join-meeting="joinMeetingOpen = true"
+            />
+            <JoinMeetingDialog
+                v-if="page.props.currentOrganization"
+                v-model:open="joinMeetingOpen"
             />
             <KeyboardShortcutsDialog v-model:open="shortcutsOpen" />
             <CreateIssueDialog

@@ -3,6 +3,7 @@ import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import MeetLayout from '@/layouts/MeetLayout.vue';
+import CallsLayout from '@/layouts/calls/Layout.vue';
 import ProjectsLayout from '@/layouts/projects/Layout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { registerServiceWorker } from '@/composables/usePwa';
@@ -38,6 +39,8 @@ void createInertiaApp({
                 return [AppLayout, SettingsLayout];
             case name.startsWith('projects/'):
                 return [AppLayout, ProjectsLayout];
+            case name.startsWith('calls/'):
+                return [AppLayout, CallsLayout];
             default:
                 return AppLayout;
         }

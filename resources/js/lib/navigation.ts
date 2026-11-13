@@ -1,9 +1,9 @@
 import type { LucideIcon } from '@lucide/vue';
-import { CircleDot, Inbox, Settings } from '@lucide/vue';
+import { CircleDot, Inbox, Settings, Video } from '@lucide/vue';
 import { ref } from 'vue';
 
-/** The three areas the rail switches between. Everything else lives inside one of them. */
-export type AppSection = 'mail' | 'projects' | 'settings';
+/** The four areas the rail switches between. Everything else lives inside one of them. */
+export type AppSection = 'mail' | 'projects' | 'calls' | 'settings';
 
 export type RailItem = {
     section: AppSection;
@@ -16,7 +16,10 @@ export type RailItem = {
 export type RailBadges = {
     mail?: number | null;
     projects?: number | null;
+    calls?: number | null;
 };
+
+const SECTIONS: AppSection[] = ['mail', 'projects', 'calls', 'settings'];
 
 /** Last URL visited per section, so the rail takes you back where you were. */
 export type LastUrls = Partial<Record<AppSection, string>>;
@@ -48,7 +51,8 @@ const pathname = (path: string): string => strip(path).split('?')[0];
 /**
  * Which rail item a URL belongs to. Account and organization settings (`/settings/...`,
  * `/organizations/...`) and org settings (`/{org}/settings/...`) all count as settings;
- * every other organization page that is not mail is projects.
+ * `/{org}/calls/...` is calls; every other organization page that is not mail is projects.
+ * The meeting room itself (`/meet/...`) has no rail and belongs to no section.
  */
 export function sectionForPath(
     path: string,
@@ -84,6 +88,10 @@ export function sectionForPath(
         return 'settings';
     }
 
+    if (rest === '/calls' || rest.startsWith('/calls/')) {
+        return 'calls';
+    }
+
     return 'projects';
 }
 
@@ -91,6 +99,8 @@ export function homeFor(section: AppSection | null, orgSlug: string): string {
     switch (section) {
         case 'projects':
             return `/${orgSlug}/my-issues`;
+        case 'calls':
+            return `/${orgSlug}/calls`;
         case 'settings':
             return '/settings/profile';
         default:
@@ -113,7 +123,7 @@ export function loadRememberedUrls(orgSlug: string | null): void {
 
     const loaded: LastUrls = {};
 
-    (['mail', 'projects', 'settings'] as AppSection[]).forEach((section) => {
+    SECTIONS.forEach((section) => {
         const url = store.getItem(key(orgSlug, section));
 
         if (url) {
@@ -150,8 +160,8 @@ export function lastUrlFor(
 }
 
 /**
- * The rail: Mail and Projects on top, Settings in the bottom group. Each item returns you
- * to the last page you had open in that area.
+ * The rail: Mail, Projects and Calls on top, Settings in the bottom group. Each item returns
+ * you to the last page you had open in that area.
  */
 export function railItems(
     orgSlug: string | null,
@@ -184,6 +194,13 @@ export function railItems(
             href: lastUrlFor('projects', orgSlug, remembered),
             icon: CircleDot,
             badge: badges.projects ?? null,
+        },
+        {
+            section: 'calls',
+            title: 'Calls',
+            href: lastUrlFor('calls', orgSlug, remembered),
+            icon: Video,
+            badge: badges.calls ?? null,
         },
         {
             section: 'settings',

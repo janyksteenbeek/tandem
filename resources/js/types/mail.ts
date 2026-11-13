@@ -314,6 +314,9 @@ export type AppNotification = {
         issue_title?: string;
         team_slug?: string;
         cycle_uuid?: string;
+        /** Call notifications carry where a click should land (same origin). */
+        call_uuid?: string;
+        url?: string;
         actor?: { id: number; name: string } | null;
     };
     read_at: string | null;

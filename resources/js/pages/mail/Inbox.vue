@@ -468,6 +468,12 @@ useKeyboard(() => [
     },
     { keys: 'g t', description: 'Sent', handler: () => goView('sent') },
     { keys: 'g d', description: 'Drafts', handler: () => goView('drafts') },
+    {
+        // Before "c": shortcuts match in order, and "g c" must win over Compose after a "g".
+        keys: 'g c',
+        description: 'Calls',
+        handler: () => slug.value && router.visit(`/${slug.value}/calls`),
+    },
     { keys: 'c', description: 'Compose', handler: () => openCompose() },
     {
         keys: 'escape',

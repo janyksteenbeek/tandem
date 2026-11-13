@@ -4,8 +4,10 @@ import { useEchoNotification } from '@laravel/echo-vue';
 import {
     AtSign,
     CheckCheck,
+    CircleAlert,
     CircleCheck,
     CircleDot,
+    Clapperboard,
     Inbox,
     Link2Off,
     MessageSquareText,
@@ -13,6 +15,7 @@ import {
     Repeat,
     UserCheck,
     Users,
+    Video,
     Workflow,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -56,6 +59,10 @@ const icons: Record<string, unknown> = {
     issue_overdue: CircleDot,
     cycle_started: Repeat,
     issue_from_email: CircleDot,
+    call_invitation: Video,
+    call_recording_ready: Clapperboard,
+    call_recording_partial: CircleAlert,
+    call_recording_failed: CircleAlert,
 };
 
 const load = async () => {
@@ -84,7 +91,9 @@ useEchoNotification<AppNotification['data']>(
         toast(notification.title, {
             description: notification.body ?? undefined,
             action:
-                notification.conversation_uuid || notification.issue_identifier
+                notification.conversation_uuid ||
+                notification.issue_identifier ||
+                callUrl(notification)
                     ? {
                           label: 'Open',
                           onClick: () => go(notification),
@@ -94,7 +103,37 @@ useEchoNotification<AppNotification['data']>(
     },
 );
 
+/**
+ * Call notifications say where to go themselves (a meeting link, a recording). Only the path
+ * is used, so the visit always stays on the origin the app is open on, whatever host the
+ * server wrote the link with.
+ */
+const callUrl = (data: AppNotification['data']): string | null => {
+    if (!data.kind.startsWith('call_') || !data.url) {
+        return null;
+    }
+
+    try {
+        const url = new URL(data.url, window.location.origin);
+
+        return url.pathname.startsWith('/')
+            ? url.pathname + url.search + url.hash
+            : null;
+    } catch {
+        return null;
+    }
+};
+
 const go = (data: AppNotification['data']) => {
+    const call = callUrl(data);
+
+    if (call) {
+        open.value = false;
+        router.visit(call);
+
+        return;
+    }
+
     if (!organization.value) {
         return;
     }

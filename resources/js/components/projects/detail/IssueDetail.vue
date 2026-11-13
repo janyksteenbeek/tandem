@@ -12,6 +12,7 @@ import AttachmentList from '@/components/projects/detail/AttachmentList.vue';
 import DependencyList from '@/components/projects/detail/DependencyList.vue';
 import IssueHeader from '@/components/projects/detail/IssueHeader.vue';
 import IssueProperties from '@/components/projects/detail/IssueProperties.vue';
+import LinkedCalls from '@/components/calls/LinkedCalls.vue';
 import LinkedConversations from '@/components/projects/detail/LinkedConversations.vue';
 import SharedContentList from '@/components/projects/detail/SharedContentList.vue';
 import IssueTopBar from '@/components/projects/detail/IssueTopBar.vue';
@@ -160,6 +161,7 @@ const safeDescription = computed(() =>
 // --- header actions ---------------------------------------------------------------------------
 const header = ref<InstanceType<typeof IssueHeader> | null>(null);
 const comments = ref<InstanceType<typeof CommentThread> | null>(null);
+const meetings = ref<InstanceType<typeof LinkedCalls> | null>(null);
 const deleteDialog = ref(false);
 const moveDialog = ref(false);
 const propertiesOpen = ref(false);
@@ -346,6 +348,7 @@ defineExpose({
             @follow="(f) => actions.follow(local, f)"
             @move="moveDialog = true"
             @delete="deleteDialog = true"
+            @call="meetings?.start()"
         />
         <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
             <div class="scrollbar-thin min-h-0 flex-1 overflow-y-auto">
@@ -441,6 +444,11 @@ defineExpose({
                             :can-link="local.can.link_conversations"
                             :identifier="local.identifier"
                             @link="emit('linkConversation')"
+                        />
+                        <LinkedCalls
+                            ref="meetings"
+                            type="issue"
+                            :link-key="local.identifier"
                         />
                         <ActivityTimeline :activity="activity" />
                         <CommentThread

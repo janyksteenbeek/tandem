@@ -10,6 +10,7 @@ import {
     Link as LinkIcon,
     MoreHorizontal,
     Trash2,
+    Video,
 } from '@lucide/vue';
 import { computed, inject, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -46,6 +47,7 @@ const emit = defineEmits<{
     follow: [following: boolean];
     move: [];
     delete: [];
+    call: [];
 }>();
 
 const openCreateIssue = inject<(prefill?: CreateIssuePrefill) => void>(
@@ -196,6 +198,9 @@ const createSubIssue = () =>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem class="gap-2" @click="createSubIssue">
                     <GitBranchPlus class="size-4" /> Create sub-issue
+                </DropdownMenuItem>
+                <DropdownMenuItem class="gap-2" @click="emit('call')">
+                    <Video class="size-4" /> Start a call about this issue
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     v-if="issue.can.move"
