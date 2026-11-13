@@ -8,8 +8,8 @@ import {
     Star,
 } from '@lucide/vue';
 import { computed } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Checkbox } from '@/components/ui/checkbox';
 import { chipClass, displayName, PRIORITY_META } from '@/lib/mail';
 import { listTime, snoozeLabel } from '@/lib/time';

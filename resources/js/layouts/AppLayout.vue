@@ -3,8 +3,10 @@ import { router, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import { Menu } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue';
-import CommandPalette from '@/components/mail/CommandPalette.vue';
-import KeyboardShortcutsDialog from '@/components/mail/KeyboardShortcutsDialog.vue';
+import JoinMeetingDialog from '@/components/calls/JoinMeetingDialog.vue';
+import CommandPalette from '@/components/shared/CommandPalette.vue';
+import CreateIssueDialog from '@/components/projects/dialogs/CreateIssueDialog.vue';
+import KeyboardShortcutsDialog from '@/components/shared/KeyboardShortcutsDialog.vue';
 import PendingInvitationsModal from '@/components/PendingInvitationsModal.vue';
 import AppRail from '@/components/shell/AppRail.vue';
 import OfflineBanner from '@/components/shell/OfflineBanner.vue';
@@ -12,9 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { useCallStarter } from '@/composables/calls/useCallStarter';
 import { provideAppShell } from '@/composables/useAppShell';
+import { provideSidebarState } from '@/composables/useSidebarState';
 import { useKeyboard } from '@/composables/useKeyboard';
+import { loadRememberedUrls, rememberVisit } from '@/lib/navigation';
 import { playNotificationSound } from '@/lib/notificationSound';
+import type { CreateIssuePrefill } from '@/types';
 
 /**
  * The one shell every signed-in page lives in: rail, an optional page-owned
@@ -23,17 +29,19 @@ import { playNotificationSound } from '@/lib/notificationSound';
  */
 const page = usePage();
 const column = provideAppShell();
+const sidebar = provideSidebarState();
 
 const paletteOpen = ref(false);
 const shortcutsOpen = ref(false);
 const mobileNavOpen = ref(false);
+const createIssueOpen = ref(false);
+const createIssuePrefill = ref<CreateIssuePrefill | null>(null);
+const joinMeetingOpen = ref(false);
+const { start: startMeeting } = useCallStarter();
 
 const userId = computed(() => page.props.auth.user.id);
-const mailUrl = computed(() =>
-    page.props.currentOrganization
-        ? `/${page.props.currentOrganization.slug}/mail`
-        : '/',
-);
+const slug = computed(() => page.props.currentOrganization?.slug ?? null);
+const mailUrl = computed(() => (slug.value ? `/${slug.value}/mail` : '/'));
 
 /** The palette's "Compose" goes to whatever page registered a handler; elsewhere it opens mail first. */
 const compose = () => {
@@ -48,6 +56,10 @@ const compose = () => {
 
 provide('openCommandPalette', () => (paletteOpen.value = true));
 provide('openShortcuts', () => (shortcutsOpen.value = true));
+provide('openCreateIssue', (prefill?: CreateIssuePrefill) => {
+    createIssuePrefill.value = prefill ?? null;
+    createIssueOpen.value = true;
+});
 
 useEcho<{ inbound?: boolean }>(
     `user.${userId.value}`,
@@ -61,6 +73,10 @@ useEcho<{ inbound?: boolean }>(
     },
 );
 
+useEcho(`user.${userId.value}`, '.user.issues', () => {
+    router.reload({ only: ['projectsNav'] });
+});
+
 useKeyboard(() => [
     {
         keys: 'mod+k',
@@ -73,29 +89,55 @@ useKeyboard(() => [
         description: 'Shortcuts',
         handler: () => (shortcutsOpen.value = true),
     },
+    {
+        keys: 'mod+\\',
+        description: 'Toggle sidebar',
+        handler: () => sidebar.toggle(),
+        allowInInput: true,
+    },
 ]);
 
 let stopListening: (() => void) | undefined;
+let stopFlash: (() => void) | undefined;
 
 onMounted(() => {
-    stopListening = router.on('navigate', () => {
+    loadRememberedUrls(slug.value);
+    rememberVisit(
+        window.location.pathname + window.location.search,
+        slug.value,
+    );
+    stopListening = router.on('navigate', (event) => {
         mobileNavOpen.value = false;
+
+        const url = new URL(event.detail.page.url, window.location.origin);
+        rememberVisit(url.pathname + url.search, slug.value);
+    });
+    stopFlash = router.on('flash', (event) => {
+        const prefill = (
+            event.detail.flash as { createIssue?: CreateIssuePrefill }
+        ).createIssue;
+
+        if (prefill) {
+            createIssuePrefill.value = prefill;
+            createIssueOpen.value = true;
+        }
     });
 });
 
-onBeforeUnmount(() => stopListening?.());
+onBeforeUnmount(() => {
+    stopListening?.();
+    stopFlash?.();
+});
 </script>
 
 <template>
     <TooltipProvider :delay-duration="200">
         <div class="flex h-dvh w-full overflow-hidden bg-background">
             <div class="app-shell-desktop hidden md:flex">
-                <AppRail
-                    @open-search="paletteOpen = true"
-                    @open-shortcuts="shortcutsOpen = true"
-                />
+                <AppRail @open-shortcuts="shortcutsOpen = true" />
                 <div
-                    v-if="column"
+                    v-if="column && !sidebar.collapsed.value"
+                    id="app-shell-column"
                     class="flex [view-transition-name:shell-column]"
                 >
                     <component :is="column.component" v-bind="column.props" />
@@ -105,13 +147,10 @@ onBeforeUnmount(() => stopListening?.());
             <Sheet v-model:open="mobileNavOpen">
                 <SheetContent
                     side="left"
-                    :class="column ? 'w-[18.5rem] p-0' : 'w-14 p-0'"
+                    :class="column ? 'w-[19.5rem] p-0' : 'w-16 p-0'"
                 >
                     <div class="flex h-full">
-                        <AppRail
-                            @open-search="paletteOpen = true"
-                            @open-shortcuts="shortcutsOpen = true"
-                        />
+                        <AppRail @open-shortcuts="shortcutsOpen = true" />
                         <component
                             :is="column.component"
                             v-if="column"
@@ -138,8 +177,23 @@ onBeforeUnmount(() => stopListening?.());
                 <slot />
             </main>
 
-            <CommandPalette v-model:open="paletteOpen" @compose="compose" />
+            <CommandPalette
+                v-model:open="paletteOpen"
+                @compose="compose"
+                @create-issue="createIssueOpen = true"
+                @start-meeting="startMeeting()"
+                @join-meeting="joinMeetingOpen = true"
+            />
+            <JoinMeetingDialog
+                v-if="page.props.currentOrganization"
+                v-model:open="joinMeetingOpen"
+            />
             <KeyboardShortcutsDialog v-model:open="shortcutsOpen" />
+            <CreateIssueDialog
+                v-if="page.props.currentOrganization"
+                v-model:open="createIssueOpen"
+                :prefill="createIssuePrefill"
+            />
             <PendingInvitationsModal
                 v-if="page.props.pendingInvitations.length > 0"
                 :invitations="page.props.pendingInvitations"

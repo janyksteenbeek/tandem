@@ -2,12 +2,12 @@
 
 namespace App\Listeners\Mail;
 
-use App\Events\Broadcast\ConversationUpdated;
-use App\Events\Broadcast\MessageAdded;
 use App\Events\Broadcast\UserNotified;
+use App\Events\Mail\Broadcast\ConversationUpdated;
+use App\Events\Mail\Broadcast\MessageAdded;
 use App\Events\Mail\MessageIngested;
 use App\Models\User;
-use App\Notifications\Conversations\NewReplyNotification;
+use App\Notifications\Mail\NewReplyNotification;
 use App\Notifications\Mail\NewSharedMailNotification;
 
 /**

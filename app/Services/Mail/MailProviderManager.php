@@ -2,8 +2,8 @@
 
 namespace App\Services\Mail;
 
-use App\Enums\MailProvider as ProviderType;
-use App\Models\MailAccount;
+use App\Enums\Mail\MailProvider as ProviderType;
+use App\Models\Mail\MailAccount;
 use App\Services\Mail\Contracts\MailProvider;
 use Illuminate\Contracts\Container\Container;
 use InvalidArgumentException;

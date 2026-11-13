@@ -13,12 +13,13 @@ import {
     Send,
     Trash2,
     Users,
+    Video,
 } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import AttachmentChip from '@/components/mail/AttachmentChip.vue';
+import AttachmentChip from '@/components/shared/AttachmentChip.vue';
 import RecipientInput from '@/components/mail/RecipientInput.vue';
-import RichTextToolbar from '@/components/mail/RichTextToolbar.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import RichTextToolbar from '@/components/shared/RichTextToolbar.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -33,7 +34,8 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useDraft, type DraftPatch } from '@/composables/useDraft';
+import { useCallStarter } from '@/composables/calls/useCallStarter';
+import { useDraft, type DraftPatch } from '@/composables/mail/useDraft';
 import { cn } from '@/lib/utils';
 import type { Draft, EmailAddress, InboxAccount } from '@/types';
 
@@ -209,6 +211,41 @@ watch(
 );
 
 onBeforeUnmount(() => editor.value?.destroy());
+
+const {
+    create: createMeeting,
+    starting: creatingMeeting,
+    slug: organizationSlug,
+} = useCallStarter();
+
+/** Creates a meeting named after the subject and drops its join link where the cursor is. */
+const addMeetingLink = async () => {
+    const call = await createMeeting({ title: props.draft.subject || null });
+
+    if (!call || !editor.value) {
+        return;
+    }
+
+    editor.value
+        .chain()
+        .focus()
+        .insertContent([
+            {
+                type: 'paragraph',
+                content: [
+                    { type: 'text', text: 'Join the meeting: ' },
+                    {
+                        type: 'text',
+                        text: call.join_url,
+                        marks: [
+                            { type: 'link', attrs: { href: call.join_url } },
+                        ],
+                    },
+                ],
+            },
+        ])
+        .run();
+};
 </script>
 
 <template>
@@ -402,6 +439,19 @@ onBeforeUnmount(() => editor.value?.destroy());
                         ><ImagePlus class="size-3.5" /></Button
                 ></TooltipTrigger>
                 <TooltipContent>Insert inline image</TooltipContent>
+            </Tooltip>
+            <Tooltip v-if="organizationSlug">
+                <TooltipTrigger as-child
+                    ><Button
+                        variant="ghost"
+                        size="icon"
+                        class="size-7"
+                        aria-label="Add meeting link"
+                        :disabled="creatingMeeting"
+                        @click="addMeetingLink"
+                        ><Video class="size-3.5" /></Button
+                ></TooltipTrigger>
+                <TooltipContent>Add meeting link</TooltipContent>
             </Tooltip>
             <input
                 ref="fileInput"

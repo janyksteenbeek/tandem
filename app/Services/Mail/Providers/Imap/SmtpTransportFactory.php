@@ -2,7 +2,7 @@
 
 namespace App\Services\Mail\Providers\Imap;
 
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Services\Mail\Exceptions\AuthenticationRequiredException;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Symfony\Component\Mailer\Transport\TransportInterface;

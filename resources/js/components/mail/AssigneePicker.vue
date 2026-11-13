@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Check, UserPlus, UserX } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     Command,

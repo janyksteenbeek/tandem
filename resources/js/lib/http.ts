@@ -5,6 +5,8 @@ export class HttpError extends Error {
         public status: number,
         message: string,
         public errors: Record<string, string[]> = {},
+        /** The full JSON body, for endpoints that return structured failures (e.g. readiness). */
+        public body: Record<string, unknown> = {},
     ) {
         super(message);
     }
@@ -60,6 +62,7 @@ async function request<T>(
             response.status,
             message,
             (data as { errors?: Record<string, string[]> }).errors ?? {},
+            (data ?? {}) as Record<string, unknown>,
         );
     }
 

@@ -2,10 +2,10 @@
 
 namespace App\Services\Mail\Providers\Forwarding;
 
-use App\Enums\MailAccountStatus;
-use App\Enums\MailProvider;
-use App\Models\Inbox;
-use App\Models\MailAccount;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\MailProvider;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
 use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;

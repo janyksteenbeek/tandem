@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Check, ChevronsUpDown, Plus, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,6 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { statusOptionsFor } from '@/lib/automations';
 import { chipClass } from '@/lib/mail';
 import { cn } from '@/lib/utils';
 import type {
@@ -43,7 +44,22 @@ type Option = {
     label: string;
     color?: string | null;
     avatar?: string | null;
+    group?: string;
 };
+
+const PICK_LIST_TYPES: ConditionValueType[] = [
+    'inbox',
+    'user',
+    'status',
+    'priority',
+    'product',
+    'project',
+    'team',
+    'workflow_status',
+    'status_category',
+    'issue_priority',
+    'label',
+];
 
 const options = computed<Option[]>(() => {
     switch (props.valueType) {
@@ -69,16 +85,59 @@ const options = computed<Option[]>(() => {
             return props.catalog.statuses;
         case 'priority':
             return props.catalog.priorities;
+        case 'product':
+            return (props.lookups.issues?.products ?? []).map((product) => ({
+                value: String(product.id),
+                label: product.name,
+                color: product.color,
+            }));
+        case 'project':
+            return (props.lookups.issues?.projects ?? []).map((project) => ({
+                value: String(project.id),
+                label: project.name,
+                color: project.color,
+            }));
+        case 'team':
+            return (props.lookups.issues?.teams ?? props.lookups.teams).map(
+                (team) => ({
+                    value: String(team.id),
+                    label: team.name,
+                    color: team.color,
+                }),
+            );
+        case 'label':
+            return (props.lookups.issues?.labels ?? []).map((label) => ({
+                value: String(label.id),
+                label: label.name,
+                color: label.color,
+            }));
+        case 'workflow_status':
+            return statusOptionsFor(props.lookups).map((status) => ({
+                value: String(status.id),
+                label: status.name,
+                group: status.group,
+            }));
+        case 'status_category':
+            return props.catalog.status_categories ?? [];
+        case 'issue_priority':
+            return (
+                props.catalog.issue_priorities ??
+                props.lookups.issues?.priorities ??
+                []
+            );
         default:
             return [];
     }
 });
 
+const labelWithGroup = (option: Option) =>
+    option.group ? `${option.label} · ${option.group}` : option.label;
+
 /**
  * Tags support fuzzy operators (contains) where free text makes more sense than a pick list.
  */
 const usesPickList = computed(() => {
-    if (['inbox', 'user', 'status', 'priority'].includes(props.valueType)) {
+    if (PICK_LIST_TYPES.includes(props.valueType)) {
         return true;
     }
 
@@ -102,6 +161,8 @@ const placeholder = computed(() => {
             return props.operator === 'matches_regex'
                 ? '\\b(invoice|refund)\\b'
                 : 'Type a word or phrase';
+        case 'number':
+            return '3';
         default:
             return 'Value';
     }
@@ -257,7 +318,7 @@ const onDraftKeydown = (event: KeyboardEvent) => {
                         :color="option.color"
                         size="sm"
                     />
-                    <span class="truncate">{{ option.label }}</span>
+                    <span class="truncate">{{ labelWithGroup(option) }}</span>
                 </button>
             </PopoverContent>
         </Popover>
@@ -339,11 +400,26 @@ const onDraftKeydown = (event: KeyboardEvent) => {
                             class="inline-block size-2.5 rounded-full bg-(--chip)"
                             :class="chipClass(option.color)"
                         />
-                        {{ option.label }}
+                        {{ labelWithGroup(option) }}
                     </span>
                 </SelectItem>
             </SelectContent>
         </Select>
+    </div>
+
+    <!-- Number -->
+    <div v-else-if="valueType === 'number'" class="min-w-0 sm:max-w-40">
+        <Input
+            v-model="single"
+            type="number"
+            step="1"
+            :placeholder="placeholder"
+            :aria-invalid="invalid || undefined"
+            autocomplete="off"
+        />
+        <p class="mt-1 text-[11px] text-muted-foreground">
+            Days from today. Negative when already past.
+        </p>
     </div>
 
     <!-- Single free text -->

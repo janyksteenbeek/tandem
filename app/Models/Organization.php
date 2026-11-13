@@ -4,6 +4,17 @@ namespace App\Models;
 
 use App\Concerns\GeneratesUniqueOrganizationSlugs;
 use App\Enums\OrganizationRole;
+use App\Models\Automations\AutomationRule;
+use App\Models\Calls\Call;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\MessageTemplate;
+use App\Models\Projects\Initiative;
+use App\Models\Projects\Issue;
+use App\Models\Projects\IssueLabel;
+use App\Models\Projects\Product;
+use App\Models\Projects\Project;
+use App\Models\Projects\Workflow;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -27,6 +38,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $google_pubsub_topic
  * @property array<string, mixed>|null $business_hours
  * @property array<string, mixed>|null $outbound_mail_settings
+ * @property string|null $issue_key
+ * @property array<string, mixed>|null $project_settings
+ * @property array<string, mixed>|null $call_settings
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -39,8 +53,14 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Tag> $tags
  * @property-read Collection<int, AutomationRule> $automationRules
  * @property-read Collection<int, MessageTemplate> $messageTemplates
+ * @property-read Collection<int, Product> $products
+ * @property-read Collection<int, Project> $projects
+ * @property-read Collection<int, Initiative> $initiatives
+ * @property-read Collection<int, Issue> $issues
+ * @property-read Collection<int, Workflow> $workflows
+ * @property-read Collection<int, IssueLabel> $issueLabels
  */
-#[Fillable(['name', 'slug', 'is_personal', 'timezone', 'color', 'google_oauth_client_id', 'google_oauth_client_secret', 'google_pubsub_topic', 'business_hours', 'outbound_mail_settings'])]
+#[Fillable(['name', 'slug', 'is_personal', 'timezone', 'color', 'google_oauth_client_id', 'google_oauth_client_secret', 'google_pubsub_topic', 'business_hours', 'outbound_mail_settings', 'issue_key', 'project_settings', 'call_settings'])]
 #[Hidden(['google_oauth_client_secret', 'outbound_mail_settings'])]
 class Organization extends Model
 {
@@ -159,6 +179,62 @@ class Organization extends Model
     }
 
     /**
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class)->orderBy('name');
+    }
+
+    /**
+     * @return HasMany<Project, $this>
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class)->orderBy('name');
+    }
+
+    /**
+     * @return HasMany<Initiative, $this>
+     */
+    public function initiatives(): HasMany
+    {
+        return $this->hasMany(Initiative::class)->orderBy('name');
+    }
+
+    /**
+     * @return HasMany<Issue, $this>
+     */
+    public function issues(): HasMany
+    {
+        return $this->hasMany(Issue::class);
+    }
+
+    /**
+     * @return HasMany<Workflow, $this>
+     */
+    public function workflows(): HasMany
+    {
+        return $this->hasMany(Workflow::class);
+    }
+
+    /**
+     * @return HasMany<IssueLabel, $this>
+     */
+    public function issueLabels(): HasMany
+    {
+        return $this->hasMany(IssueLabel::class)->orderBy('name');
+    }
+
+    /**
+     * @return HasMany<Call, $this>
+     */
+    public function calls(): HasMany
+    {
+        return $this->hasMany(Call::class);
+    }
+
+    /**
      * Whether this organization has its own Google OAuth client configured.
      */
     public function hasGoogleOAuthCredentials(): bool
@@ -178,6 +254,8 @@ class Organization extends Model
             'google_oauth_client_secret' => 'encrypted',
             'business_hours' => 'array',
             'outbound_mail_settings' => 'encrypted:array',
+            'project_settings' => 'array',
+            'call_settings' => 'array',
         ];
     }
 

@@ -2,10 +2,13 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\AutomationConditionField;
-use App\Enums\AutomationConditionOperator;
-use App\Models\Conversation;
-use App\Models\Message;
+use App\Enums\Automations\AutomationConditionField;
+use App\Enums\Automations\AutomationConditionOperator;
+use App\Enums\Automations\AutomationSubjectType;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Message;
+use App\Models\Projects\Issue;
+use App\Models\Projects\IssueWorkstream;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -22,13 +25,13 @@ class ConditionEvaluator
      * @param  array{message?: Message|null}  $context
      * @return array{matched: bool, match: string, conditions: array<int, array{field: string, operator: string, value: mixed, actual: mixed, passed: bool, error?: string}>}
      */
-    public function evaluate(array $conditions, string $match, Conversation $conversation, array $context = []): array
+    public function evaluate(array $conditions, string $match, Conversation|Issue $subject, array $context = []): array
     {
         $match = $match === 'any' ? 'any' : 'all';
         $results = [];
 
         foreach ($conditions as $condition) {
-            $results[] = $this->evaluateCondition($condition, $conversation, $context);
+            $results[] = $this->evaluateCondition($condition, $subject, $context);
         }
 
         $passed = array_filter($results, fn (array $result) => $result['passed']);
@@ -44,7 +47,7 @@ class ConditionEvaluator
      * @param  array{message?: Message|null}  $context
      * @return array{field: string, operator: string, value: mixed, actual: mixed, passed: bool, error?: string}
      */
-    public function evaluateCondition(array $condition, Conversation $conversation, array $context = []): array
+    public function evaluateCondition(array $condition, Conversation|Issue $subject, array $context = []): array
     {
         $fieldKey = is_string($condition['field'] ?? null) ? $condition['field'] : '';
         $operatorKey = is_string($condition['operator'] ?? null) ? $condition['operator'] : '';
@@ -63,8 +66,14 @@ class ConditionEvaluator
             return $result + ['error' => sprintf('Operator "%s" is not supported for "%s".', $operator->value, $field->value)];
         }
 
+        if ($field->subjectType() !== AutomationSubjectType::of($subject)) {
+            return $result + ['error' => sprintf('The "%s" field does not apply to this %s.', $field->value, $subject instanceof Issue ? 'issue' : 'conversation')];
+        }
+
         try {
-            $actual = $this->actual($field, $conversation, $context);
+            $actual = $subject instanceof Issue
+                ? $this->issueActual($field, $subject, $context)
+                : $this->actual($field, $subject, $context);
             $result['actual'] = $actual;
             $result['passed'] = $this->compare($field, $operator, $actual, $value);
         } catch (Throwable $e) {
@@ -94,6 +103,36 @@ class ConditionEvaluator
             AutomationConditionField::BusinessHours => $conversation->organization !== null && $this->businessHours->isOpen($conversation->organization),
             AutomationConditionField::Status => $conversation->status->value,
             AutomationConditionField::Priority => $conversation->priority->key(),
+            default => null,
+        };
+    }
+
+    /**
+     * Resolve the live value of a field on an issue.
+     *
+     * @param  array<string, mixed>  $context
+     * @return string|int|bool|array<int, string>|null
+     */
+    protected function issueActual(AutomationConditionField $field, Issue $issue, array $context): string|int|bool|array|null
+    {
+        $workstream = $context['workstream'] ?? null;
+
+        return match ($field) {
+            AutomationConditionField::IssueProduct => $issue->product_id !== null ? (string) $issue->product_id : null,
+            AutomationConditionField::IssueProject => $issue->project_id !== null ? (string) $issue->project_id : null,
+            AutomationConditionField::IssueTeam => $issue->workstreams->pluck('team_id')->map(fn ($id) => (string) $id)->values()->all(),
+            AutomationConditionField::IssueLeadTeam => $issue->lead_team_id !== null ? (string) $issue->lead_team_id : null,
+            AutomationConditionField::IssueStatus => (string) $issue->status_id,
+            AutomationConditionField::IssueStatusCategory => $issue->status_category->value,
+            AutomationConditionField::IssuePriority => $issue->priority->key(),
+            AutomationConditionField::IssueOwner => $issue->owner_id !== null ? (string) $issue->owner_id : null,
+            AutomationConditionField::IssueLabel => $issue->labels()->pluck('issue_labels.id')->map(fn ($id) => (string) $id)->values()->all(),
+            AutomationConditionField::WorkstreamTeam => $workstream instanceof IssueWorkstream ? (string) $workstream->team_id : null,
+            AutomationConditionField::WorkstreamStatusCategory => $workstream instanceof IssueWorkstream ? $workstream->status_category->value : null,
+            AutomationConditionField::IssueDaysUntilDue => $issue->due_date ? (int) now()->startOfDay()->diffInDays($issue->due_date, false) : null,
+            AutomationConditionField::IssueHasBlockers => $issue->blocked_by_count > 0 || $issue->blocked_workstreams_count > 0,
+            AutomationConditionField::IssueTitle => $issue->title,
+            default => null,
         };
     }
 
@@ -113,6 +152,15 @@ class ConditionEvaluator
                 return $actual === true;
             case AutomationConditionOperator::IsFalse:
                 return $actual === false;
+            case AutomationConditionOperator::AtMost:
+            case AutomationConditionOperator::AtLeast:
+                if ($isEmpty || ! is_numeric($actual) || ! is_numeric(is_array($expected) ? ($expected[0] ?? null) : $expected)) {
+                    return false;
+                }
+
+                $limit = (float) (is_array($expected) ? $expected[0] : $expected);
+
+                return $operator === AutomationConditionOperator::AtMost ? (float) $actual <= $limit : (float) $actual >= $limit;
         }
 
         $actuals = $this->normalizeActuals($actual);

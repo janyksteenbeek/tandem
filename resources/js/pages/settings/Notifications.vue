@@ -14,7 +14,7 @@ import { update } from '@/routes/notification-settings';
 
 const props = defineProps<{
     publicKey: string | null;
-    topics: Record<'direct' | 'follows' | 'shared', boolean>;
+    topics: Record<'direct' | 'follows' | 'shared' | 'teams', boolean>;
     deviceCount: number;
 }>();
 
@@ -68,6 +68,12 @@ const topicRows = [
         title: 'New mail in shared inboxes',
         description:
             'Every new conversation in a shared inbox you belong to. Noisy on a busy inbox.',
+    },
+    {
+        key: 'teams',
+        title: 'Team-wide project updates',
+        description:
+            'Your team being added to an issue, cycles starting, issues created from email.',
     },
 ] as const;
 

@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\SyncRunType;
-use App\Models\Conversation;
-use App\Models\MailAccount;
-use App\Models\Message;
-use App\Models\SyncRun;
+use App\Enums\Mail\SyncRunType;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
+use App\Models\Mail\SyncRun;
 use App\Services\Mail\Data\MailboxState;
 use App\Services\Mail\Ingestion\MessageIngestor;
 use App\Services\Mail\Ingestion\MimeMessageParser;

@@ -3,7 +3,7 @@
 namespace App\Notifications\Mail;
 
 use App\Enums\PushTopic;
-use App\Models\Message;
+use App\Models\Mail\Message;
 use App\Notifications\Concerns\PushesToDevices;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;

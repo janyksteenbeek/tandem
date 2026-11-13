@@ -11,7 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { useDraft } from '@/composables/useDraft';
+import { useDraft } from '@/composables/mail/useDraft';
 import { api, reportError } from '@/lib/http';
 import { cn } from '@/lib/utils';
 import type { ComposePrefill, Draft, Inbox, NavInbox } from '@/types';

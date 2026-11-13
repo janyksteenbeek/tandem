@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowRightLeft, Share2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,

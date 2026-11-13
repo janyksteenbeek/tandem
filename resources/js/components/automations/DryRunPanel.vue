@@ -5,7 +5,7 @@ import { computed, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { describeCondition } from '@/lib/automations';
-import { api, reportError } from '@/lib/http';
+import { HttpError, api, reportError } from '@/lib/http';
 import { displayName } from '@/lib/mail';
 import { listTime } from '@/lib/time';
 import { cn } from '@/lib/utils';
@@ -16,44 +16,71 @@ import type {
     AutomationCondition,
     AutomationLookups,
     AutomationMatch,
+    AutomationSubjectType,
     DryRunResult,
 } from '@/types/automations';
 import type { ConversationListItem } from '@/types/mail';
+import type { IssueListItem } from '@/types/projects';
 
-const props = defineProps<{
-    slug: string;
-    ruleUuid: string | null;
-    conditions: AutomationCondition[];
-    match: AutomationMatch;
-    catalog: AutomationCatalog;
-    lookups: AutomationLookups;
-}>();
+const props = withDefaults(
+    defineProps<{
+        slug: string;
+        ruleUuid: string | null;
+        conditions: AutomationCondition[];
+        match: AutomationMatch;
+        catalog: AutomationCatalog;
+        lookups: AutomationLookups;
+        subject?: AutomationSubjectType;
+    }>(),
+    { subject: 'conversation' },
+);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const IDENTIFIER = /^[a-z][a-z0-9]{1,9}-\d+$/i;
+
+type Picked = {
+    uuid: string;
+    subject: string | null;
+    identifier?: string;
+};
 
 const query = ref('');
 const results = ref<ConversationListItem[]>([]);
+const issueResults = ref<IssueListItem[]>([]);
 const searching = ref(false);
-const picked = ref<{ uuid: string; subject: string | null } | null>(null);
+const picked = ref<Picked | null>(null);
 const running = ref(false);
 const result = ref<DryRunResult | null>(null);
 const stale = ref(false);
+const notFound = ref<string | null>(null);
+
+const isIssue = computed(() => props.subject === 'issue');
+const noun = computed(() => (isIssue.value ? 'issue' : 'conversation'));
 
 const runSearch = useDebounceFn(async () => {
     const q = query.value.trim();
 
-    if (q.length < 2 || UUID.test(q)) {
+    if (q.length < 2 || UUID.test(q) || (isIssue.value && IDENTIFIER.test(q))) {
         results.value = [];
+        issueResults.value = [];
         searching.value = false;
 
         return;
     }
 
     try {
-        const response = await api.get<{
-            conversations: ConversationListItem[];
-        }>(search.url(), { q, limit: 6 });
-        results.value = response.conversations;
+        if (isIssue.value) {
+            const response = await api.get<{ issues: IssueListItem[] }>(
+                search.url(),
+                { q, limit: 6, types: 'issues' },
+            );
+            issueResults.value = response.issues ?? [];
+        } else {
+            const response = await api.get<{
+                conversations: ConversationListItem[];
+            }>(search.url(), { q, limit: 6 });
+            results.value = response.conversations;
+        }
     } catch (error) {
         reportError(error, 'Search is taking a nap.');
     } finally {
@@ -62,16 +89,52 @@ const runSearch = useDebounceFn(async () => {
 }, 300);
 
 watch(query, (value) => {
-    if (UUID.test(value.trim())) {
-        picked.value = { uuid: value.trim(), subject: null };
+    const trimmed = value.trim();
+
+    if (!isIssue.value && UUID.test(trimmed)) {
+        picked.value = { uuid: trimmed, subject: null };
         results.value = [];
 
         return;
     }
 
-    searching.value = value.trim().length >= 2;
+    if (isIssue.value && IDENTIFIER.test(trimmed)) {
+        picked.value = {
+            uuid: '',
+            subject: null,
+            identifier: trimmed.toUpperCase(),
+        };
+        issueResults.value = [];
+        query.value = '';
+
+        return;
+    }
+
+    searching.value = trimmed.length >= 2;
     void runSearch();
 });
+
+watch(
+    () => props.subject,
+    () => {
+        picked.value = null;
+        result.value = null;
+        results.value = [];
+        issueResults.value = [];
+        query.value = '';
+    },
+);
+
+const pickIssue = (item: IssueListItem) => {
+    picked.value = {
+        uuid: item.uuid,
+        subject: item.title,
+        identifier: item.identifier,
+    };
+    issueResults.value = [];
+    query.value = '';
+    result.value = null;
+};
 
 watch(
     () => [props.conditions, props.match],
@@ -94,6 +157,7 @@ const clear = () => {
     picked.value = null;
     result.value = null;
     stale.value = false;
+    notFound.value = null;
 };
 
 const run = async () => {
@@ -102,6 +166,7 @@ const run = async () => {
     }
 
     running.value = true;
+    notFound.value = null;
 
     try {
         result.value = await api.post<DryRunResult>(
@@ -110,15 +175,33 @@ const run = async () => {
                 rule: props.ruleUuid,
             }),
             {
-                conversation_uuid: picked.value.uuid,
+                ...(picked.value.identifier
+                    ? { issue_identifier: picked.value.identifier }
+                    : { conversation_uuid: picked.value.uuid }),
                 conditions: props.conditions,
                 match: props.match,
             },
         );
-        picked.value = result.value.conversation;
+
+        if (result.value.issue) {
+            picked.value = {
+                uuid: result.value.issue.uuid,
+                subject: result.value.issue.title,
+                identifier: result.value.issue.identifier,
+            };
+        } else if (result.value.conversation) {
+            picked.value = result.value.conversation;
+        }
+
         stale.value = false;
     } catch (error) {
-        reportError(error, 'Could not run the test.');
+        if (error instanceof HttpError && error.status === 404) {
+            notFound.value = picked.value.identifier
+                ? `There is no ${picked.value.identifier} in this organization.`
+                : 'That conversation no longer exists.';
+        } else {
+            reportError(error, 'Could not run the test.');
+        }
     } finally {
         running.value = false;
     }
@@ -133,7 +216,7 @@ const verdict = computed(() => {
         return {
             tone: 'success',
             title: 'It would run.',
-            body: 'Every check lines up for this conversation.',
+            body: `Every check lines up for this ${noun.value}.`,
         };
     }
 
@@ -141,7 +224,9 @@ const verdict = computed(() => {
         return {
             tone: 'warning',
             title: 'Matches, but would not run.',
-            body: 'The rule is paused or scoped to a different inbox.',
+            body: isIssue.value
+                ? 'The rule is paused or scoped to another product or team.'
+                : 'The rule is paused or scoped to a different inbox.',
         };
     }
 
@@ -198,7 +283,11 @@ const formatActual = (value: unknown): string => {
                 <Input
                     v-model="query"
                     class="pl-8"
-                    placeholder="Search a subject or paste a conversation id"
+                    :placeholder="
+                        isIssue
+                            ? 'Type an identifier like FRONT-12 or search a title'
+                            : 'Search a subject or paste a conversation id'
+                    "
                     autocomplete="off"
                 />
                 <Loader2
@@ -207,7 +296,28 @@ const formatActual = (value: unknown): string => {
                 />
 
                 <ul
-                    v-if="results.length > 0"
+                    v-if="issueResults.length > 0"
+                    data-test="dry-run-issue-results"
+                    class="mt-2 scrollbar-thin max-h-56 divide-y overflow-y-auto rounded-lg border bg-popover shadow-float"
+                >
+                    <li v-for="item in issueResults" :key="item.uuid">
+                        <button
+                            type="button"
+                            class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
+                            @click="pickIssue(item)"
+                        >
+                            <span
+                                class="shrink-0 font-mono text-[11px] text-muted-foreground"
+                                >{{ item.identifier }}</span
+                            >
+                            <span class="truncate font-medium">{{
+                                item.title
+                            }}</span>
+                        </button>
+                    </li>
+                </ul>
+                <ul
+                    v-else-if="results.length > 0"
                     data-test="dry-run-results"
                     class="mt-2 scrollbar-thin max-h-56 divide-y overflow-y-auto rounded-lg border bg-popover shadow-float"
                 >
@@ -239,7 +349,11 @@ const formatActual = (value: unknown): string => {
                     v-else-if="query.trim().length >= 2 && !searching"
                     class="mt-2 text-xs text-muted-foreground"
                 >
-                    Nothing matches. Try a name or a word from the subject.
+                    {{
+                        isIssue
+                            ? 'Nothing matches. Try the identifier or a word from the title.'
+                            : 'Nothing matches. Try a name or a word from the subject.'
+                    }}
                 </p>
             </div>
 
@@ -248,11 +362,17 @@ const formatActual = (value: unknown): string => {
                 class="flex items-center gap-2 rounded-lg border bg-surface px-3 py-2 text-sm"
             >
                 <span class="min-w-0 flex-1 truncate">
+                    <span
+                        v-if="picked.identifier"
+                        class="mr-1.5 font-mono text-[11px] text-muted-foreground"
+                        >{{ picked.identifier }}</span
+                    >
                     <span class="font-medium">{{
-                        picked.subject || 'Conversation'
+                        picked.subject ||
+                        (picked.identifier ? 'Issue' : 'Conversation')
                     }}</span>
                     <span
-                        v-if="!picked.subject"
+                        v-if="!picked.subject && !picked.identifier"
                         class="ml-1 font-mono text-[11px] text-muted-foreground"
                         >{{ picked.uuid.slice(0, 8) }}…</span
                     >
@@ -261,7 +381,7 @@ const formatActual = (value: unknown): string => {
                     type="button"
                     variant="ghost"
                     size="icon-xs"
-                    aria-label="Pick another conversation"
+                    :aria-label="`Pick another ${noun}`"
                     @click="clear"
                     ><X
                 /></Button>
@@ -281,9 +401,16 @@ const formatActual = (value: unknown): string => {
                         ? stale
                             ? 'Run again with current conditions'
                             : 'Run again'
-                        : 'Test this conversation'
+                        : `Test this ${noun}`
                 }}
             </Button>
+
+            <p
+                v-if="notFound"
+                class="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive"
+            >
+                {{ notFound }}
+            </p>
 
             <div v-if="result && verdict" class="mt-3 animate-rise space-y-2">
                 <div
@@ -347,7 +474,7 @@ const formatActual = (value: unknown): string => {
                     </li>
                 </ul>
                 <p v-else class="text-xs text-muted-foreground">
-                    No conditions, so every conversation matches.
+                    No conditions, so every {{ noun }} matches.
                 </p>
             </div>
         </template>

@@ -2,15 +2,15 @@
 
 namespace App\Services\Mail\Ingestion;
 
-use App\Enums\ConversationEventType;
-use App\Enums\ConversationStatus;
-use App\Enums\DeliveryStatus;
-use App\Enums\MessageDirection;
+use App\Enums\Mail\ConversationEventType;
+use App\Enums\Mail\ConversationStatus;
+use App\Enums\Mail\DeliveryStatus;
+use App\Enums\Mail\MessageDirection;
 use App\Events\Mail\MessageIngested;
-use App\Models\Contact;
-use App\Models\Conversation;
-use App\Models\MailAccount;
-use App\Models\Message;
+use App\Models\Mail\Contact;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Data\IncomingMessage;
 use App\Services\Mail\Data\MailboxState;

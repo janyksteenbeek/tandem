@@ -2,12 +2,15 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\AutomationActionType;
-use App\Enums\AutomationConditionField;
-use App\Enums\AutomationConditionOperator;
-use App\Enums\AutomationTrigger;
-use App\Enums\ConversationPriority;
-use App\Enums\ConversationStatus;
+use App\Enums\Automations\AutomationActionType;
+use App\Enums\Automations\AutomationConditionField;
+use App\Enums\Automations\AutomationConditionOperator;
+use App\Enums\Automations\AutomationSubjectType;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\ConversationPriority;
+use App\Enums\Mail\ConversationStatus;
+use App\Enums\Projects\IssuePriority;
+use App\Enums\Projects\StatusCategory;
 
 /**
  * Everything the rule builder UI needs to render triggers, conditions, actions and variables.
@@ -20,6 +23,7 @@ class AutomationCatalog
     public static function toArray(): array
     {
         return [
+            'subjects' => AutomationSubjectType::options(),
             'triggers' => AutomationTrigger::options(),
             'match' => [
                 ['value' => 'all', 'label' => 'All conditions match'],
@@ -33,6 +37,8 @@ class AutomationCatalog
                 ->values()
                 ->all(),
             'priorities' => ConversationPriority::options(),
+            'issue_priorities' => IssuePriority::options(),
+            'status_categories' => StatusCategory::options(),
             'strategies' => [
                 ['value' => TeamAssigner::ROUND_ROBIN, 'label' => 'Round robin'],
                 ['value' => TeamAssigner::LEAST_BUSY, 'label' => 'Least busy'],

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\MailboxView;
+use App\Enums\Mail\MailboxView;
 use App\Http\Controllers\Controller;
 use App\Services\Mail\MailNavigation;
 use Illuminate\Http\RedirectResponse;

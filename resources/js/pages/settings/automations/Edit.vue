@@ -10,7 +10,7 @@ import {
     Save,
     Trash2,
 } from '@lucide/vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import ActionRow from '@/components/automations/ActionRow.vue';
 import ConditionRow from '@/components/automations/ConditionRow.vue';
 import DryRunPanel from '@/components/automations/DryRunPanel.vue';
@@ -45,6 +45,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useKeyboard } from '@/composables/useKeyboard';
 import {
     actionLabel,
+    actionsFor,
     describeAction,
     describeCondition,
     emptyAction,
@@ -52,6 +53,7 @@ import {
     emptyRuleForm,
     formatMinutes,
     starterRule,
+    switchSubject,
 } from '@/lib/automations';
 import { api, reportError } from '@/lib/http';
 import { fullTime, relative } from '@/lib/time';
@@ -73,11 +75,13 @@ import type {
     AutomationRun,
     AutomationRunPage,
     AutomationRunStatus,
+    AutomationSubjectType,
     AutomationTagOption,
     AutomationTeamOption,
     AutomationTemplateOption,
     AutomationUserOption,
 } from '@/types/automations';
+import type { IssueLookups } from '@/types/projects';
 import type { Organization } from '@/types';
 
 const props = defineProps<{
@@ -90,6 +94,7 @@ const props = defineProps<{
     teams: AutomationTeamOption[];
     templates: AutomationTemplateOption[];
     catalog: AutomationCatalog;
+    issueLookups?: IssueLookups | null;
 }>();
 
 const page = usePage();
@@ -100,6 +105,7 @@ const lookups = computed<AutomationLookups>(() => ({
     users: props.users,
     teams: props.teams,
     templates: props.templates,
+    issues: props.issueLookups ?? null,
 }));
 
 const query = new URLSearchParams(page.url.split('?')[1] ?? '');
@@ -110,7 +116,10 @@ const initialForm = (): AutomationRuleForm => {
         return {
             name: props.rule.name,
             description: props.rule.description ?? '',
+            subject_type: props.rule.subject_type ?? 'conversation',
             inbox_uuid: props.rule.inbox_uuid,
+            product_id: props.rule.product_id ?? null,
+            team_id: props.rule.team_id ?? null,
             trigger: props.rule.trigger.value,
             match: props.rule.match,
             is_active: props.rule.is_active,
@@ -125,14 +134,60 @@ const initialForm = (): AutomationRuleForm => {
         };
     }
 
+    const subject: AutomationSubjectType =
+        query.get('subject') === 'issue' ? 'issue' : 'conversation';
+
     return (
         starterRule(starterKey, props.catalog, lookups.value) ??
-        emptyRuleForm(props.catalog)
+        emptyRuleForm(props.catalog, subject)
     );
 };
 
 const form = useForm<AutomationRuleForm>(initialForm());
 const startedFrom = ref<string | null>(starterKey ? 'starter' : null);
+
+/**
+ * Switching the subject drops whatever cannot apply to the other kind of rule and resets the
+ * scope, so the form never submits a conversation check on an issue rule.
+ */
+const setSubject = (subject: AutomationSubjectType) => {
+    if (form.subject_type === subject) {
+        return;
+    }
+
+    const next = switchSubject(
+        { ...form.data(), subject_type: form.subject_type },
+        subject,
+        props.catalog,
+    );
+
+    form.subject_type = next.subject_type;
+    form.trigger = next.trigger;
+    form.inbox_uuid = next.inbox_uuid;
+    form.product_id = next.product_id;
+    form.team_id = next.team_id;
+    form.conditions = next.conditions;
+    form.actions = next.actions;
+};
+
+const isIssueRule = computed(() => form.subject_type === 'issue');
+const actionOptions = computed(() =>
+    actionsFor(props.catalog, form.subject_type),
+);
+
+watch(
+    () => form.trigger,
+    (trigger) => {
+        // Keep the subject honest when a duplicate or starter sets a trigger of the other kind.
+        const owner = props.catalog.triggers.find(
+            (option) => option.value === trigger,
+        )?.subject;
+
+        if (owner && owner !== form.subject_type) {
+            form.subject_type = owner;
+        }
+    },
+);
 
 onMounted(() => {
     if (props.rule || query.get('from') !== 'duplicate') {
@@ -216,7 +271,8 @@ const actionErrors = (i: number): Record<string, string | undefined> => {
     return result;
 };
 
-const addCondition = () => form.conditions.push(emptyCondition(props.catalog));
+const addCondition = () =>
+    form.conditions.push(emptyCondition(props.catalog, form.subject_type));
 const removeCondition = (i: number) => form.conditions.splice(i, 1);
 const addAction = (type: string) =>
     form.actions.push(emptyAction(props.catalog, type));
@@ -405,12 +461,20 @@ const runReason = (run: AutomationRun): string | null => {
                     <TriggerPicker
                         v-model:trigger="form.trigger"
                         v-model:inbox="form.inbox_uuid"
+                        v-model:product="form.product_id"
+                        v-model:team="form.team_id"
+                        :subject="form.subject_type"
                         :catalog="catalog"
                         :inboxes="inboxes"
+                        :lookups="lookups"
                         :errors="{
                             trigger: errors.trigger,
                             inbox_uuid: errors.inbox_uuid,
+                            product_id: errors.product_id,
+                            team_id: errors.team_id,
+                            subject_type: errors.subject_type,
                         }"
+                        @update:subject="setSubject"
                     />
                 </section>
 
@@ -470,6 +534,7 @@ const runReason = (run: AutomationRun): string | null => {
                             :index="i"
                             :catalog="catalog"
                             :lookups="lookups"
+                            :subject="form.subject_type"
                             :conjunction="conjunction"
                             :errors="conditionErrors(i)"
                             @remove="removeCondition(i)"
@@ -479,8 +544,12 @@ const runReason = (run: AutomationRun): string | null => {
                             class="rounded-xl border border-dashed bg-card/50 p-4 text-sm text-muted-foreground"
                         >
                             No conditions means every event runs the actions.
-                            Add one to narrow it down, e.g. “sender ends with
-                            @acme.com”.
+                            Add one to narrow it down, e.g.
+                            {{
+                                isIssueRule
+                                    ? '“priority is urgent”'
+                                    : '“sender ends with @acme.com”'
+                            }}.
                         </p>
                     </div>
                     <InputError class="mt-2" :message="errors.conditions" />
@@ -514,6 +583,7 @@ const runReason = (run: AutomationRun): string | null => {
                             :index="i"
                             :catalog="catalog"
                             :lookups="lookups"
+                            :subject="form.subject_type"
                             :errors="actionErrors(i)"
                             @remove="removeAction(i)"
                         />
@@ -544,7 +614,7 @@ const runReason = (run: AutomationRun): string | null => {
                             class="max-h-80 overflow-y-auto"
                         >
                             <DropdownMenuItem
-                                v-for="option in catalog.actions"
+                                v-for="option in actionOptions"
                                 :key="option.value"
                                 @select="addAction(option.value)"
                                 >{{ option.label }}</DropdownMenuItem
@@ -604,7 +674,10 @@ const runReason = (run: AutomationRun): string | null => {
                     </div>
                     <div class="grid gap-1.5">
                         <Label for="rule-cooldown"
-                            >Per-conversation cooldown</Label
+                            >Per-{{
+                                isIssueRule ? 'issue' : 'conversation'
+                            }}
+                            cooldown</Label
                         >
                         <div class="flex items-center gap-2">
                             <Input
@@ -641,6 +714,7 @@ const runReason = (run: AutomationRun): string | null => {
                     :rule-uuid="rule?.uuid ?? null"
                     :conditions="form.conditions"
                     :match="form.match"
+                    :subject="form.subject_type"
                     :catalog="catalog"
                     :lookups="lookups"
                 />
@@ -734,10 +808,16 @@ const runReason = (run: AutomationRun): string | null => {
                                         </span>
                                         <span
                                             class="block truncate text-xs text-muted-foreground"
-                                            >{{
+                                            ><template v-if="run.issue"
+                                                ><span class="font-mono">{{
+                                                    run.issue.identifier
+                                                }}</span>
+                                                {{ run.issue.title }}</template
+                                            ><template v-else>{{
                                                 run.conversation?.subject ||
                                                 'Conversation'
-                                            }}<template v-if="runReason(run)">
+                                            }}</template
+                                            ><template v-if="runReason(run)">
                                                 · {{ runReason(run) }}</template
                                             ></span
                                         >

@@ -2,6 +2,7 @@
 
 namespace App\Services\Mail\Providers\Imap;
 
+use App\Models\Mail\Message;
 use App\Services\Mail\Providers\Imap\Data\RemoteFolder;
 use App\Services\Mail\Providers\Imap\Data\RemoteFolderStatus;
 use App\Services\Mail\Providers\Imap\Data\RemoteMessage;

@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests\Automations;
 
-use App\Models\Inbox;
+use App\Http\Requests\OrganizationScopedRequest;
+use App\Models\Mail\Inbox;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 

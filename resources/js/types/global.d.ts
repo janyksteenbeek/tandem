@@ -2,10 +2,8 @@ import type { Directive } from 'vue';
 import type { Auth, Sso } from '@/types/auth';
 import type { Branding } from '@/types/branding';
 import type { ComposePrefill, MailNav } from '@/types/mail';
-import type {
-    Organization,
-    PendingInvitation,
-} from '@/types/organizations';
+import type { Organization, PendingInvitation } from '@/types/organizations';
+import type { CreateIssuePrefill, ProjectsNav } from '@/types/projects';
 import type { CreatedChannel } from '@/types/settings';
 import type { FlashToast, ReverbConnection } from '@/types/ui';
 
@@ -33,6 +31,7 @@ declare module '@inertiajs/core' {
             currentOrganization: Organization | null;
             organizations: Organization[];
             mailNav: MailNav | null;
+            projectsNav: ProjectsNav | null;
             unreadNotifications: number;
             canManageOrganization: boolean;
             pendingInvitations: PendingInvitation[];
@@ -42,6 +41,7 @@ declare module '@inertiajs/core' {
             toast?: FlashToast;
             compose?: ComposePrefill;
             channel?: CreatedChannel;
+            createIssue?: CreateIssuePrefill;
         };
     }
 }

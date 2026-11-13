@@ -1,15 +1,15 @@
 <?php
 
-use App\Enums\InboxRole;
+use App\Enums\Mail\InboxRole;
 use App\Events\Mail\MessageIngested;
 use App\Listeners\Mail\BroadcastIngestedMessage;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\MailAccount;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
 use App\Models\Organization;
 use App\Models\User;
-use App\Notifications\Conversations\ConversationAssignedNotification;
-use App\Notifications\Conversations\NewReplyNotification;
+use App\Notifications\Mail\ConversationAssignedNotification;
+use App\Notifications\Mail\NewReplyNotification;
 use App\Notifications\Mail\NewSharedMailNotification;
 use App\Services\Mail\Ingestion\MessageIngestor;
 use App\Services\Mail\Ingestion\MimeMessageParser;

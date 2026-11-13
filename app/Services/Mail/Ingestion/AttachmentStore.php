@@ -2,8 +2,8 @@
 
 namespace App\Services\Mail\Ingestion;
 
-use App\Models\Attachment;
-use App\Models\Message;
+use App\Models\Mail\Attachment;
+use App\Models\Mail\Message;
 use App\Services\Mail\Data\IncomingAttachment;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;

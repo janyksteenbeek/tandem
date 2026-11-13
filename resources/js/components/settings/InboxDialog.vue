@@ -2,7 +2,7 @@
 import { useForm } from '@inertiajs/vue3';
 import { Loader2 } from '@lucide/vue';
 import { watch } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
 import InboxFields from '@/components/settings/InboxFields.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

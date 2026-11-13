@@ -86,6 +86,31 @@ const attach = () => {
 
 watch(srcdoc, () => setTimeout(attach, 30));
 onBeforeUnmount(() => observer?.disconnect());
+
+/**
+ * HTML of the text the reader selected inside the message, or null when nothing is selected.
+ * The frame is same-origin so its selection is readable; nothing is ever written into it.
+ */
+const selectionHtml = (): string | null => {
+    const win = frame.value?.contentWindow;
+    const selection = win?.getSelection();
+
+    if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+        return null;
+    }
+
+    const container = win!.document.createElement('div');
+
+    for (let i = 0; i < selection.rangeCount; i++) {
+        container.appendChild(selection.getRangeAt(i).cloneContents());
+    }
+
+    const html = container.innerHTML.trim();
+
+    return html.length > 0 ? html : null;
+};
+
+defineExpose({ selectionHtml });
 </script>
 
 <template>

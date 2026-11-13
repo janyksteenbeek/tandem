@@ -1,13 +1,16 @@
 <?php
 
-use App\Enums\AutomationTrigger;
+use App\Enums\Automations\AutomationActionType;
+use App\Enums\Automations\AutomationConditionField;
+use App\Enums\Automations\AutomationConditionOperator;
+use App\Enums\Automations\AutomationTrigger;
 use App\Enums\OrganizationRole;
-use App\Models\AutomationRule;
-use App\Models\AutomationRun;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\Message;
-use App\Models\MessageTemplate;
+use App\Models\Automations\AutomationRule;
+use App\Models\Automations\AutomationRun;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\Message;
+use App\Models\Mail\MessageTemplate;
 use App\Models\Organization;
 use App\Models\Tag;
 use App\Models\Team;
@@ -75,9 +78,10 @@ test('admins can view the automation pages with catalogs and related data', func
                 ->where('trigger.value', 'conversation_received')
                 ->etc())
             ->has('catalog.triggers', count(AutomationTrigger::cases()))
-            ->has('catalog.fields', 10)
-            ->has('catalog.operators', 13)
-            ->has('catalog.actions', 11)
+            ->has('catalog.subjects', 2)
+            ->has('catalog.fields', count(AutomationConditionField::cases()))
+            ->has('catalog.operators', count(AutomationConditionOperator::cases()))
+            ->has('catalog.actions', count(AutomationActionType::cases()))
             ->has('catalog.variables', 12));
 
     $this->actingAs($this->admin)

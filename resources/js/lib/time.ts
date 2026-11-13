@@ -97,3 +97,14 @@ export function bytes(size: number): string {
 
     return `${(size / 1024 / 1024).toFixed(1)} MB`;
 }
+
+/** Whole days from now until `iso`, never negative; 0 means it ends today or has ended. */
+export function daysUntil(iso: string | null | undefined): number {
+    if (!iso) {
+        return 0;
+    }
+
+    const diff = new Date(iso).getTime() - Date.now();
+
+    return Math.max(0, Math.ceil(diff / 86_400_000));
+}

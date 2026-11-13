@@ -2,6 +2,7 @@
 
 namespace App\Services\Mail\Ingestion;
 
+use App\Models\Mail\Message;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 use Illuminate\Support\Str;

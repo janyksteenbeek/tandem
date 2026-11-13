@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Mail;
 
 use App\Http\Controllers\Controller;
-use App\Models\Inbox;
-use App\Models\SavedView;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\SavedView;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

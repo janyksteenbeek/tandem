@@ -4,6 +4,7 @@ import {
     ArrowRightLeft,
     Bot,
     CheckCircle2,
+    CircleDot,
     Clock,
     Flag,
     RotateCcw,
@@ -109,6 +110,19 @@ const describe = computed((): { icon: unknown; text: string } => {
             return {
                 icon: Zap,
                 text: `Delivery failed: ${p.value.error ?? 'unknown error'}`,
+            };
+        case 'issue_linked':
+            return {
+                icon: CircleDot,
+                text:
+                    p.value.kind === 'created_from'
+                        ? `${actor.value} created issue ${p.value.issue_identifier} from this conversation`
+                        : `${actor.value} linked issue ${p.value.issue_identifier}`,
+            };
+        case 'issue_unlinked':
+            return {
+                icon: CircleDot,
+                text: `${actor.value} unlinked issue ${p.value.issue_identifier}`,
             };
         default:
             return { icon: Zap, text: props.event.type.replace(/_/g, ' ') };

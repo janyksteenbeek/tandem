@@ -7,9 +7,13 @@
 ARG PHP_IMAGE=dunglas/frankenphp:1-php8.4-bookworm
 ARG NODE_IMAGE=node:22-bookworm-slim
 ARG COMPOSER_IMAGE=composer:2
+# A single static FFmpeg binary for recording exports (mixed audio, combined video). It only
+# ever runs on the queue after a call; live calls and recording never use it.
+ARG FFMPEG_IMAGE=mwader/static-ffmpeg:7.1
 
 FROM ${NODE_IMAGE} AS node
 FROM ${COMPOSER_IMAGE} AS composer
+FROM ${FFMPEG_IMAGE} AS ffmpeg
 
 # ---------------------------------------------------------------------------
 # Base: FrankenPHP + the PHP extensions the app needs + Node (Vite at build
@@ -22,6 +26,8 @@ WORKDIR /app
 RUN install-php-extensions bcmath gmp intl opcache pcntl pdo_mysql redis sockets zip
 
 COPY docker/php.ini "$PHP_INI_DIR/conf.d/zz-tandem.ini"
+
+COPY --from=ffmpeg /ffmpeg /usr/local/bin/ffmpeg
 
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules

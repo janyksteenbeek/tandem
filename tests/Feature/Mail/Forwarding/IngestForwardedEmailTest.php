@@ -1,11 +1,11 @@
 <?php
 
-use App\Enums\MailAccountStatus;
-use App\Enums\MessageDirection;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\MessageDirection;
 use App\Jobs\Mail\IngestForwardedEmail;
-use App\Models\Conversation;
-use App\Models\MailAccount;
-use App\Models\Message;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
 use App\Models\WebhookReceipt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;

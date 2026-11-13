@@ -2,8 +2,8 @@
 
 namespace App\Events\Mail;
 
-use App\Models\Conversation;
-use App\Models\Message;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Message;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 

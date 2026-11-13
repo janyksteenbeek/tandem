@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Check, ChevronsUpDown, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import ParamInput from '@/components/automations/ParamInput.vue';
 import TemplatePicker from '@/components/automations/TemplatePicker.vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,21 +22,115 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { defaultParams, formatMinutes, variableToken } from '@/lib/automations';
+import {
+    actionFor,
+    actionsFor,
+    defaultParams,
+    formatMinutes,
+    variableToken,
+} from '@/lib/automations';
 import { chipClass } from '@/lib/mail';
 import type {
     AutomationAction,
     AutomationCatalog,
     AutomationLookups,
     AutomationParamValue,
+    AutomationSubjectType,
+    CatalogActionParam,
 } from '@/types/automations';
 
-const props = defineProps<{
-    index: number;
-    catalog: AutomationCatalog;
-    lookups: AutomationLookups;
-    errors?: Record<string, string | undefined>;
-}>();
+const props = withDefaults(
+    defineProps<{
+        index: number;
+        catalog: AutomationCatalog;
+        lookups: AutomationLookups;
+        subject?: AutomationSubjectType;
+        errors?: Record<string, string | undefined>;
+    }>(),
+    { subject: 'conversation', errors: undefined },
+);
+
+/**
+ * Actions with a hand-written editor below. Everything else (every issue action, the mail
+ * to issue bridge) renders its parameters straight from the catalog.
+ */
+const HAND_WRITTEN = new Set([
+    'reply_with_template',
+    'assign_user',
+    'add_follower',
+    'assign_team',
+    'move_to_inbox',
+    'add_tag',
+    'remove_tag',
+    'set_priority',
+    'set_status',
+    'notify_users',
+    'add_comment',
+]);
+
+const NEW_LABEL = '__new__';
+
+const actionOptions = computed(() => actionsFor(props.catalog, props.subject));
+
+const catalogParams = computed<CatalogActionParam[]>(
+    () => actionFor(props.catalog, action.value.type)?.params ?? [],
+);
+
+/**
+ * Parameters that only make sense given a sibling's value.
+ */
+const paramVisible = (param: CatalogActionParam): boolean => {
+    const params = action.value.params;
+
+    if (action.value.type === 'link_issue' && param.name === 'identifier') {
+        return (params.mode ?? 'identifier') === 'identifier';
+    }
+
+    if (param.name === 'label_name') {
+        return false;
+    }
+
+    return true;
+};
+
+const visibleParams = computed(() => catalogParams.value.filter(paramVisible));
+
+const hasLabelName = computed(() =>
+    catalogParams.value.some((param) => param.name === 'label_name'),
+);
+
+/**
+ * Label pick-or-type: the select carries a "New label…" entry that reveals a name field.
+ */
+const labelMode = computed({
+    get: () => (str('label_id') !== '' ? str('label_id') : NEW_LABEL),
+    set: (value: string) => {
+        action.value = {
+            ...action.value,
+            params: {
+                ...action.value.params,
+                label_id: value === NEW_LABEL ? null : Number(value),
+                label_name: value === NEW_LABEL ? str('label_name') : '',
+            },
+        };
+    },
+});
+
+const paramLabel = (param: CatalogActionParam): string | undefined => {
+    if (param.name === 'user_id') {
+        return action.value.type === 'set_issue_owner'
+            ? 'Owner'
+            : action.value.type === 'add_issue_follower'
+              ? 'Follower'
+              : 'Assignee';
+    }
+
+    if (param.name === 'team_id' && action.value.type === 'assign_workstream') {
+        return 'Team';
+    }
+
+    return undefined;
+};
 
 const action = defineModel<AutomationAction>({ required: true });
 const emit = defineEmits<{ remove: [] }>();
@@ -164,7 +259,7 @@ const error = (key: string) => props.errors?.[key];
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem
-                            v-for="option in catalog.actions"
+                            v-for="option in actionOptions"
                             :key="option.value"
                             :value="option.value"
                             >{{ option.label }}</SelectItem
@@ -642,6 +737,102 @@ const error = (key: string) => props.errors?.[key];
                 </p>
                 <InputError :message="error('body')" />
             </div>
+
+            <!-- Catalog-driven (issue actions, mail → issue bridge) -->
+            <template v-else-if="!HAND_WRITTEN.has(action.type)">
+                <p
+                    v-if="catalogParams.length === 0"
+                    class="text-xs text-muted-foreground"
+                >
+                    Nothing to configure.
+                </p>
+
+                <div
+                    v-else
+                    :class="
+                        visibleParams.length > 1
+                            ? 'grid gap-3 sm:grid-cols-2'
+                            : 'grid gap-3 sm:max-w-sm'
+                    "
+                >
+                    <template v-for="param in visibleParams" :key="param.name">
+                        <!-- Label: pick one or type a new name -->
+                        <div
+                            v-if="param.name === 'label_id' && hasLabelName"
+                            class="grid gap-1.5"
+                        >
+                            <Label :for="`action-${index}-label`">Label</Label>
+                            <Select v-model="labelMode">
+                                <SelectTrigger
+                                    :id="`action-${index}-label`"
+                                    class="w-full"
+                                    :aria-invalid="
+                                        error('label_id') ? true : undefined
+                                    "
+                                    ><SelectValue
+                                /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem :value="NEW_LABEL"
+                                        >New label…</SelectItem
+                                    >
+                                    <SelectItem
+                                        v-for="item in lookups.issues?.labels ??
+                                        []"
+                                        :key="item.id"
+                                        :value="String(item.id)"
+                                    >
+                                        <span class="flex items-center gap-2">
+                                            <span
+                                                class="inline-block size-2.5 rounded-full bg-(--chip)"
+                                                :class="chipClass(item.color)"
+                                            />
+                                            {{ item.name }}
+                                        </span>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Input
+                                v-if="labelMode === NEW_LABEL"
+                                :model-value="str('label_name')"
+                                maxlength="60"
+                                placeholder="e.g. Needs design"
+                                :aria-invalid="
+                                    error('label_name') || error('label_id')
+                                        ? true
+                                        : undefined
+                                "
+                                @update:model-value="
+                                    (v) => setParam('label_name', String(v))
+                                "
+                            />
+                            <InputError
+                                :message="
+                                    error('label_id') ?? error('label_name')
+                                "
+                            />
+                        </div>
+
+                        <ParamInput
+                            v-else
+                            :id="`action-${index}-${param.name}`"
+                            :model-value="action.params[param.name] ?? null"
+                            :param="param"
+                            :action-type="action.type"
+                            :params="action.params"
+                            :catalog="catalog"
+                            :lookups="lookups"
+                            :label="paramLabel(param)"
+                            :error="error(param.name)"
+                            :class="
+                                param.type === 'text' || param.type === 'teams'
+                                    ? 'sm:col-span-2'
+                                    : ''
+                            "
+                            @update:model-value="(v) => setParam(param.name, v)"
+                        />
+                    </template>
+                </div>
+            </template>
         </div>
     </div>
 </template>

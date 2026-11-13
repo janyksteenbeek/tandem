@@ -2,16 +2,16 @@
 
 namespace App\Services\Automations;
 
-use App\Enums\DraftKind;
-use App\Models\AutomationRule;
-use App\Models\AutoresponderSend;
-use App\Models\Conversation;
-use App\Models\Draft;
-use App\Models\Inbox;
-use App\Models\MailAccount;
-use App\Models\Message;
-use App\Models\MessageTemplate;
-use App\Models\SenderIdentity;
+use App\Enums\Mail\DraftKind;
+use App\Models\Automations\AutomationRule;
+use App\Models\Mail\AutoresponderSend;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Draft;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\Message;
+use App\Models\Mail\MessageTemplate;
+use App\Models\Mail\SenderIdentity;
 use App\Models\User;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Ingestion\HtmlSanitizer;

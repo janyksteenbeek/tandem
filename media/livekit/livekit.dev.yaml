@@ -1,0 +1,31 @@
+# Local development media server for Tandem Calls.
+#   media/bin/tandem-media --config media/livekit/livekit.dev.yaml   (see docs/calls.md)
+# Ports are offset from LiveKit's defaults so this never collides with another local instance.
+port: 7980
+bind_addresses:
+    - 127.0.0.1
+rtc:
+    tcp_port: 7981
+    udp_port: 7982
+    use_external_ip: false
+    node_ip: 127.0.0.1
+keys:
+    # Matches LIVEKIT_API_KEY / LIVEKIT_API_SECRET in .env. Development only.
+    tandemdev: tandem-local-development-secret-0123456789
+room:
+    auto_create: true
+    empty_timeout: 120
+    departure_timeout: 120
+    # Opus plus VP8/VP9 only: every track then fits a WebM file untouched, which is what lets
+    # the recorder store media without decoding or re-encoding anything.
+    enabled_codecs:
+        - mime: audio/opus
+        - mime: audio/red
+        - mime: video/vp8
+        - mime: video/vp9
+        - mime: video/rtx
+webhook:
+    api_key: tandemdev
+    urls:
+        - http://127.0.0.1:8000/webhooks/calls/media
+log_level: info

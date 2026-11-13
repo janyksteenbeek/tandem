@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\SyncRunType;
+use App\Enums\Mail\SyncRunType;
 use App\Jobs\Mail\SyncMailAccount;
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Models\WebhookReceipt;
 use Illuminate\Support\Facades\Queue;
 

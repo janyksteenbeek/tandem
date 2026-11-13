@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\MailAccountStatus;
-use App\Enums\SyncRunType;
-use App\Models\MailAccount;
-use App\Models\SyncRun;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\SyncRunType;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\SyncRun;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Data\OutgoingMessage;
 use App\Services\Mail\Exceptions\UnsupportedOperationException;

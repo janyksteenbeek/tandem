@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers\Mail;
 
-use App\Enums\ConversationPriority;
-use App\Enums\ConversationStatus;
-use App\Enums\InboxType;
-use App\Enums\MailboxView;
+use App\Enums\Mail\ConversationPriority;
+use App\Enums\Mail\ConversationStatus;
+use App\Enums\Mail\InboxType;
+use App\Enums\Mail\MailboxView;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ConversationListItemResource;
-use App\Http\Resources\ConversationResource;
-use App\Http\Resources\InboxResource;
+use App\Http\Resources\Mail\ConversationListItemResource;
+use App\Http\Resources\Mail\ConversationResource;
+use App\Http\Resources\Mail\InboxResource;
 use App\Http\Resources\TagResource;
 use App\Http\Resources\UserSummaryResource;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\SavedView;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\SavedView;
 use App\Models\Tag;
 use App\Models\User;
-use App\Services\Conversations\ConversationQuery;
+use App\Services\Mail\Conversations\ConversationQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;

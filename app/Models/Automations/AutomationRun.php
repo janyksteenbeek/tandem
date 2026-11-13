@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Models\Automations;
+
+use App\Models\Mail\Conversation;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+/**
+ * @property int $id
+ * @property int $automation_rule_id
+ * @property int|null $conversation_id
+ * @property string|null $subject_type
+ * @property int|null $subject_id
+ * @property string $trigger
+ * @property string $status
+ * @property array<string, mixed>|null $details
+ * @property CarbonInterface $created_at
+ * @property-read AutomationRule $rule
+ * @property-read Conversation|null $conversation
+ */
+#[Fillable(['automation_rule_id', 'conversation_id', 'subject_type', 'subject_id', 'trigger', 'status', 'details', 'created_at'])]
+class AutomationRun extends Model
+{
+    public $timestamps = false;
+
+    protected static function booted(): void
+    {
+        static::creating(fn (AutomationRun $run) => $run->created_at ??= now());
+    }
+
+    /** @return BelongsTo<AutomationRule, $this> */
+    public function rule(): BelongsTo
+    {
+        return $this->belongsTo(AutomationRule::class, 'automation_rule_id');
+    }
+
+    /** @return BelongsTo<Conversation, $this> */
+    public function conversation(): BelongsTo
+    {
+        return $this->belongsTo(Conversation::class);
+    }
+
+    /** @return MorphTo<Model, $this> */
+    public function subject(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    protected function casts(): array
+    {
+        return ['details' => 'array', 'created_at' => 'datetime'];
+    }
+}

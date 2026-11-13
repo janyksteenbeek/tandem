@@ -1,17 +1,17 @@
 <?php
 
-use App\Enums\AutomationTrigger;
-use App\Enums\ConversationStatus;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\ConversationStatus;
 use App\Enums\OrganizationRole;
-use App\Events\Conversations\ConversationAssigned;
-use App\Events\Conversations\ConversationStatusChanged;
-use App\Events\Conversations\ConversationTagged;
+use App\Events\Mail\ConversationAssigned;
+use App\Events\Mail\ConversationStatusChanged;
+use App\Events\Mail\ConversationTagged;
 use App\Events\Mail\MessageIngested;
-use App\Models\AutomationRule;
-use App\Models\AutomationRun;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\Message;
+use App\Models\Automations\AutomationRule;
+use App\Models\Automations\AutomationRun;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\Message;
 use App\Models\Organization;
 use App\Models\Tag;
 use App\Models\User;

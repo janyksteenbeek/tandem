@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Resources\Mail;
+
+use App\Http\Resources\UserSummaryResource;
+use App\Models\Mail\Comment;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * @mixin Comment
+ */
+class CommentResource extends JsonResource
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'uuid' => $this->uuid,
+            'body' => $this->body,
+            'mentions' => $this->mentions ?? [],
+            'user' => UserSummaryResource::make($this->user)->resolve(),
+            'created_at' => $this->created_at?->toISOString(),
+            'edited_at' => $this->edited_at?->toISOString(),
+        ];
+    }
+}

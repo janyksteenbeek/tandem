@@ -73,7 +73,9 @@ test('generating a Forward channel shows the address and set-up steps', async ({
 
     await expect(dialog).toContainText('Your address is ready');
     await expect(dialog).toContainText('@forward.tandem.test');
-    await expect(dialog).toContainText('Copy the address above.');
+    await expect(dialog).toContainText(
+        'forward incoming mail to the address above',
+    );
     await page.waitForTimeout(400);
     await page.screenshot({
         path: 'tests/e2e/screenshots/settings-forward-ready.png',

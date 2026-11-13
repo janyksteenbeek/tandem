@@ -1,115 +1,66 @@
-import { onBeforeUnmount, onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import type { Ref } from 'vue';
+import { getKeyboardRegistry, PRIORITY } from '@/lib/keyboard';
+import type { Shortcut } from '@/lib/keyboard';
 
-export type Shortcut = {
-    keys: string;
-    description: string;
-    handler: (event: KeyboardEvent) => void;
-    allowInInput?: boolean;
-};
+export type { Shortcut };
 
-const MODIFIER_PATTERN = /^(mod|ctrl|meta|alt|shift)\+/i;
+type Options = { scope?: string; priority?: number; blocking?: boolean };
 
-function isTypingTarget(target: EventTarget | null): boolean {
-    if (!(target instanceof HTMLElement)) {
-        return false;
-    }
+/**
+ * Registers shortcuts for the lifetime of a component. Sequences like "g i" are written with a
+ * space. Higher-priority layers (dialogs, editors) win; see lib/keyboard.ts.
+ */
+export function useKeyboard(
+    shortcuts: () => Shortcut[],
+    options: Options = {},
+): void {
+    let release: (() => void) | undefined;
 
-    const tag = target.tagName.toLowerCase();
+    onMounted(() => {
+        release = getKeyboardRegistry().register(
+            options.scope ?? 'page',
+            options.priority ?? PRIORITY.page,
+            options.blocking ?? false,
+            shortcuts,
+        );
+    });
 
-    return (
-        tag === 'input' ||
-        tag === 'textarea' ||
-        tag === 'select' ||
-        target.isContentEditable
-    );
-}
-
-function matches(combo: string, event: KeyboardEvent): boolean {
-    const parts = combo.toLowerCase().split('+');
-    const key = parts[parts.length - 1];
-    const wantsMod = parts.includes('mod');
-    const wantsShift = parts.includes('shift');
-    const wantsAlt = parts.includes('alt');
-
-    const modPressed = navigator.platform.toUpperCase().includes('MAC')
-        ? event.metaKey
-        : event.ctrlKey;
-
-    if (wantsMod !== modPressed) {
-        return false;
-    }
-
-    if (wantsShift !== event.shiftKey) {
-        return false;
-    }
-
-    if (wantsAlt !== event.altKey) {
-        return false;
-    }
-
-    if (!wantsMod && (event.metaKey || event.ctrlKey)) {
-        return false;
-    }
-
-    return event.key.toLowerCase() === key;
+    onBeforeUnmount(() => release?.());
 }
 
 /**
- * Registers single-key and chorded shortcuts for the lifetime of a component.
- * Sequences like "g i" are expressed as `keys: 'g i'` and resolved within 800ms.
+ * A blocking layer that is only active while `active` is true: rich-text editors on focus,
+ * dialogs while open. Non-global single-key shortcuts below it stay quiet.
  */
-export function useKeyboard(shortcuts: () => Shortcut[]): void {
-    let pending: string | null = null;
-    let pendingTimer: ReturnType<typeof setTimeout> | null = null;
+export function useShortcutScope(
+    scope: string,
+    active: Ref<boolean>,
+    priority: number = PRIORITY.dialog,
+    shortcuts: () => Shortcut[] = () => [],
+): void {
+    let release: (() => void) | undefined;
+    const mounted = ref(false);
 
-    const handler = (event: KeyboardEvent): void => {
-        const typing = isTypingTarget(event.target);
+    const sync = () => {
+        release?.();
+        release = undefined;
 
-        for (const shortcut of shortcuts()) {
-            if (
-                typing &&
-                !shortcut.allowInInput &&
-                !MODIFIER_PATTERN.test(shortcut.keys)
-            ) {
-                continue;
-            }
-
-            if (shortcut.keys.includes(' ')) {
-                const [first, second] = shortcut.keys.split(' ');
-
-                if (pending === first && matches(second, event)) {
-                    pending = null;
-                    event.preventDefault();
-                    shortcut.handler(event);
-
-                    return;
-                }
-
-                if (!pending && matches(first, event) && !typing) {
-                    pending = first;
-
-                    if (pendingTimer) {
-                        clearTimeout(pendingTimer);
-                    }
-
-                    pendingTimer = setTimeout(() => (pending = null), 800);
-                    event.preventDefault();
-
-                    return;
-                }
-
-                continue;
-            }
-
-            if (matches(shortcut.keys, event)) {
-                event.preventDefault();
-                shortcut.handler(event);
-
-                return;
-            }
+        if (mounted.value && active.value) {
+            release = getKeyboardRegistry().register(
+                scope,
+                priority,
+                true,
+                shortcuts,
+            );
         }
     };
 
-    onMounted(() => window.addEventListener('keydown', handler));
-    onBeforeUnmount(() => window.removeEventListener('keydown', handler));
+    onMounted(() => {
+        mounted.value = true;
+        sync();
+    });
+
+    watch(active, sync);
+    onBeforeUnmount(() => release?.());
 }

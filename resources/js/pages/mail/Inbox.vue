@@ -18,8 +18,8 @@ import ComposeDialog from '@/components/mail/ComposeDialog.vue';
 import MailSidebar from '@/components/mail/MailSidebar.vue';
 import ConversationListItem from '@/components/mail/ConversationListItem.vue';
 import ConversationPane from '@/components/mail/ConversationPane.vue';
-import EmptyState from '@/components/mail/EmptyState.vue';
-import ListSkeleton from '@/components/mail/ListSkeleton.vue';
+import EmptyState from '@/components/shared/EmptyState.vue';
+import ListSkeleton from '@/components/shared/ListSkeleton.vue';
 import ListToolbar from '@/components/mail/ListToolbar.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,7 +27,7 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import { useConversationActions } from '@/composables/useConversationActions';
+import { useConversationActions } from '@/composables/mail/useConversationActions';
 import { useShellColumn } from '@/composables/useAppShell';
 import { useKeyboard } from '@/composables/useKeyboard';
 import { api, reportError } from '@/lib/http';
@@ -468,6 +468,12 @@ useKeyboard(() => [
     },
     { keys: 'g t', description: 'Sent', handler: () => goView('sent') },
     { keys: 'g d', description: 'Drafts', handler: () => goView('drafts') },
+    {
+        // Before "c": shortcuts match in order, and "g c" must win over Compose after a "g".
+        keys: 'g c',
+        description: 'Calls',
+        handler: () => slug.value && router.visit(`/${slug.value}/calls`),
+    },
     { keys: 'c', description: 'Compose', handler: () => openCompose() },
     {
         keys: 'escape',

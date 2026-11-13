@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Services\Mail\Data\Address;
 use App\Services\Mail\Data\OutgoingMessage;
 use App\Services\Mail\Providers\Imap\ImapClientFactory;

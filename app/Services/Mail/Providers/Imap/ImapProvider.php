@@ -2,13 +2,14 @@
 
 namespace App\Services\Mail\Providers\Imap;
 
-use App\Enums\FolderType;
-use App\Enums\MailProvider as ProviderType;
-use App\Models\Conversation;
-use App\Models\MailAccount;
-use App\Models\MailFolder;
-use App\Models\Message;
-use App\Models\SyncRun;
+use App\Enums\Mail\FolderType;
+use App\Enums\Mail\MailProvider as ProviderType;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\MailFolder;
+use App\Models\Mail\Message;
+use App\Models\Mail\SyncRun;
 use App\Services\Mail\Data\ConnectionTestResult;
 use App\Services\Mail\Data\FolderInfo;
 use App\Services\Mail\Data\OutgoingMessage;

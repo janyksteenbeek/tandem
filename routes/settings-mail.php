@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\Settings\InboxSettingsController;
-use App\Http\Controllers\Settings\MailAccountController;
-use App\Http\Controllers\Settings\OrganizationIntegrationController;
-use App\Http\Controllers\Settings\SenderIdentityController;
+use App\Http\Controllers\Mail\Settings\InboxSettingsController;
+use App\Http\Controllers\Mail\Settings\MailAccountController;
+use App\Http\Controllers\Mail\Settings\OrganizationIntegrationController;
+use App\Http\Controllers\Mail\Settings\SenderIdentityController;
 use App\Http\Controllers\Settings\TeamSettingsController;
 use App\Http\Middleware\EnsureOrganizationMembership;
 use Illuminate\Support\Facades\Route;

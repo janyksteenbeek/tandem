@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\MailAccountStatus;
+use App\Enums\Mail\MailAccountStatus;
 use App\Jobs\Mail\IngestForwardedEmail;
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Models\WebhookReceipt;
 use App\Services\Mail\Providers\Forwarding\WebhookSignature;
 use Illuminate\Contracts\Filesystem\Filesystem;

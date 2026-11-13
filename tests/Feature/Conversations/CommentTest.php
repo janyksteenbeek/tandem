@@ -1,14 +1,14 @@
 <?php
 
-use App\Enums\InboxRole;
+use App\Enums\Mail\InboxRole;
 use App\Enums\OrganizationRole;
 use App\Jobs\Mail\SendOutgoingMessage;
-use App\Models\Conversation;
-use App\Models\Inbox;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
 use App\Models\Organization;
 use App\Models\Team;
 use App\Models\User;
-use App\Notifications\Conversations\MentionedInCommentNotification;
+use App\Notifications\Mail\MentionedInCommentNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 

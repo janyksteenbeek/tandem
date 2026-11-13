@@ -9,8 +9,8 @@ import {
     Users,
 } from '@lucide/vue';
 import { computed } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import ProviderBadge from '@/components/settings/ProviderBadge.vue';
 import StatusPill from '@/components/settings/StatusPill.vue';
 import { Button } from '@/components/ui/button';

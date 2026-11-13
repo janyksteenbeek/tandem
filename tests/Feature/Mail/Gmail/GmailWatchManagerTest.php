@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\MailAccountStatus;
-use App\Models\MailAccount;
+use App\Enums\Mail\MailAccountStatus;
+use App\Models\Mail\MailAccount;
 use App\Services\Mail\Providers\Gmail\GmailWatchManager;
 use Tests\Support\FakeGmailApi;
 

@@ -6,17 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Automations\ReorderAutomationRulesRequest;
 use App\Http\Requests\Automations\SaveAutomationRuleRequest;
 use App\Http\Requests\Automations\TestAutomationRuleRequest;
-use App\Models\AutomationRule;
-use App\Models\AutomationRun;
-use App\Models\Conversation;
-use App\Models\Inbox;
-use App\Models\MessageTemplate;
+use App\Models\Automations\AutomationRule;
+use App\Models\Automations\AutomationRun;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
+use App\Models\Mail\MessageTemplate;
 use App\Models\Organization;
+use App\Models\Projects\Issue;
 use App\Models\Tag;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Automations\AutomationCatalog;
 use App\Services\Automations\AutomationEngine;
+use App\Services\Projects\IssueLookups;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +33,7 @@ class AutomationRuleController extends Controller
         $organization = $currentOrganization;
 
         $rules = $organization->automationRules()
-            ->with('inbox')
+            ->with(['inbox', 'product', 'team'])
             ->orderBy('position')
             ->orderBy('id')
             ->get()
@@ -173,13 +175,31 @@ class AutomationRuleController extends Controller
         $organization = $currentOrganization;
         $this->ensureBelongs($rule, $organization);
 
+        $conditions = $request->has('conditions') ? $request->validated('conditions') : ($rule->conditions ?? []);
+        $match = $request->validated('match') ?? $rule->match;
+
+        if ($request->filled('issue_identifier')) {
+            $issue = Issue::query()
+                ->where('organization_id', $organization->id)
+                ->where('identifier', strtoupper((string) $request->validated('issue_identifier')))
+                ->firstOrFail();
+
+            $result = $engine->dryRun($conditions, $match, $issue);
+
+            return response()->json([
+                'rule' => ['uuid' => $rule->uuid, 'name' => $rule->name],
+                'issue' => ['uuid' => $issue->uuid, 'identifier' => $issue->identifier, 'title' => $issue->title],
+                'matched' => $result['matched'],
+                'match' => $result['match'],
+                'conditions' => $result['conditions'],
+                'would_run' => $result['matched'] && $rule->is_active && $engine->rulesFor($rule->trigger, $issue)->contains('id', $rule->id),
+            ]);
+        }
+
         $conversation = Conversation::query()
             ->where('organization_id', $organization->id)
             ->where('uuid', $request->validated('conversation_uuid'))
             ->firstOrFail();
-
-        $conditions = $request->has('conditions') ? $request->validated('conditions') : ($rule->conditions ?? []);
-        $match = $request->validated('match') ?? $rule->match;
 
         $result = $engine->dryRun($conditions, $match, $conversation);
 
@@ -224,6 +244,7 @@ class AutomationRuleController extends Controller
                 'inbox' => $template->inbox ? ['uuid' => $template->inbox->uuid, 'name' => $template->inbox->name] : null,
             ])->values(),
             'catalog' => AutomationCatalog::toArray(),
+            'issueLookups' => app(IssueLookups::class)->for(request()->user(), $organization),
         ];
     }
 
@@ -237,6 +258,9 @@ class AutomationRuleController extends Controller
             'name' => $rule->name,
             'description' => $rule->description,
             'trigger' => ['value' => $rule->trigger->value, 'label' => $rule->trigger->label()],
+            'subject_type' => $rule->subject_type->value,
+            'product' => $rule->product ? ['id' => $rule->product->id, 'name' => $rule->product->name, 'key' => $rule->product->key] : null,
+            'team' => $rule->team ? ['id' => $rule->team->id, 'name' => $rule->team->name, 'color' => $rule->team->color] : null,
             'match' => $rule->match,
             'is_active' => $rule->is_active,
             'position' => $rule->position,
@@ -258,6 +282,8 @@ class AutomationRuleController extends Controller
     {
         return $this->ruleSummary($rule) + [
             'inbox_uuid' => $rule->inbox?->uuid,
+            'product_id' => $rule->product_id,
+            'team_id' => $rule->team_id,
             'conditions' => $rule->conditions ?? [],
             'actions' => $rule->actions ?? [],
         ];
@@ -274,6 +300,7 @@ class AutomationRuleController extends Controller
             'status' => $run->status,
             'details' => $run->details,
             'conversation' => $run->conversation ? ['uuid' => $run->conversation->uuid, 'subject' => $run->conversation->subject] : null,
+            'issue' => $run->subject instanceof Issue ? ['uuid' => $run->subject->uuid, 'identifier' => $run->subject->identifier, 'title' => $run->subject->title] : null,
             'created_at' => $run->created_at->toIso8601String(),
         ];
     }

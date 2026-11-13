@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Mail;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CommentResource;
-use App\Models\Comment;
-use App\Models\Conversation;
-use App\Services\Conversations\CommentService;
+use App\Http\Resources\Mail\CommentResource;
+use App\Models\Mail\Comment;
+use App\Models\Mail\Conversation;
+use App\Services\Mail\Conversations\CommentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

@@ -2,14 +2,14 @@
 
 namespace App\Listeners\Automations;
 
-use App\Enums\AutomationTrigger;
-use App\Enums\ConversationStatus;
-use App\Events\Conversations\ConversationAssigned;
-use App\Events\Conversations\ConversationMoved;
-use App\Events\Conversations\ConversationStatusChanged;
-use App\Events\Conversations\ConversationTagged;
+use App\Enums\Automations\AutomationTrigger;
+use App\Enums\Mail\ConversationStatus;
+use App\Events\Mail\ConversationAssigned;
+use App\Events\Mail\ConversationMoved;
+use App\Events\Mail\ConversationStatusChanged;
+use App\Events\Mail\ConversationTagged;
 use App\Events\Mail\MessageIngested;
-use App\Models\Conversation;
+use App\Models\Mail\Conversation;
 use App\Services\Automations\AutomationEngine;
 use App\Services\Automations\TriggerEchoGuard;
 use Illuminate\Contracts\Queue\ShouldQueue;

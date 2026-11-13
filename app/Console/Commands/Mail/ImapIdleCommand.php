@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands\Mail;
 
-use App\Enums\MailAccountStatus;
-use App\Enums\MailProvider;
-use App\Enums\SyncRunType;
+use App\Enums\Mail\MailAccountStatus;
+use App\Enums\Mail\MailProvider;
+use App\Enums\Mail\SyncRunType;
 use App\Jobs\Mail\SyncMailAccount;
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Services\Mail\Exceptions\AuthenticationRequiredException;
 use App\Services\Mail\Providers\Imap\ImapClientFactory;
 use App\Services\Mail\Providers\Imap\ImapSession;

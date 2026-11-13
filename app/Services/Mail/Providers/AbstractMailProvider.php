@@ -2,11 +2,11 @@
 
 namespace App\Services\Mail\Providers;
 
-use App\Enums\ProviderCapability;
-use App\Models\Attachment;
-use App\Models\MailAccount;
-use App\Models\MailFolder;
-use App\Models\Message;
+use App\Enums\Mail\ProviderCapability;
+use App\Models\Mail\Attachment;
+use App\Models\Mail\MailAccount;
+use App\Models\Mail\MailFolder;
+use App\Models\Mail\Message;
 use App\Services\Mail\Contracts\MailProvider;
 use App\Services\Mail\Data\FolderInfo;
 use App\Services\Mail\Exceptions\UnsupportedOperationException;

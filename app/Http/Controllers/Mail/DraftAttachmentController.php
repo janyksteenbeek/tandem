@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Mail;
 
 use App\Http\Controllers\Controller;
-use App\Models\Draft;
-use App\Models\DraftAttachment;
+use App\Models\Mail\Draft;
+use App\Models\Mail\DraftAttachment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;

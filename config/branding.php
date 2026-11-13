@@ -22,7 +22,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Absolute or root-relative URLs. Leave the logo null to use the built-in
-    | envelope mark. "logo_dark" is optional and only used in dark mode. The
+    | Tandem mark. "logo_dark" is optional and only used in dark mode. The
     | wordmark is the mark with the product name set beside it; clear it when
     | you rename the product and the UI falls back to the mark plus the name
     | as text. The OG image is what chat apps and social cards unfurl.
@@ -31,10 +31,10 @@ return [
 
     'logo' => env('BRANDING_LOGO'),
     'logo_dark' => env('BRANDING_LOGO_DARK'),
-    'wordmark' => env('BRANDING_WORDMARK', '/tandem/tandem-mail-wordmark-purple.svg'),
-    'wordmark_dark' => env('BRANDING_WORDMARK_DARK', '/tandem/tandem-mail-wordmark-light.svg'),
+    'wordmark' => env('BRANDING_WORDMARK', '/tandem/tandem-wordmark.svg'),
+    'wordmark_dark' => env('BRANDING_WORDMARK_DARK', '/tandem/tandem-wordmark-light.svg'),
     'favicon' => env('BRANDING_FAVICON', '/tandem/icon.svg'),
-    'og_image' => env('BRANDING_OG_IMAGE', '/tandem/tandem-mail-og.png'),
+    'og_image' => env('BRANDING_OG_IMAGE', '/tandem/tandem-og.png'),
 
     /*
     |--------------------------------------------------------------------------

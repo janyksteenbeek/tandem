@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Automations;
 
+use App\Http\Requests\OrganizationScopedRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 

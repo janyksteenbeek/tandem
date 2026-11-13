@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property array<string, mixed>|null $payload
  * @property string|null $ip_address
  * @property string|null $user_agent
+ * @property CarbonInterface|null $created_at
  */
 #[Fillable(['organization_id', 'user_id', 'action', 'auditable_type', 'auditable_id', 'payload', 'ip_address', 'user_agent', 'created_at'])]
 class AuditLog extends Model

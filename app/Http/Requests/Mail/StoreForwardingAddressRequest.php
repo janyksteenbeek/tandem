@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Mail;
 
-use App\Enums\MailProvider;
+use App\Enums\Mail\MailProvider;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

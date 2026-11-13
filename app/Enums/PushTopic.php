@@ -16,8 +16,11 @@ enum PushTopic: string
     /** New conversations arriving in shared inboxes you belong to. */
     case Shared = 'shared';
 
+    /** Team-wide project updates: your team was added to an issue, a cycle started. */
+    case Teams = 'teams';
+
     public function default(): bool
     {
-        return $this !== self::Shared;
+        return $this !== self::Shared && $this !== self::Teams;
     }
 }

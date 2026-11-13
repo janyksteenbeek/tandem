@@ -1,7 +1,7 @@
 <?php
 
 use App\Enums\OrganizationRole;
-use App\Models\MailAccount;
+use App\Models\Mail\MailAccount;
 use App\Models\Organization;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;

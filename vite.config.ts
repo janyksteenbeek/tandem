@@ -44,6 +44,9 @@ export default defineConfig({
                 '**/.claude/**',
                 '**/.cursor/**',
                 '**/.junie/**',
+                // Runtime data (logs, uploads, recordings, Inertia's dev SSR error dumps): a write
+                // here must never reload the page, or a dev-mode SSR error loops forever.
+                '**/storage/**',
                 '**/vendor/**',
             ],
         },

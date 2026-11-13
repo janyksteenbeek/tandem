@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\AutomationTrigger;
-use App\Models\AutomationRule;
-use App\Models\AutomationRun;
-use App\Models\Conversation;
-use App\Models\Inbox;
+use App\Enums\Automations\AutomationTrigger;
+use App\Models\Automations\AutomationRule;
+use App\Models\Automations\AutomationRun;
+use App\Models\Mail\Conversation;
+use App\Models\Mail\Inbox;
 use App\Models\Organization;
 use App\Services\Automations\BusinessHours;
 use Carbon\CarbonImmutable;

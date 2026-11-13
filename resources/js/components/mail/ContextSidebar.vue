@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import { Bell, BellOff, ExternalLink, Share2, X } from '@lucide/vue';
+import { usePage } from '@inertiajs/vue3';
+import {
+    Bell,
+    BellOff,
+    CirclePlus,
+    ExternalLink,
+    Link2,
+    Share2,
+    X,
+} from '@lucide/vue';
 import { computed } from 'vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import LinkedIssueCard from '@/components/projects/shared/LinkedIssueCard.vue';
+import InboxDot from '@/components/shared/InboxDot.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
     Tooltip,
@@ -19,10 +29,20 @@ const emit = defineEmits<{
     follow: [following: boolean];
     unshare: [inboxUuid: string];
     compose: [email: string];
+    linkIssue: [];
+    createIssue: [];
+    unlinkIssue: [identifier: string];
 }>();
+
+const page = usePage();
+const orgSlug = computed(() => page.props.currentOrganization?.slug ?? '');
 
 const people = computed(() => props.conversation.participants);
 const primary = computed(() => props.conversation.counterpart);
+/** Only issues the server returned for this viewer; hidden ones are never inferred. */
+const linkedIssues = computed(() => props.conversation.linked_issues ?? []);
+/** Issues live in organizations; a personal mailbox cannot link one. */
+const canLink = computed(() => props.conversation.organization_id !== null);
 </script>
 
 <template>
@@ -114,6 +134,70 @@ const primary = computed(() => props.conversation.counterpart);
                         </span>
                     </li>
                 </ul>
+            </section>
+
+            <section v-if="canLink">
+                <div class="mb-2 flex items-center justify-between">
+                    <p
+                        class="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase"
+                    >
+                        Linked issues
+                    </p>
+                    <div class="flex items-center gap-0.5">
+                        <Tooltip>
+                            <TooltipTrigger as-child>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="size-6"
+                                    aria-label="Link an existing issue"
+                                    @click="emit('linkIssue')"
+                                    ><Link2 class="size-3.5"
+                                /></Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Link existing issue</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger as-child>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="size-6"
+                                    aria-label="Create an issue from this conversation"
+                                    @click="emit('createIssue')"
+                                    ><CirclePlus class="size-3.5"
+                                /></Button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                                >Create issue
+                                <kbd
+                                    class="ml-1 rounded border px-1 text-[10px]"
+                                    >⇧I</kbd
+                                ></TooltipContent
+                            >
+                        </Tooltip>
+                    </div>
+                </div>
+                <div v-if="linkedIssues.length" class="space-y-1.5">
+                    <LinkedIssueCard
+                        v-for="issue in linkedIssues"
+                        :key="issue.uuid"
+                        :issue="issue"
+                        :org-slug="orgSlug"
+                        can-unlink
+                        @unlink="
+                            (identifier) => emit('unlinkIssue', identifier)
+                        "
+                    />
+                </div>
+                <p
+                    v-else
+                    class="rounded-lg border border-dashed px-3 py-2.5 text-xs text-muted-foreground"
+                >
+                    No issues yet. Track this thread as work by creating an
+                    issue, or link one that already exists. Linking never shares
+                    the email itself.
+                </p>
             </section>
 
             <section>

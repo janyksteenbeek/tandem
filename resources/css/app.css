@@ -65,6 +65,12 @@
     --color-surface-raised: var(--surface-raised);
     --color-surface-sunken: var(--surface-sunken);
 
+    --color-status-backlog: var(--status-backlog);
+    --color-status-unstarted: var(--status-unstarted);
+    --color-status-started: var(--status-started);
+    --color-status-completed: var(--status-completed);
+    --color-status-canceled: var(--status-canceled);
+
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);
@@ -142,7 +148,7 @@
 
 /*
   Tandem palette. Quiet, near-neutral greys with a hint of cool so text stays
-  crisp for a full day, the violet of the envelope mark as the single brand
+  crisp for a full day, the violet of the Tandem mark as the single brand
   accent, and a soft amber highlight for stars, snoozes and anything that
   deserves a wink.
 */
@@ -181,6 +187,11 @@
     --surface: oklch(0.975 0.002 285);
     --surface-raised: oklch(1 0 0);
     --surface-sunken: oklch(0.965 0.003 285);
+    --status-backlog: oklch(0.7 0.015 275);
+    --status-unstarted: oklch(0.55 0.03 275);
+    --status-started: oklch(0.76 0.15 75);
+    --status-completed: oklch(0.55 0.22 282);
+    --status-canceled: oklch(0.62 0.02 275);
     --chart-1: oklch(0.52 0.25 282);
     --chart-2: oklch(0.65 0.15 155);
     --chart-3: oklch(0.82 0.13 80);
@@ -233,6 +244,11 @@
     --surface: oklch(0.18 0.006 275);
     --surface-raised: oklch(0.22 0.007 275);
     --surface-sunken: oklch(0.14 0.006 275);
+    --status-backlog: oklch(0.55 0.015 275);
+    --status-unstarted: oklch(0.7 0.03 275);
+    --status-started: oklch(0.8 0.14 80);
+    --status-completed: oklch(0.7 0.17 289);
+    --status-canceled: oklch(0.6 0.02 275);
     --chart-1: oklch(0.67 0.17 289);
     --chart-2: oklch(0.7 0.15 155);
     --chart-3: oklch(0.82 0.13 80);
@@ -388,10 +404,29 @@
     background:
         linear-gradient(
             180deg,
-            color-mix(in oklch, var(--brand) 6%, transparent) 0,
-            transparent 14rem
+            color-mix(in oklch, var(--brand) 9%, transparent) 0,
+            transparent 16rem
         ),
         var(--sidebar-background);
+}
+@utility entity-glyph-surface {
+    color: var(--chip);
+    background: color-mix(in oklch, var(--chip) 14%, transparent);
+    box-shadow: inset 0 0 0 1px
+        color-mix(in oklch, var(--chip) 18%, transparent);
+    .dark & {
+        background: color-mix(in oklch, var(--chip) 22%, transparent);
+        box-shadow: inset 0 0 0 1px
+            color-mix(in oklch, var(--chip) 28%, transparent);
+    }
+}
+@utility rail-active-surface {
+    background: color-mix(in oklch, var(--brand) 12%, transparent);
+    box-shadow: inset 0 0 0 1px
+        color-mix(in oklch, var(--brand) 14%, transparent);
+    .dark & {
+        background: color-mix(in oklch, var(--brand) 20%, transparent);
+    }
 }
 @utility brand-button-surface {
     background: linear-gradient(
@@ -607,4 +642,52 @@
         content: attr(data-placeholder);
         @apply pointer-events-none float-left h-0 text-muted-foreground;
     }
+}
+
+/* --- Projects ------------------------------------------------------------------- */
+
+@utility status-backlog {
+    --status: var(--status-backlog);
+}
+@utility status-unstarted {
+    --status: var(--status-unstarted);
+}
+@utility status-started {
+    --status: var(--status-started);
+}
+@utility status-completed {
+    --status: var(--status-completed);
+}
+@utility status-canceled {
+    --status: var(--status-canceled);
+}
+
+@utility issue-row {
+    @apply flex h-9 items-center gap-2 rounded-lg px-2 text-[13px] transition-colors hover:bg-accent/60;
+}
+
+.prose-tandem ul[data-type='taskList'] {
+    list-style: none;
+    padding-left: 0;
+}
+.prose-tandem ul[data-type='taskList'] li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.prose-tandem ul[data-type='taskList'] li > label {
+    flex: 0 0 auto;
+    margin-top: 0.2rem;
+}
+.prose-tandem ul[data-type='taskList'] li > div {
+    flex: 1 1 auto;
+}
+.prose-tandem ul[data-type='taskList'] li[data-checked='true'] > div {
+    color: var(--muted-foreground);
+    text-decoration: line-through;
+}
+
+::view-transition-old(issue-detail),
+::view-transition-new(issue-detail) {
+    animation-duration: 180ms;
 }

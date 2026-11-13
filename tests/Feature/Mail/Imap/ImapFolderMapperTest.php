@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\FolderType;
+use App\Enums\Mail\FolderType;
 use App\Services\Mail\Providers\Imap\Data\RemoteFolder;
 use App\Services\Mail\Providers\Imap\ImapFolderMapper;
 

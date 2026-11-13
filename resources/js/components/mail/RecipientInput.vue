@@ -2,7 +2,7 @@
 import { useDebounceFn } from '@vueuse/core';
 import { X } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import UserAvatar from '@/components/mail/UserAvatar.vue';
+import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { api } from '@/lib/http';
 import { cn } from '@/lib/utils';
 import type { EmailAddress } from '@/types';

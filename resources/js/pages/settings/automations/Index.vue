@@ -3,18 +3,22 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     ArrowDown,
     ArrowUp,
+    Box,
+    CircleDot,
     Copy,
     GripVertical,
     Inbox,
+    Mail,
     MoreHorizontal,
     Pencil,
     Plus,
     Sparkles,
     Trash2,
+    Users,
     Zap,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
-import EmptyState from '@/components/mail/EmptyState.vue';
+import EmptyState from '@/components/shared/EmptyState.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +36,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { chipClass } from '@/lib/mail';
 import { Switch } from '@/components/ui/switch';
 import {
     Tooltip,
@@ -55,6 +60,7 @@ import type {
     AutomationCatalog,
     AutomationRuleDetail,
     AutomationRuleSummary,
+    AutomationSubjectType,
 } from '@/types/automations';
 import type { Organization } from '@/types';
 import { toast } from 'vue-sonner';
@@ -82,6 +88,27 @@ watch(
 const activeCount = computed(
     () => items.value.filter((rule) => rule.is_active).length,
 );
+
+const subjectFilter = ref<AutomationSubjectType | ''>('');
+const hasBothSubjects = computed(
+    () =>
+        items.value.some((rule) => rule.subject_type === 'issue') &&
+        items.value.some((rule) => rule.subject_type !== 'issue'),
+);
+const visibleItems = computed(() =>
+    subjectFilter.value
+        ? items.value.filter(
+              (rule) =>
+                  (rule.subject_type ?? 'conversation') === subjectFilter.value,
+          )
+        : items.value,
+);
+const SUBJECT_FILTERS: { value: AutomationSubjectType | ''; label: string }[] =
+    [
+        { value: '', label: 'All' },
+        { value: 'conversation', label: 'Conversations' },
+        { value: 'issue', label: 'Issues' },
+    ];
 
 const routeArgs = (rule: AutomationRuleSummary) => ({
     current_organization: slug.value,
@@ -212,7 +239,10 @@ const duplicate = async (rule: AutomationRuleSummary) => {
             JSON.stringify({
                 name: `${detail.name} (copy)`,
                 description: detail.description ?? '',
+                subject_type: detail.subject_type ?? 'conversation',
                 inbox_uuid: detail.inbox_uuid,
+                product_id: detail.product_id ?? null,
+                team_id: detail.team_id ?? null,
                 trigger: detail.trigger.value,
                 match: detail.match,
                 is_active: false,
@@ -229,6 +259,9 @@ const duplicate = async (rule: AutomationRuleSummary) => {
         mark(rule.uuid, false);
     }
 };
+
+const indexOf = (rule: AutomationRuleSummary) =>
+    items.value.findIndex((candidate) => candidate.uuid === rule.uuid);
 
 const conditionLabel = (rule: AutomationRuleSummary) => {
     if (rule.condition_count === 0) {
@@ -266,13 +299,58 @@ const conditionLabel = (rule: AutomationRuleSummary) => {
                 >
                     <Sparkles /> Starters
                 </Button>
-                <Button
-                    as-child
-                    class="bg-brand text-brand-foreground hover:bg-brand/90"
-                >
-                    <Link :href="create(slug)"><Plus /> New rule</Link>
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <Button
+                            class="bg-brand text-brand-foreground hover:bg-brand/90"
+                            ><Plus /> New rule</Button
+                        >
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem as-child>
+                            <Link :href="create(slug)"
+                                ><Mail /> For conversations</Link
+                            >
+                        </DropdownMenuItem>
+                        <DropdownMenuItem as-child>
+                            <Link
+                                :href="
+                                    create(slug, {
+                                        query: { subject: 'issue' },
+                                    })
+                                "
+                                ><CircleDot /> For issues</Link
+                            >
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
+        </div>
+
+        <div
+            v-if="hasBothSubjects"
+            class="inline-flex rounded-lg border bg-card p-0.5 text-xs"
+            role="radiogroup"
+            aria-label="Filter rules by subject"
+        >
+            <button
+                v-for="option in SUBJECT_FILTERS"
+                :key="option.value"
+                type="button"
+                role="radio"
+                :aria-checked="subjectFilter === option.value"
+                :class="
+                    cn(
+                        'rounded-md px-2.5 py-1 transition',
+                        subjectFilter === option.value
+                            ? 'bg-brand text-brand-foreground shadow-xs'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )
+                "
+                @click="subjectFilter = option.value"
+            >
+                {{ option.label }}
+            </button>
         </div>
 
         <!-- Starters -->
@@ -315,7 +393,7 @@ const conditionLabel = (rule: AutomationRuleSummary) => {
         <TooltipProvider v-if="items.length > 0" :delay-duration="200">
             <ol class="space-y-2">
                 <li
-                    v-for="(rule, i) in items"
+                    v-for="rule in visibleItems"
                     :key="rule.uuid"
                     :class="
                         cn(
@@ -355,16 +433,16 @@ const conditionLabel = (rule: AutomationRuleSummary) => {
                             variant="ghost"
                             size="icon-xs"
                             aria-label="Move up"
-                            :disabled="i === 0"
-                            @click="move(i, i - 1)"
+                            :disabled="indexOf(rule) === 0"
+                            @click="move(indexOf(rule), indexOf(rule) - 1)"
                             ><ArrowUp
                         /></Button>
                         <Button
                             variant="ghost"
                             size="icon-xs"
                             aria-label="Move down"
-                            :disabled="i === items.length - 1"
-                            @click="move(i, i + 1)"
+                            :disabled="indexOf(rule) === items.length - 1"
+                            @click="move(indexOf(rule), indexOf(rule) + 1)"
                             ><ArrowDown
                         /></Button>
                     </div>
@@ -452,11 +530,53 @@ const conditionLabel = (rule: AutomationRuleSummary) => {
                             class="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs"
                         >
                             <span
+                                :class="
+                                    cn(
+                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium',
+                                        rule.subject_type === 'issue'
+                                            ? 'bg-status-started/15 text-status-started'
+                                            : 'bg-secondary text-secondary-foreground',
+                                    )
+                                "
+                                :data-test="`subject-badge-${rule.subject_type}`"
+                            >
+                                <CircleDot
+                                    v-if="rule.subject_type === 'issue'"
+                                    class="size-3"
+                                />
+                                <Mail v-else class="size-3" />
+                                {{
+                                    rule.subject_type === 'issue'
+                                        ? 'Issue'
+                                        : 'Conversation'
+                                }}
+                            </span>
+                            <span
                                 class="inline-flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 font-medium text-brand-soft-foreground"
                             >
                                 <Zap class="size-3" /> {{ rule.trigger.label }}
                             </span>
+                            <template v-if="rule.subject_type === 'issue'">
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-muted-foreground"
+                                >
+                                    <Box class="size-3" />
+                                    {{ rule.product?.name ?? 'Any product' }}
+                                </span>
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-muted-foreground"
+                                >
+                                    <span
+                                        v-if="rule.team"
+                                        class="inline-block size-2 rounded-full bg-(--chip)"
+                                        :class="chipClass(rule.team.color)"
+                                    />
+                                    <Users v-else class="size-3" />
+                                    {{ rule.team?.name ?? 'Any team' }}
+                                </span>
+                            </template>
                             <span
+                                v-else
                                 class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-muted-foreground"
                             >
                                 <Inbox class="size-3" />

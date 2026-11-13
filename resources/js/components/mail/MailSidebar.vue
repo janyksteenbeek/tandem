@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import {
     AlertTriangle,
     Archive,
@@ -20,10 +20,14 @@ import {
     UserCheck,
     Users,
 } from '@lucide/vue';
+import type { LucideIcon } from '@lucide/vue';
 import { computed } from 'vue';
 import Collapse from '@/components/Collapse.vue';
-import InboxDot from '@/components/mail/InboxDot.vue';
 import ShellColumn from '@/components/shell/ShellColumn.vue';
+import SidebarRow from '@/components/shell/SidebarRow.vue';
+import SidebarSearchRow from '@/components/shell/SidebarSearchRow.vue';
+import SidebarSection from '@/components/shell/SidebarSection.vue';
+import WorkspaceSwitcher from '@/components/shell/WorkspaceSwitcher.vue';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import {
@@ -34,9 +38,6 @@ import {
 import { VIEW_LABELS as viewLabels } from '@/lib/mail';
 import { cn } from '@/lib/utils';
 import type { MailNav, NavInbox, SavedView, ViewOption } from '@/types';
-import { useBranding } from '@/composables/useBranding';
-
-const branding = useBranding();
 
 const props = defineProps<{
     activeInboxUuid?: string | null;
@@ -53,7 +54,7 @@ const nav = computed<MailNav | null>(() => page.props.mailNav ?? null);
 const organization = computed(() => page.props.currentOrganization);
 const orgSlug = computed(() => organization.value?.slug ?? '');
 
-const viewIcons: Record<string, unknown> = {
+const viewIcons: Record<string, LucideIcon> = {
     inbox: Inbox,
     starred: Star,
     snoozed: Clock,
@@ -118,17 +119,16 @@ const showAllPersonal = computed(() => (nav.value?.personal.length ?? 0) > 1);
  * heading that opens: when active it just gets weight, never a fill. The
  * view rows underneath carry the one brand-tinted active state.
  */
-const rowClass =
-    'group flex h-8 items-center gap-2 rounded-lg px-2 text-[13px] text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground';
-const openRowClass = 'font-medium text-sidebar-foreground';
-const viewRowClass =
-    'group/view flex h-7 items-center gap-2 rounded-md px-2 text-[12.5px] text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground';
-const activeViewClass =
-    'vt-sidebar-active bg-brand-soft/70 font-medium text-brand-soft-foreground ring-1 ring-brand/10 ring-inset hover:bg-brand-soft hover:text-brand-soft-foreground';
-const viewIconClass =
-    'size-3.5 shrink-0 text-muted-foreground/80 transition-colors group-hover/view:text-sidebar-foreground';
-const sectionLabelClass =
-    'text-[10.5px] font-semibold tracking-[0.08em] text-muted-foreground/70 uppercase';
+const moreRowClass =
+    'flex h-7 cursor-pointer list-none items-center gap-2 rounded-md px-2 text-[13px] text-muted-foreground transition-colors select-none hover:bg-sidebar-accent hover:text-sidebar-foreground';
+
+const manageInboxes = () => {
+    if (organization.value) {
+        router.visit(
+            `/settings/organizations/${organization.value.slug}/inboxes`,
+        );
+    }
+};
 
 const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
     const params = new URLSearchParams();
@@ -150,47 +150,27 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
 <template>
     <ShellColumn label="Mailboxes">
         <template #header>
-            <div class="px-4 pt-3 pb-2">
-                <div class="flex h-10 flex-col justify-center">
-                    <p
-                        class="truncate text-[13px] leading-[18px] font-semibold text-sidebar-foreground"
-                    >
-                        {{ organization?.name ?? branding.name }}
-                    </p>
-                    <p
-                        class="truncate text-[11px] leading-[15px] text-muted-foreground"
-                    >
-                        <template v-if="nav && nav.assigned_to_me > 0"
-                            >{{ nav.assigned_to_me }} assigned to you</template
-                        >
-                        <template v-else>Nothing waiting on you</template>
-                    </p>
-                </div>
-
-                <Button
-                    class="mt-2 h-8 w-full justify-start gap-2 rounded-lg px-2.5 text-[13px] text-brand-foreground brand-button-surface"
-                    @click="emit('compose')"
+            <WorkspaceSwitcher />
+            <Button
+                class="mt-2 h-8 w-full justify-start gap-2 rounded-lg px-2.5 text-[13px] text-brand-foreground brand-button-surface"
+                @click="emit('compose')"
+            >
+                <PenLine class="size-3.5" />
+                <span class="flex-1 text-left">New message</span>
+                <Kbd
+                    class="h-4 min-w-4 bg-brand-foreground/15 px-1 text-[10px] text-brand-foreground/80"
+                    >C</Kbd
                 >
-                    <PenLine class="size-3.5" />
-                    <span class="flex-1 text-left">New message</span>
-                    <Kbd
-                        class="h-4 min-w-4 bg-brand-foreground/15 px-1 text-[10px] text-brand-foreground/80"
-                        >C</Kbd
-                    >
-                </Button>
-            </div>
+            </Button>
+            <SidebarSearchRow class="mt-2" />
         </template>
 
-        <nav>
+        <nav aria-label="Mailboxes">
             <template v-if="nav">
-                <section class="mt-2">
-                    <p :class="cn('px-2 pb-1.5', sectionLabelClass)">
-                        Personal
-                    </p>
-
+                <SidebarSection label="Personal">
                     <div
                         v-if="nav.personal.length === 0"
-                        class="mx-2 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
+                        class="mx-1 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
                     >
                         <p class="font-medium text-sidebar-foreground">
                             No mail accounts yet.
@@ -204,155 +184,90 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                     </div>
 
                     <template v-if="showAllPersonal">
-                        <Link
+                        <SidebarRow
                             :href="inboxUrl('all')"
-                            :class="
-                                cn(rowClass, isActive('all') && openRowClass)
-                            "
+                            :icon="Layers"
+                            variant="heading"
+                            :active="isActive('all')"
                         >
-                            <Layers
-                                class="size-4 shrink-0 text-muted-foreground"
-                            />
-                            <span class="flex-1 truncate"
-                                >All personal mail</span
-                            >
-                            <span
-                                v-if="nav.personal_unread > 0"
-                                class="text-[11px] font-semibold text-brand tabular-nums"
-                                >{{ nav.personal_unread }}</span
-                            >
-                        </Link>
+                            All personal mail
+                            <template v-if="nav.personal_unread > 0" #trailing>
+                                <span
+                                    class="text-[11px] font-semibold text-brand tabular-nums"
+                                    >{{ nav.personal_unread }}</span
+                                >
+                            </template>
+                        </SidebarRow>
                         <Collapse :open="isActive('all')">
-                            <div class="mt-0.5 mb-2 ml-6 space-y-px">
-                                <Link
+                            <div class="mt-0.5 mb-2 space-y-px">
+                                <SidebarRow
                                     v-for="view in views"
                                     :key="view.value"
                                     :href="inboxUrl('all', view.value)"
-                                    :class="
-                                        cn(
-                                            viewRowClass,
-                                            activeView === view.value &&
-                                                activeViewClass,
-                                        )
-                                    "
+                                    :icon="viewIcons[view.value] ?? Mail"
+                                    :depth="1"
+                                    :active="activeView === view.value"
+                                    :trailing="counts?.[view.value] || null"
                                 >
-                                    <component
-                                        :is="viewIcons[view.value] ?? Mail"
-                                        :class="
-                                            cn(
-                                                viewIconClass,
-                                                activeView === view.value &&
-                                                    'text-brand',
-                                            )
-                                        "
-                                    />
-                                    <span class="flex-1 truncate">{{
-                                        viewLabels[view.value] ?? view.label
-                                    }}</span>
-                                    <span
-                                        v-if="counts && counts[view.value]"
-                                        class="text-[11px] text-muted-foreground tabular-nums"
-                                        >{{ counts[view.value] }}</span
-                                    >
-                                </Link>
+                                    {{ viewLabels[view.value] ?? view.label }}
+                                </SidebarRow>
                             </div>
                         </Collapse>
                     </template>
 
                     <template v-for="inbox in nav.personal" :key="inbox.uuid">
-                        <Link
+                        <SidebarRow
                             :href="inboxUrl(inbox)"
-                            :class="
-                                cn(rowClass, isActive(inbox) && openRowClass)
-                            "
+                            :icon="Mail"
+                            variant="heading"
+                            :active="isActive(inbox)"
+                            :title="inbox.email ?? inbox.name"
                         >
-                            <Mail
-                                class="size-4 shrink-0 text-muted-foreground"
-                            />
-                            <span
-                                class="flex-1 truncate"
-                                :title="inbox.email ?? inbox.name"
-                                >{{ inbox.email ?? inbox.name }}</span
-                            >
-                            <Tooltip v-if="inbox.health === 'attention'">
-                                <TooltipTrigger as-child
-                                    ><AlertTriangle
-                                        class="size-3.5 text-warning"
-                                /></TooltipTrigger>
-                                <TooltipContent
-                                    >This account needs
-                                    attention</TooltipContent
+                            {{ inbox.email ?? inbox.name }}
+                            <template #trailing>
+                                <Tooltip v-if="inbox.health === 'attention'">
+                                    <TooltipTrigger as-child
+                                        ><AlertTriangle
+                                            class="size-3.5 text-warning"
+                                    /></TooltipTrigger>
+                                    <TooltipContent
+                                        >This account needs
+                                        attention</TooltipContent
+                                    >
+                                </Tooltip>
+                                <span
+                                    v-if="inbox.count > 0"
+                                    class="text-[11px] font-semibold text-brand tabular-nums"
+                                    >{{ inbox.count }}</span
                                 >
-                            </Tooltip>
-                            <ChevronRight
-                                :class="
-                                    cn(
-                                        'size-3.5 shrink-0 text-muted-foreground/0 transition group-hover:text-muted-foreground/60',
-                                        isActive(inbox) &&
-                                            'rotate-90 text-muted-foreground/60',
-                                    )
-                                "
-                            />
-                            <span
-                                v-if="inbox.count > 0"
-                                class="text-[11px] font-semibold text-brand tabular-nums"
-                                >{{ inbox.count }}</span
-                            >
-                        </Link>
+                            </template>
+                        </SidebarRow>
                         <Collapse :open="isActive(inbox)">
-                            <div class="mt-0.5 mb-2 ml-6 space-y-px">
-                                <Link
+                            <div class="mt-0.5 mb-2 space-y-px">
+                                <SidebarRow
                                     v-for="view in views"
                                     :key="view.value"
                                     :href="inboxUrl(inbox, view.value)"
-                                    :class="
-                                        cn(
-                                            viewRowClass,
-                                            activeView === view.value &&
-                                                activeViewClass,
-                                        )
-                                    "
+                                    :icon="viewIcons[view.value] ?? Mail"
+                                    :depth="1"
+                                    :active="activeView === view.value"
+                                    :trailing="counts?.[view.value] || null"
                                 >
-                                    <component
-                                        :is="viewIcons[view.value] ?? Mail"
-                                        :class="
-                                            cn(
-                                                viewIconClass,
-                                                activeView === view.value &&
-                                                    'text-brand',
-                                            )
-                                        "
-                                    />
-                                    <span class="flex-1 truncate">{{
-                                        viewLabels[view.value] ?? view.label
-                                    }}</span>
-                                    <span
-                                        v-if="counts && counts[view.value]"
-                                        class="text-[11px] text-muted-foreground tabular-nums"
-                                        >{{ counts[view.value] }}</span
-                                    >
-                                </Link>
+                                    {{ viewLabels[view.value] ?? view.label }}
+                                </SidebarRow>
                             </div>
                         </Collapse>
                     </template>
-                </section>
+                </SidebarSection>
 
-                <section class="mt-6">
-                    <div class="flex items-center justify-between px-2 pb-1.5">
-                        <p :class="sectionLabelClass">Shared</p>
-                        <Link
-                            v-if="organization"
-                            :href="`/settings/organizations/${organization.slug}/inboxes`"
-                            class="-mr-1 rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-foreground"
-                            title="Manage shared inboxes"
-                        >
-                            <Plus class="size-3.5" />
-                        </Link>
-                    </div>
-
+                <SidebarSection
+                    label="Shared"
+                    :can-add="Boolean(organization)"
+                    @add="manageInboxes"
+                >
                     <div
                         v-if="nav.shared.length === 0"
-                        class="mx-2 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
+                        class="mx-1 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-xs text-muted-foreground"
                     >
                         <p class="font-medium text-sidebar-foreground">
                             No shared inboxes.
@@ -364,127 +279,87 @@ const savedViewUrl = (inbox: NavInbox | 'all', view: SavedView) => {
                     </div>
 
                     <template v-for="inbox in nav.shared" :key="inbox.uuid">
-                        <Link
+                        <SidebarRow
                             :href="inboxUrl(inbox)"
-                            :class="
-                                cn(rowClass, isActive(inbox) && openRowClass)
-                            "
+                            :entity="{
+                                name: inbox.name,
+                                color: inbox.color,
+                                icon: inbox.icon,
+                            }"
+                            :icon="Inbox"
+                            variant="heading"
+                            :active="isActive(inbox)"
                         >
-                            <span
-                                class="flex size-4 shrink-0 items-center justify-center"
-                            >
-                                <InboxDot :color="inbox.color" size="sm" />
-                            </span>
-                            <span class="flex-1 truncate">{{
-                                inbox.name
-                            }}</span>
-                            <Tooltip v-if="inbox.health === 'attention'">
-                                <TooltipTrigger as-child
-                                    ><AlertTriangle
-                                        class="size-3.5 text-warning"
-                                /></TooltipTrigger>
-                                <TooltipContent
-                                    >A channel of this inbox needs
-                                    attention</TooltipContent
+                            {{ inbox.name }}
+                            <template #trailing>
+                                <Tooltip v-if="inbox.health === 'attention'">
+                                    <TooltipTrigger as-child
+                                        ><AlertTriangle
+                                            class="size-3.5 text-warning"
+                                    /></TooltipTrigger>
+                                    <TooltipContent
+                                        >A channel of this inbox needs
+                                        attention</TooltipContent
+                                    >
+                                </Tooltip>
+                                <span
+                                    v-if="inbox.count > 0"
+                                    class="text-[11px] text-muted-foreground tabular-nums"
+                                    >{{ inbox.count }}</span
                                 >
-                            </Tooltip>
-                            <span
-                                v-if="inbox.count > 0"
-                                class="text-[11px] text-muted-foreground tabular-nums"
-                                >{{ inbox.count }}</span
-                            >
-                        </Link>
+                            </template>
+                        </SidebarRow>
                         <Collapse :open="isActive(inbox)">
-                            <div class="mt-0.5 mb-2 ml-6 space-y-px">
-                                <Link
+                            <div class="mt-0.5 mb-2 space-y-px">
+                                <SidebarRow
                                     v-for="view in primaryViews"
                                     :key="view.value"
                                     :href="inboxUrl(inbox, view.value)"
-                                    :class="
-                                        cn(
-                                            viewRowClass,
-                                            activeView === view.value &&
-                                                activeViewClass,
-                                        )
-                                    "
+                                    :icon="viewIcons[view.value] ?? Mail"
+                                    :depth="1"
+                                    :active="activeView === view.value"
+                                    :trailing="counts?.[view.value] || null"
                                 >
-                                    <component
-                                        :is="viewIcons[view.value] ?? Mail"
-                                        :class="
-                                            cn(
-                                                viewIconClass,
-                                                activeView === view.value &&
-                                                    'text-brand',
-                                            )
-                                        "
-                                    />
-                                    <span class="flex-1 truncate">{{
-                                        viewLabels[view.value] ?? view.label
-                                    }}</span>
-                                    <span
-                                        v-if="counts && counts[view.value]"
-                                        class="text-[11px] text-muted-foreground tabular-nums"
-                                        >{{ counts[view.value] }}</span
-                                    >
-                                </Link>
-                                <Link
+                                    {{ viewLabels[view.value] ?? view.label }}
+                                </SidebarRow>
+                                <SidebarRow
                                     v-for="saved in savedViews ?? []"
                                     :key="`saved-${saved.id}`"
                                     :href="savedViewUrl(inbox, saved)"
-                                    :class="viewRowClass"
+                                    :icon="Bookmark"
+                                    :depth="1"
                                 >
-                                    <Bookmark
-                                        class="size-3.5 shrink-0 text-brand"
-                                    />
-                                    <span class="flex-1 truncate">{{
-                                        saved.name
-                                    }}</span>
-                                </Link>
-                                <details class="group/more">
-                                    <summary
-                                        :class="
-                                            cn(
-                                                viewRowClass,
-                                                'cursor-pointer list-none text-muted-foreground select-none',
-                                            )
-                                        "
-                                    >
+                                    {{ saved.name }}
+                                </SidebarRow>
+                                <details class="group/more pl-4">
+                                    <summary :class="moreRowClass">
                                         <ChevronRight
-                                            class="size-3 transition group-open/more:rotate-90"
+                                            class="size-3.5 transition group-open/more:rotate-90"
                                         />
                                         More
                                     </summary>
-                                    <Link
-                                        v-for="view in secondaryViews"
-                                        :key="view.value"
-                                        :href="inboxUrl(inbox, view.value)"
-                                        :class="
-                                            cn(
-                                                viewRowClass,
-                                                activeView === view.value &&
-                                                    activeViewClass,
-                                            )
-                                        "
-                                    >
-                                        <component
-                                            :is="viewIcons[view.value] ?? Mail"
-                                            :class="
-                                                cn(
-                                                    viewIconClass,
-                                                    activeView === view.value &&
-                                                        'text-brand',
-                                                )
+                                    <div class="-ml-4 space-y-px">
+                                        <SidebarRow
+                                            v-for="view in secondaryViews"
+                                            :key="view.value"
+                                            :href="inboxUrl(inbox, view.value)"
+                                            :icon="
+                                                viewIcons[view.value] ?? Mail
                                             "
-                                        />
-                                        <span class="flex-1 truncate">{{
-                                            viewLabels[view.value] ?? view.label
-                                        }}</span>
-                                    </Link>
+                                            :depth="1"
+                                            :active="activeView === view.value"
+                                        >
+                                            {{
+                                                viewLabels[view.value] ??
+                                                view.label
+                                            }}
+                                        </SidebarRow>
+                                    </div>
                                 </details>
                             </div>
                         </Collapse>
                     </template>
-                </section>
+                </SidebarSection>
             </template>
         </nav>
     </ShellColumn>
