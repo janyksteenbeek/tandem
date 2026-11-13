@@ -1,0 +1,26 @@
+# TLS for Tandem and Tandem Calls. Caddy obtains and renews the certificates itself.
+#   docker compose --profile tls up -d
+# Set APP_DOMAIN and MEET_DOMAIN in .env, point both DNS names at this host, and use:
+#   APP_URL=https://{$APP_DOMAIN}
+#   LIVEKIT_PUBLIC_URL=wss://{$MEET_DOMAIN}
+#   REVERB_PUBLIC_HOST={$APP_DOMAIN}  REVERB_PUBLIC_PORT=443  REVERB_PUBLIC_SCHEME=https
+
+{$APP_DOMAIN} {
+	encode zstd gzip
+
+	# Reverb (Pusher protocol) lives under /app and /apps on the same hostname.
+	@reverb path /app/* /apps/*
+	reverse_proxy @reverb reverb:8080
+
+	reverse_proxy app:8000
+
+	# Large chat attachments.
+	request_body {
+		max_size 128MB
+	}
+}
+
+# WebRTC signalling only. Media itself flows over UDP 7882 / TCP 7881, directly to the media container.
+{$MEET_DOMAIN} {
+	reverse_proxy media:7880
+}

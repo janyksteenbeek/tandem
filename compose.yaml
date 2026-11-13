@@ -1,8 +1,16 @@
 # Production-shaped stack: one image, one container per role.
 # Local use: cp .env.example .env, set APP_KEY, then `docker compose up --build`.
 
+# Keep container logs bounded on a small disk.
+x-logging: &logging
+    driver: json-file
+    options:
+        max-size: '10m'
+        max-file: '3'
+
 x-app: &app
     image: ${TANDEM_IMAGE:-tandem:local}
+    logging: *logging
     build:
         context: .
         args:
@@ -13,6 +21,8 @@ x-app: &app
         DB_HOST: mariadb
         REDIS_HOST: redis
         INERTIA_SSR_URL: http://ssr:13714
+        LIVEKIT_URL: http://media:7880
+        CALLS_RECORDER_URL: http://media:7890
     volumes:
         # Attachments and raw .eml files on the local disk must be shared by every role.
         - storage:/app/storage/app
@@ -30,6 +40,8 @@ services:
             DB_HOST: mariadb
             REDIS_HOST: redis
             INERTIA_SSR_URL: http://ssr:13714
+            LIVEKIT_URL: http://media:7880
+            CALLS_RECORDER_URL: http://media:7890
             TANDEM_RUN_MIGRATIONS: 'true'
         ports:
             - '${APP_PORT:-8000}:8000'
@@ -67,8 +79,116 @@ services:
         healthcheck:
             disable: true
 
+    # --- Tandem Calls -------------------------------------------------------------------
+    # The whole media side is one small Go process (media/tandem-media): the LiveKit SFU,
+    # which forwards encrypted audio and video without decoding it, with the recorder built
+    # in, which writes the tracks it receives straight to disk. No GPU, no browser, no FFmpeg.
+    # See docs/calls.md.
+
+    media:
+        image: ${TANDEM_MEDIA_IMAGE:-tandem-media:local}
+        build:
+            context: media/tandem-media
+        logging: *logging
+        environment:
+            # The SFU configuration, so everything stays in .env. The standalone equivalent
+            # with comments is media/livekit/livekit.yaml.
+            LIVEKIT_CONFIG: |
+                port: 7880
+                rtc:
+                    tcp_port: 7881
+                    udp_port: 7882
+                    use_external_ip: ${LIVEKIT_USE_EXTERNAL_IP:-true}
+                keys:
+                    ${LIVEKIT_API_KEY:?set LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET:?set LIVEKIT_API_SECRET (32+ characters)}
+                room:
+                    auto_create: true
+                    empty_timeout: 120
+                    departure_timeout: 120
+                    enabled_codecs:
+                        - mime: audio/opus
+                        - mime: audio/red
+                        - mime: video/vp8
+                        - mime: video/vp9
+                        - mime: video/rtx
+                turn:
+                    enabled: ${LIVEKIT_TURN_ENABLED:-true}
+                    udp_port: 3478
+                webhook:
+                    api_key: ${LIVEKIT_API_KEY}
+                    urls:
+                        - http://app:8000/webhooks/calls/media
+                log_level: ${LIVEKIT_LOG_LEVEL:-info}
+            # The recorder half. It finds the SFU and its key pair by itself. Leave
+            # CALLS_RECORDER_SECRET empty to run calls without recording.
+            RECORDER_LISTEN: ':7890'
+            RECORDER_SECRET: ${CALLS_RECORDER_SECRET:-}
+            RECORDER_WEBHOOK_URL: http://app:8000/webhooks/calls/recorder
+            RECORDINGS_DIR: /data/private/${CALLS_RECORDINGS_PATH:-calls/recordings}
+            RECORDER_MIN_FREE_BYTES: ${RECORDER_MIN_FREE_BYTES:-536870912}
+            LOG_LEVEL: ${RECORDER_LOG_LEVEL:-info}
+        volumes:
+            # The application's storage volume: recordings land where Laravel serves them
+            # from. The image runs as uid 33 (www-data), the same as the application, so
+            # each side can read and delete what the other wrote.
+            - storage:/data
+        ports:
+            # Signalling (put TLS in front: wss://). Never expose 7880 itself to the internet.
+            - '${LIVEKIT_HTTP_BIND:-127.0.0.1}:7880:7880'
+            # Media: one UDP port for everyone, TCP as the fallback when UDP is blocked.
+            - '7882:7882/udp'
+            - '7881:7881'
+            # Built-in TURN relay for clients behind strict NATs.
+            - '3478:3478/udp'
+            # 7890 (recorder API) is deliberately not published: only the app talks to it.
+        healthcheck:
+            # Fails when either the SFU or the recorder is unhealthy.
+            test: ['CMD', '/usr/local/bin/tandem-media', '-healthcheck']
+            interval: 30s
+            timeout: 5s
+            start_period: 15s
+        # SIGTERM finishes and closes every recording file before the SFU stops.
+        stop_grace_period: 30s
+        deploy:
+            resources:
+                limits:
+                    memory: ${MEDIA_MEMORY_LIMIT:-512M}
+        restart: unless-stopped
+
+    # Optional: terminates TLS for the app, Reverb and LiveKit with automatic certificates.
+    #   docker compose --profile tls up -d      (see media/caddy/Caddyfile)
+    caddy:
+        image: caddy:2-alpine
+        profiles: ['tls']
+        logging: *logging
+        environment:
+            APP_DOMAIN: ${APP_DOMAIN:-app.example.com}
+            MEET_DOMAIN: ${MEET_DOMAIN:-meet.example.com}
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - ./media/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+            - caddy:/data
+        depends_on:
+            - app
+            - media
+        restart: unless-stopped
+
+    # Optional: a standalone TURN server, for networks that only allow TLS on port 443.
+    #   docker compose --profile coturn up -d   (see media/coturn/turnserver.conf)
+    coturn:
+        image: coturn/coturn:4.6
+        profiles: ['coturn']
+        logging: *logging
+        network_mode: host
+        volumes:
+            - ./media/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+        restart: unless-stopped
+
     mariadb:
         image: mariadb:11
+        logging: *logging
         environment:
             MARIADB_DATABASE: ${DB_DATABASE:-tandem}
             MARIADB_USER: ${DB_USERNAME:-tandem}
@@ -85,6 +205,7 @@ services:
 
     redis:
         image: redis:7-alpine
+        logging: *logging
         command: ['redis-server', '--appendonly', 'yes']
         volumes:
             - redis:/data
@@ -99,3 +220,4 @@ volumes:
     storage:
     mariadb:
     redis:
+    caddy:

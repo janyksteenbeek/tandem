@@ -2,13 +2,14 @@
 
 ## Code layout
 
-The application is split into two product domains plus the infrastructure they share:
+The application is split into product domains plus the infrastructure they share:
 
 | Domain                                                                                         | Backend namespaces                                                                                                                                                                                                                                                                                             | Frontend                                                                                             |
 | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | **Shared** (tenancy, auth, audit, branding, SSO, the automation engine, notification plumbing) | `App\Models\{Organization,Team,User,Tag,AuditLog,…}`, `App\Policies\{Organization,Team}Policy`, `App\Services\{Audit,Automations,Sso}`, `App\Enums\{OrganizationRole,TeamRole,PushTopic}`, `App\Models\Automations`, `App\Enums\Automations`, `App\Http\Controllers\{Auth,Organizations,Settings,Automations}` | `components/shared`, `components/shell`, `components/ui`, `composables/*`, `lib/*`, `types/*`        |
 | **Mail** (inboxes, conversations, messages, drafts, providers)                                 | `App\Models\Mail`, `App\Policies\Mail`, `App\Services\Mail` (+ `Conversations`), `App\Events\Mail` (+ `Broadcast`), `App\Notifications\Mail`, `App\Enums\Mail`, `App\Http\{Controllers,Requests,Resources}\Mail`, `App\Jobs\Mail`, `App\Listeners\Mail`, `Database\Factories\Mail`                             | `pages/mail`, `components/mail`, `composables/mail`, `lib/mail.ts`, `types/mail.ts`                  |
 | **Projects** (products, modules, projects, issues, workstreams, cycles)                        | `App\Models\Projects`, `App\Policies\Projects`, `App\Services\Projects`, `App\Events\Projects`, `App\Notifications\Projects`, `App\Enums\Projects`, `App\Http\{Controllers,Requests,Resources}\Projects`, `Database\Factories\Projects`                                                                        | `pages/projects`, `components/projects`, `composables/projects`, `lib/projects`, `types/projects.ts` |
+| **Calls** (meetings, participants and guests, chat, files, recordings, transcripts)            | `App\Models\Calls`, `App\Policies\Calls`, `App\Services\Calls` (+ `Media`), `App\Events\Calls` (+ `Broadcast`), `App\Notifications\Calls`, `App\Mail\Calls`, `App\Enums\Calls`, `App\Http\{Controllers,Resources}\Calls`, `App\Jobs\Calls`, `App\Listeners\Calls`, `Database\Factories\Calls`; the media server in `media/tandem-media` (Go)                                                             | `pages/calls`, `pages/meet`, `components/{calls,meet}`, `composables/{calls,meet}`, `lib/{calls,meet}`, `types/calls.ts` |
 
 Polymorphic columns store the short aliases from `AppServiceProvider::morphMap()` (enforced), so classes can move without data migrations.
 
@@ -68,3 +69,10 @@ Reverb channels: `private-inbox.{id}` (list updates), `private-conversation.{uui
 - OAuth state is a signed nonce kept in the session with its intent; the Pub/Sub endpoint requires a shared token; the Cloudflare Worker signs every delivery (HMAC-SHA256 with timestamp tolerance); all webhooks are deduplicated through `webhook_receipts`.
 - Email HTML is purified on ingest and rendered in a sandboxed, script-less iframe; attachments stream through an authorized controller with `nosniff` and a restrictive CSP; dangerous upload extensions are refused.
 - Audit trail: `conversation_events`, `automation_runs`, `sync_runs`, `webhook_receipts`, `audit_logs`.
+
+## Calls
+
+Meetings are their own domain with one extra process: `tandem-media`, a single Go binary that
+embeds the LiveKit SFU and a track recorder. Laravel decides who may join and hands out
+short-lived media tokens; media never passes through PHP. `docs/calls.md` covers the media
+path, recording, guest access, deployment and measured resource use.
