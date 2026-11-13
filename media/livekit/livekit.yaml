@@ -1,0 +1,50 @@
+# Production media server configuration for Tandem Calls (standalone binary deployments).
+#   tandem-media --config /etc/tandem/livekit.yaml
+# With Docker Compose the same settings are generated from .env; see compose.yaml.
+
+port: 7880
+# Signalling must reach browsers as wss://. Bind locally and put a TLS proxy in front
+# (media/caddy/Caddyfile), or set bind_addresses to a private interface.
+bind_addresses:
+    - 127.0.0.1
+
+rtc:
+    # One UDP port carries every participant's media; TCP is the fallback when UDP is blocked.
+    udp_port: 7882
+    tcp_port: 7881
+    # Discover the public address with STUN. On a host with a public interface and no NAT,
+    # set this to false and `node_ip` to that address instead.
+    use_external_ip: true
+
+keys:
+    # LIVEKIT_API_KEY: LIVEKIT_API_SECRET  (the secret must be at least 32 characters)
+    CHANGE_ME_KEY: CHANGE_ME_SECRET_AT_LEAST_32_CHARACTERS
+
+room:
+    auto_create: true
+    empty_timeout: 120
+    departure_timeout: 120
+    # Opus with VP8/VP9 only. Every track then fits a WebM file as it is, which is what lets
+    # the recorder store media without decoding or re-encoding anything. Do not add H.264
+    # here without changing the recorder.
+    enabled_codecs:
+        - mime: audio/opus
+        - mime: audio/red
+        - mime: video/vp8
+        - mime: video/vp9
+        - mime: video/rtx
+
+# Built-in TURN relay for participants behind strict NATs. For networks that only allow TLS
+# on 443, add `domain`, `tls_port: 443` and a certificate (cert_file / key_file), or run the
+# standalone coturn from media/coturn and list it under rtc.turn_servers.
+turn:
+    enabled: true
+    udp_port: 3478
+
+webhook:
+    # Must be one of the keys above; Tandem verifies each delivery with its secret.
+    api_key: CHANGE_ME_KEY
+    urls:
+        - https://app.example.com/webhooks/calls/media
+
+log_level: info

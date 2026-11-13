@@ -50,3 +50,7 @@ playwright-report/
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+# Tandem Calls: locally built media binaries; the Caddy config directory is not the binary above
+/media/bin
+!/media/caddy
