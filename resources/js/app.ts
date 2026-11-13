@@ -2,6 +2,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import MeetLayout from '@/layouts/MeetLayout.vue';
 import ProjectsLayout from '@/layouts/projects/Layout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { registerServiceWorker } from '@/composables/usePwa';
@@ -29,6 +30,9 @@ void createInertiaApp({
         switch (true) {
             case name.startsWith('auth/'):
                 return AuthLayout;
+            // The meeting room and shared recordings: open to guests, so no app shell.
+            case name.startsWith('meet/'):
+                return MeetLayout;
             case name.startsWith('settings/'):
             case name.startsWith('organizations/'):
                 return [AppLayout, SettingsLayout];

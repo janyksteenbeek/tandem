@@ -6,3 +6,4 @@ export * from './settings';
 export * from './automations';
 export * from './branding';
 export * from './projects';
+export * from './calls';
