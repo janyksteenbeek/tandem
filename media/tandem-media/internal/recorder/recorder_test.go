@@ -397,6 +397,23 @@ func newHookRecorder(t *testing.T) *hookRecorder {
 	return h
 }
 
+// notifier returns a notifier that posts to this recorder. It is drained before the test's
+// temporary directory is removed: a delivered webhook is acknowledged by a write to the
+// recording's state file, which would otherwise race with that removal.
+func (h *hookRecorder) notifier(t *testing.T) *webhook.Notifier {
+	t.Helper()
+
+	n := webhook.New(h.server.URL, "s3cret", quiet())
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		n.Close(ctx)
+	})
+
+	return n
+}
+
 func (h *hookRecorder) find(name string) map[string]any {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -498,7 +515,7 @@ func TestRecoverRepairsAnInterruptedRecordingWhoseRoomIsGone(t *testing.T) {
 	}
 
 	hooks := newHookRecorder(t)
-	m := NewManager(testConfig(root), quiet(), webhook.New(hooks.server.URL, "s3cret", quiet()))
+	m := NewManager(testConfig(root), quiet(), hooks.notifier(t))
 	m.roomOpen = func(string) (bool, bool) { return false, true }
 
 	m.Recover()
@@ -579,7 +596,7 @@ func TestRecoverRepeatsAnOutcomeTandemNeverAcknowledged(t *testing.T) {
 	}
 
 	hooks := newHookRecorder(t)
-	m := NewManager(testConfig(root), quiet(), webhook.New(hooks.server.URL, "s3cret", quiet()))
+	m := NewManager(testConfig(root), quiet(), hooks.notifier(t))
 	m.Recover()
 
 	hooks.wait(t, webhook.EventFinished)
@@ -646,7 +663,7 @@ func TestAPanicInARecordingIsReportedAsFailed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	session := newSession(testConfig(root), quiet(), webhook.New(hooks.server.URL, "s3cret", quiet()), state, nil)
+	session := newSession(testConfig(root), quiet(), hooks.notifier(t), state, nil)
 
 	// A file that was being written when the bug hit.
 	crashedAudio(t, filepath.Join(session.dir, "0001-microphone-p_jane.webm"), 100)
@@ -683,7 +700,7 @@ func TestShutdownEndsOrSuspendsRecordings(t *testing.T) {
 	for _, finish := range []bool{true, false} {
 		root := t.TempDir()
 		hooks := newHookRecorder(t)
-		m := NewManager(testConfig(root), quiet(), webhook.New(hooks.server.URL, "s3cret", quiet()))
+		m := NewManager(testConfig(root), quiet(), hooks.notifier(t))
 
 		state := &manifest.State{ID: "rec-1", Room: "room", Mode: ModeAudio, Path: "rec-1", Status: manifest.StateActive, Part: 1, StartedAt: time.Now().Add(-time.Minute)}
 		if err := os.MkdirAll(filepath.Join(root, "rec-1"), 0o755); err != nil {
