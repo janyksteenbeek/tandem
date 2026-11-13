@@ -25,9 +25,16 @@ class CloudflareInboundController extends Controller
 {
     public const PROVIDER = 'cloudflare';
 
-    public const DISK = 'local';
-
     public const DIRECTORY = 'inbound';
+
+    /**
+     * Raw .eml files follow the attachments disk so the web and queue roles share them without a
+     * shared volume (TANDEM_ATTACHMENTS_DISK=s3 in production).
+     */
+    public static function disk(): string
+    {
+        return (string) config('tandem.attachments.disk', 'local');
+    }
 
     public function __invoke(CloudflareInboundRequest $request, ForwardingAddressGenerator $addresses): JsonResponse
     {
@@ -85,7 +92,18 @@ class CloudflareInboundController extends Controller
 
         $path = self::DIRECTORY.'/'.Str::uuid().'.eml';
 
-        Storage::disk(self::DISK)->put($path, $raw);
+        if (! Storage::disk(self::disk())->put($path, $raw)) {
+            Log::error('Cloudflare inbound mail could not be written to disk.', [
+                'receipt_id' => $receipt->id,
+                'disk' => self::disk(),
+                'path' => $path,
+            ]);
+
+            // Release the claim so the Worker's retry is not rejected as a duplicate.
+            $receipt->delete();
+
+            return response()->json(['status' => 'storage_unavailable'], 503);
+        }
 
         $receipt->update([
             'mail_account_id' => $account->id,

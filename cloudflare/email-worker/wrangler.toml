@@ -10,7 +10,7 @@ compatibility_date = "2026-01-01"
 
 [vars]
 # Public URL of the Tandem webhook endpoint (route: webhooks.cloudflare.inbound).
-TANDEM_INGEST_URL = "https://app.tandem.example/webhooks/cloudflare/inbound"
+TANDEM_INGEST_URL = "https://inbox.services.eu.portivio.com/webhooks/cloudflare/inbound"
 # Reject messages larger than this many bytes before uploading them (default 25 MiB).
 MAX_BYTES = "26214400"
 # Optional: also forward every message to a verified destination address (debugging / backup).

@@ -5,6 +5,7 @@ use App\Jobs\Mail\IngestForwardedEmail;
 use App\Models\MailAccount;
 use App\Models\WebhookReceipt;
 use App\Services\Mail\Providers\Forwarding\WebhookSignature;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
@@ -110,6 +111,36 @@ it('returns 413 when the declared or decoded size exceeds the limit', function (
 
     postInbound(inboundPayload($this->account->email_address, ['size' => 10]))
         ->assertStatus(413);
+
+    Queue::assertNothingPushed();
+    expect(WebhookReceipt::count())->toBe(0);
+});
+
+it('stores the raw message on the configured attachments disk', function () {
+    config()->set('tandem.attachments.disk', 's3');
+    Storage::fake('s3');
+    Storage::fake('local');
+    Queue::fake([IngestForwardedEmail::class]);
+    $payload = inboundPayload($this->account->email_address);
+
+    postInbound($payload)->assertStatus(202)->assertJsonPath('status', 'queued');
+
+    $receipt = WebhookReceipt::where('provider', 'cloudflare')->where('external_id', $payload['id'])->firstOrFail();
+
+    expect(Storage::disk('s3')->get($receipt->payload['path']))->toBe(base64_decode($payload['raw']))
+        ->and(Storage::disk('local')->allFiles('inbound'))->toBe([]);
+
+    Queue::assertPushed(IngestForwardedEmail::class);
+});
+
+it('releases the receipt and asks the worker to retry when the raw message cannot be written', function () {
+    Storage::fake('local');
+    Queue::fake([IngestForwardedEmail::class]);
+    Storage::shouldReceive('disk')->with('local')->andReturn($disk = Mockery::mock(Filesystem::class));
+    $disk->shouldReceive('put')->once()->andReturn(false);
+    $payload = inboundPayload($this->account->email_address);
+
+    postInbound($payload)->assertStatus(503)->assertJsonPath('status', 'storage_unavailable');
 
     Queue::assertNothingPushed();
     expect(WebhookReceipt::count())->toBe(0);

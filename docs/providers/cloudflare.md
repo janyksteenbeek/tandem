@@ -35,7 +35,7 @@ mailer (`FallbackMailer`), never through Cloudflare.
         |   1. validate + size check
         |   2. WebhookReceipt::claim('cloudflare', id)   (exactly-once)
         |   3. resolve MailAccount (provider in [forwarding, google_group], email=normalized recipient)
-        |   4. write storage/app/inbound/{uuid}.eml
+        |   4. write inbound/{uuid}.eml to the attachments disk (TANDEM_ATTACHMENTS_DISK)
         |   5. dispatch IngestForwardedEmail  (queue: mail-inbound)
         v
  IngestForwardedEmail job
@@ -195,7 +195,7 @@ Tandem's own outbound mail always carries `X-Tandem-Message: <uuid>`, and test e
 | Worker gets `413`                | `setReject("Message too large")`: the sender receives a bounce.                                                                                                                                       |
 | Webhook duplicate `id`           | `200 {"status":"duplicate"}`; nothing dispatched. Cloudflare may redeliver after a timeout; `WebhookReceipt` guarantees exactly-once processing.                                                      |
 | Unknown or disconnected address  | `202 {"status":"unknown_recipient"}`: never 4xx/5xx, so Cloudflare does not retry mail for addresses we deleted. Logged at info level.                                                                |
-| Accepted                         | `202 {"status":"queued"}`; the `.eml` is in `storage/app/inbound/` and `IngestForwardedEmail` is queued on `mail-inbound`.                                                                            |
+| Accepted                         | `202 {"status":"queued"}`; the `.eml` is at `inbound/{uuid}.eml` on the attachments disk (`storage/app/private/` locally) and `IngestForwardedEmail` is queued on `mail-inbound`.                     |
 | Job failure                      | Receipt status `failed` with `payload.error`; the job retries 5 times (30s, 2m, 10m, 30m). After the last attempt the `.eml` stays on disk for manual recovery and the account's `last_error` is set. |
 | Job success                      | Account `last_synced_at`/`status=connected`, `sync_state.received_count` incremented, receipt `processed`, temp file deleted.                                                                         |
 

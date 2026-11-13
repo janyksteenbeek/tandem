@@ -67,7 +67,7 @@ class IngestForwardedEmail implements ShouldQueue
             return;
         }
 
-        $disk = Storage::disk(CloudflareInboundController::DISK);
+        $disk = Storage::disk(CloudflareInboundController::disk());
 
         if (! $disk->exists($this->path)) {
             $this->recordFailure($receipt, 'Raw message file is missing: '.$this->path, final: true);
@@ -221,7 +221,7 @@ class IngestForwardedEmail implements ShouldQueue
             'payload' => array_merge($receipt->payload ?? [], ['skipped_reason' => $reason]),
         ]);
 
-        Storage::disk(CloudflareInboundController::DISK)->delete($this->path);
+        Storage::disk(CloudflareInboundController::disk())->delete($this->path);
     }
 
     protected function recordFailure(WebhookReceipt $receipt, string $error, bool $final): void

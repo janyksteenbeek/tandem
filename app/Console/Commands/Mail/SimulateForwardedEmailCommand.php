@@ -84,7 +84,7 @@ class SimulateForwardedEmailCommand extends Command
         }
 
         $storagePath = CloudflareInboundController::DIRECTORY.'/'.Str::uuid().'.eml';
-        Storage::disk(CloudflareInboundController::DISK)->put($storagePath, $raw);
+        Storage::disk(CloudflareInboundController::disk())->put($storagePath, $raw);
 
         $receipt = WebhookReceipt::claim(CloudflareInboundController::PROVIDER, (string) $payload['id'], $account->id, [
             'to' => $recipient,
