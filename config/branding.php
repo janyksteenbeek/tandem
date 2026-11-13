@@ -14,7 +14,7 @@ return [
     */
 
     'name' => env('BRANDING_NAME', env('APP_NAME', 'Tandem')),
-    'tagline' => env('BRANDING_TAGLINE', 'calm mail for busy teams'),
+    'tagline' => env('BRANDING_TAGLINE', 'work in good company'),
 
     /*
     |--------------------------------------------------------------------------
