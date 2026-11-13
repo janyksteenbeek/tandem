@@ -42,6 +42,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Meeting guests, resolved per realtime channel from their session.
+        // See AppServiceProvider::registerCallGuestGuard().
+        'call-guest' => [
+            'driver' => 'call-guest',
+        ],
     ],
 
     /*

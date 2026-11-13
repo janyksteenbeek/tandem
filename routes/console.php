@@ -33,3 +33,7 @@ Schedule::command('tandem:prune')->daily()->description('Prune old sync runs, we
 
 Schedule::command('projects:cycles')->hourly()->withoutOverlapping()->description('Start, complete and schedule team cycles');
 Schedule::command('projects:due-dates')->hourly()->withoutOverlapping()->description('Fire due-date automations and reminders');
+
+// Calls
+Schedule::command('calls:sync')->everyMinute()->withoutOverlapping()->description('Reconcile calls with the media server and catch stalled recordings');
+Schedule::command('calls:prune-recordings')->daily()->description('Delete recordings past their retention period');

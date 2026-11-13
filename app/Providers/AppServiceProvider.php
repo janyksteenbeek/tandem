@@ -21,6 +21,14 @@ use App\Listeners\Automations\RunIssueAutomations;
 use App\Models\AuditLog;
 use App\Models\Automations\AutomationRule;
 use App\Models\Automations\AutomationRun;
+use App\Models\Calls\Call;
+use App\Models\Calls\CallFile;
+use App\Models\Calls\CallLink;
+use App\Models\Calls\CallMessage;
+use App\Models\Calls\CallParticipant;
+use App\Models\Calls\CallRecording;
+use App\Models\Calls\CallRecordingExport;
+use App\Models\Calls\CallTranscriptDelivery;
 use App\Models\Mail\Attachment;
 use App\Models\Mail\AutoresponderSend;
 use App\Models\Mail\Comment;
@@ -63,6 +71,7 @@ use App\Models\Team;
 use App\Models\TeamMember;
 use App\Models\User;
 use App\Models\WebhookReceipt;
+use App\Services\Calls\CallAccess;
 use App\Services\Projects\Access\IssueAccess;
 use App\Services\Sso\Sso;
 use Carbon\CarbonImmutable;
@@ -71,6 +80,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -97,6 +107,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureMorphMap();
         $this->configureTrustedProxies();
         $this->registerAutomationListeners();
+        $this->registerCallGuestGuard();
         Sso::registerDrivers();
     }
 
@@ -161,6 +172,14 @@ class AppServiceProvider extends ServiceProvider
             'issue_comment' => IssueComment::class,
             'issue_attachment' => IssueAttachment::class,
             'issue_view' => IssueView::class,
+            'call' => Call::class,
+            'call_participant' => CallParticipant::class,
+            'call_message' => CallMessage::class,
+            'call_file' => CallFile::class,
+            'call_recording' => CallRecording::class,
+            'call_recording_export' => CallRecordingExport::class,
+            'call_transcript_delivery' => CallTranscriptDelivery::class,
+            'call_link' => CallLink::class,
         ];
     }
 
@@ -211,6 +230,24 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * Guests in a meeting have no user, but still need to authorize the call's realtime
+     * channel. This guard answers with the call participant their session holds for the
+     * channel being requested, and with nobody for anything else.
+     */
+    protected function registerCallGuestGuard(): void
+    {
+        Auth::viaRequest('call-guest', function (Request $request): ?CallParticipant {
+            if (! preg_match('/^private-call\.([0-9a-f-]{36})$/', (string) $request->input('channel_name'), $match)) {
+                return null;
+            }
+
+            $call = Call::query()->where('uuid', $match[1])->first();
+
+            return $call ? app(CallAccess::class)->guestFor($request, $call) : null;
+        });
+    }
+
+    /**
      * Configure default behaviors for production-ready applications.
      */
     protected function configureDefaults(): void
@@ -218,6 +255,12 @@ class AppServiceProvider extends ServiceProvider
         Date::use(CarbonImmutable::class);
 
         RateLimiter::for('webhooks', fn (Request $request) => Limit::perMinute(600)->by($request->ip()));
+
+        // Meeting links are public, so joining is limited per address; chat and uploads per
+        // session, which is the closest thing a guest has to an identity.
+        RateLimiter::for('calls-join', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
+        RateLimiter::for('calls-chat', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->session()->getId()));
+        RateLimiter::for('calls-upload', fn (Request $request) => Limit::perMinute(30)->by($request->user()?->id ?: $request->session()->getId()));
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

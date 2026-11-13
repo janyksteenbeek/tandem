@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Calls\Call;
+use App\Models\Calls\CallParticipant;
 use App\Models\Mail\Conversation;
 use App\Models\Mail\Inbox;
 use App\Models\Organization;
@@ -81,3 +83,23 @@ Broadcast::channel('organization.{organizationId}.issues', function (User $user,
 
     return $organization !== null && $user->belongsToOrganization($organization);
 });
+
+// --- Calls ------------------------------------------------------------------------------
+
+// Everyone who was let into a call, signed in or not. Guests authenticate through the
+// `call-guest` guard, which only ever yields the participant their session holds for this call.
+Broadcast::channel('call.{uuid}', function (User|CallParticipant $actor, string $uuid) {
+    $call = Call::query()->where('uuid', $uuid)->first();
+
+    if ($call === null) {
+        return false;
+    }
+
+    // Always read the participant's current standing: someone removed a moment ago must not
+    // keep listening on the strength of an older lookup.
+    $participant = $actor instanceof CallParticipant
+        ? $call->participants()->whereKey($actor->id)->whereNull('user_id')->first()
+        : $call->participants()->where('user_id', $actor->id)->first();
+
+    return $participant !== null && $participant->isInside();
+}, ['guards' => ['web', 'call-guest']]);

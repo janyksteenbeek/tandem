@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\GeneratesUniqueOrganizationSlugs;
 use App\Enums\OrganizationRole;
 use App\Models\Automations\AutomationRule;
+use App\Models\Calls\Call;
 use App\Models\Mail\Inbox;
 use App\Models\Mail\MailAccount;
 use App\Models\Mail\MessageTemplate;
@@ -39,6 +40,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $outbound_mail_settings
  * @property string|null $issue_key
  * @property array<string, mixed>|null $project_settings
+ * @property array<string, mixed>|null $call_settings
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -58,7 +60,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Workflow> $workflows
  * @property-read Collection<int, IssueLabel> $issueLabels
  */
-#[Fillable(['name', 'slug', 'is_personal', 'timezone', 'color', 'google_oauth_client_id', 'google_oauth_client_secret', 'google_pubsub_topic', 'business_hours', 'outbound_mail_settings', 'issue_key', 'project_settings'])]
+#[Fillable(['name', 'slug', 'is_personal', 'timezone', 'color', 'google_oauth_client_id', 'google_oauth_client_secret', 'google_pubsub_topic', 'business_hours', 'outbound_mail_settings', 'issue_key', 'project_settings', 'call_settings'])]
 #[Hidden(['google_oauth_client_secret', 'outbound_mail_settings'])]
 class Organization extends Model
 {
@@ -225,6 +227,14 @@ class Organization extends Model
     }
 
     /**
+     * @return HasMany<Call, $this>
+     */
+    public function calls(): HasMany
+    {
+        return $this->hasMany(Call::class);
+    }
+
+    /**
      * Whether this organization has its own Google OAuth client configured.
      */
     public function hasGoogleOAuthCredentials(): bool
@@ -245,6 +255,7 @@ class Organization extends Model
             'business_hours' => 'array',
             'outbound_mail_settings' => 'encrypted:array',
             'project_settings' => 'array',
+            'call_settings' => 'array',
         ];
     }
 

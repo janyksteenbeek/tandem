@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Calls\Webhooks\MediaServerWebhookController;
+use App\Http\Controllers\Calls\Webhooks\RecorderWebhookController;
 use App\Http\Controllers\Mail\Webhooks\CloudflareInboundController;
 use App\Http\Controllers\Mail\Webhooks\GmailPushController;
 use App\Http\Middleware\VerifyCloudflareWorkerSignature;
@@ -23,4 +25,9 @@ Route::prefix('webhooks')->name('webhooks.')->group(function () {
     Route::post('cloudflare/inbound', CloudflareInboundController::class)
         ->middleware(VerifyCloudflareWorkerSignature::class)
         ->name('cloudflare.inbound');
+
+    // --- Tandem Calls: media server room events and recorder reports ------------
+    // Both controllers verify the caller's signature themselves.
+    Route::post('calls/media', MediaServerWebhookController::class)->name('calls.media');
+    Route::post('calls/recorder', RecorderWebhookController::class)->name('calls.recorder');
 });

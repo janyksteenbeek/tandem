@@ -210,6 +210,21 @@ return [
             'timeout' => 300,
             'nice' => 0,
         ],
+
+        // Recording exports (FFmpeg): one at a time, low priority, long timeout, so encoding
+        // never competes with live calls, mail or broadcasts for CPU.
+        'supervisor-media' => [
+            'connection' => 'redis-long',
+            'queue' => ['calls-media'],
+            'balance' => 'simple',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 1,
+            'timeout' => 3800,
+            'nice' => 15,
+        ],
     ],
 
     'environments' => [
@@ -219,11 +234,17 @@ return [
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
+            'supervisor-media' => [
+                'maxProcesses' => 1,
+            ],
         ],
 
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 3,
+            ],
+            'supervisor-media' => [
+                'maxProcesses' => 1,
             ],
         ],
     ],

@@ -31,3 +31,4 @@ require __DIR__.'/settings-mail.php';
 
 require __DIR__.'/automations.php';
 require __DIR__.'/projects.php';
+require __DIR__.'/calls.php';
