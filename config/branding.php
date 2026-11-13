@@ -46,7 +46,7 @@ return [
     */
 
     'auth' => [
-        'quote' => env('BRANDING_AUTH_QUOTE', 'Inbox zero is a team sport.'),
+        'quote' => env('BRANDING_AUTH_QUOTE', 'Work in good company.'),
     ],
 
     /*
