@@ -13,8 +13,8 @@ test('branding from config is shared with every page', function () {
         ->where('branding.name', 'Acme Mail')
         ->where('branding.tagline', 'mail, but calmer')
         ->where('branding.logo', 'https://cdn.example.com/logo.svg')
-        ->where('branding.wordmark', '/tandem/tandem-mail-wordmark-purple.svg')
-        ->where('branding.wordmark_dark', '/tandem/tandem-mail-wordmark-light.svg')
+        ->where('branding.wordmark', '/tandem/tandem-wordmark.svg')
+        ->where('branding.wordmark_dark', '/tandem/tandem-wordmark-light.svg')
         ->where('branding.auth.quote', 'One thing.')
     );
 });

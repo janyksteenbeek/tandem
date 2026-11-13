@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="public/tandem/tandem-mail-og.png" alt="Tandem Mail" width="720">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/tandem/tandem-github-banner-dark.png">
+    <img src="public/tandem/tandem-github-banner.png" alt="Tandem" width="720">
+  </picture>
 </p>
 
 <p align="center">Calm mail for busy teams.</p>
