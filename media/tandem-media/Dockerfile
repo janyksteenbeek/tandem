@@ -6,6 +6,9 @@
 #
 #   docker build -t tandem-media media/tandem-media
 #
+# CI (.github/workflows/docker.yml) publishes it as ghcr.io/<owner>/<repo>-media for
+# linux/amd64 and linux/arm64.
+#
 # The image also carries tandem-recorder, the recorder on its own, for installations that
 # record from a separate host: override the entrypoint with /usr/local/bin/tandem-recorder.
 #
@@ -13,7 +16,9 @@
 ARG GO_IMAGE=golang:1.27-bookworm
 ARG RUNTIME_IMAGE=gcr.io/distroless/static-debian12
 
-FROM ${GO_IMAGE} AS build
+# The compiler always runs on the build machine's own architecture and cross-compiles for the
+# target, so a multi-platform build needs no emulation.
+FROM --platform=${BUILDPLATFORM} ${GO_IMAGE} AS build
 
 WORKDIR /src
 
@@ -24,9 +29,11 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 COPY . .
 
 ARG VERSION=dev
+ARG TARGETOS
+ARG TARGETARCH
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 go build -trimpath \
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath \
       -ldflags "-s -w -X github.com/janyksteenbeek/tandem/media/tandem-media/internal/recorder.Version=${VERSION}" \
       -o /out/ ./cmd/tandem-media ./cmd/tandem-recorder \
     && mkdir -p /out/recordings
