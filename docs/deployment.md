@@ -59,7 +59,7 @@ BRANDING_LOGO_DARK=https://cdn.example.com/mark-dark.svg
 BRANDING_FAVICON=/tandem/icon.svg
 BRANDING_WORDMARK=/tandem/tandem-wordmark.svg
 BRANDING_OG_IMAGE=/tandem/tandem-og.png
-BRANDING_AUTH_QUOTE="Inbox zero is a team sport."
+BRANDING_AUTH_QUOTE="Work in good company."
 BRANDING_COLOR_BRAND="#603df3"                           # any CSS colour; *_DARK variants apply in dark mode
 BRANDING_COLOR_BRAND_FOREGROUND=
 BRANDING_COLOR_BRAND_SOFT= BRANDING_COLOR_BRAND_SOFT_FOREGROUND=

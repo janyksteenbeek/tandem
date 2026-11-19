@@ -14,7 +14,7 @@ return [
     */
 
     'name' => env('BRANDING_NAME', env('APP_NAME', 'Tandem')),
-    'tagline' => env('BRANDING_TAGLINE', 'calm mail for busy teams'),
+    'tagline' => env('BRANDING_TAGLINE', 'work in good company'),
 
     /*
     |--------------------------------------------------------------------------
@@ -46,7 +46,7 @@ return [
     */
 
     'auth' => [
-        'quote' => env('BRANDING_AUTH_QUOTE', 'Inbox zero is a team sport.'),
+        'quote' => env('BRANDING_AUTH_QUOTE', 'Work in good company.'),
     ],
 
     /*

@@ -5,7 +5,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 beforeEach(function () {
     config([
         'branding.name' => 'Tandem',
-        'branding.tagline' => 'calm mail for busy teams',
+        'branding.tagline' => 'work in good company',
     ]);
 });
 
@@ -20,7 +20,7 @@ test('system mail renders the brand logo, name and footer through the tandem the
         ->toContain('src="'.url('/tandem/icon-192.png').'"')
         ->toContain('href="https://tandem.test/mail"')
         ->toContain('Open inbox')
-        ->toContain('Tandem · calm mail for busy teams')
+        ->toContain('Tandem · work in good company')
         ->toContain('The Tandem team')
         ->toContain('background-color: #603df3')
         ->not->toContain('laravel.com/img');
@@ -35,6 +35,6 @@ test('system mail follows the configured brand name and drops a cleared tagline'
         ->toContain('<title>Acme Mail</title>')
         ->toContain('The Acme Mail team')
         ->toContain('Acme Mail</p>')
-        ->not->toContain('calm mail for busy teams')
+        ->not->toContain('work in good company')
         ->not->toContain('·');
 });
