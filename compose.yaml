@@ -14,8 +14,8 @@ x-app: &app
     build:
         context: .
         args:
-            PHP_IMAGE: ${PHP_IMAGE:-dunglas/frankenphp:1-php8.4-bookworm}
-            NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+            PHP_IMAGE: ${PHP_IMAGE:-dunglas/frankenphp:1-php8.5-bookworm}
+            NODE_IMAGE: ${NODE_IMAGE:-node:26-bookworm-slim}
     env_file: .env
     environment:
         DB_HOST: mariadb

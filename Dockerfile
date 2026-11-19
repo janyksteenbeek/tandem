@@ -2,10 +2,10 @@
 
 # Base images are build arguments so a hardened drop-in replacement can be used
 # without editing this file, for example the Aikido Images mirror:
-#   --build-arg PHP_IMAGE=docker.aikido.io/<token>/dunglas/frankenphp:1-php8.4-bookworm
-#   --build-arg NODE_IMAGE=docker.aikido.io/<token>/node:22-bookworm-slim
-ARG PHP_IMAGE=dunglas/frankenphp:1-php8.4-bookworm
-ARG NODE_IMAGE=node:22-bookworm-slim
+#   --build-arg PHP_IMAGE=docker.aikido.io/<token>/dunglas/frankenphp:1-php8.5-bookworm
+#   --build-arg NODE_IMAGE=docker.aikido.io/<token>/node:26-bookworm-slim
+ARG PHP_IMAGE=dunglas/frankenphp:1-php8.5-bookworm
+ARG NODE_IMAGE=node:26-bookworm-slim
 ARG COMPOSER_IMAGE=composer:2
 # A single static FFmpeg binary for recording exports (mixed audio, combined video). It only
 # ever runs on the queue after a call; live calls and recording never use it.

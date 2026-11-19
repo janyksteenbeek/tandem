@@ -52,8 +52,8 @@ jobs:
 
       # PHP_IMAGE / NODE_IMAGE are repository variables (Settings -> Variables) so the
       # Aikido Images mirror path, which embeds an account token, stays out of the repo:
-      #   PHP_IMAGE=docker.aikido.io/<token>/dunglas/frankenphp:1-php8.4-bookworm
-      #   NODE_IMAGE=docker.aikido.io/<token>/node:22-bookworm-slim
+      #   PHP_IMAGE=docker.aikido.io/<token>/dunglas/frankenphp:1-php8.5-bookworm
+      #   NODE_IMAGE=docker.aikido.io/<token>/node:26-bookworm-slim
       - name: Build and push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -64,8 +64,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            PHP_IMAGE=${{ vars.PHP_IMAGE || 'dunglas/frankenphp:1-php8.4-bookworm' }}
-            NODE_IMAGE=${{ vars.NODE_IMAGE || 'node:22-bookworm-slim' }}
+            PHP_IMAGE=${{ vars.PHP_IMAGE || 'dunglas/frankenphp:1-php8.5-bookworm' }}
+            NODE_IMAGE=${{ vars.NODE_IMAGE || 'node:26-bookworm-slim' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true

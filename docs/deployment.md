@@ -5,7 +5,7 @@
 | Process              | Command                                        | Notes                                                                                                                                                                                                          |
 | -------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Web                  | `php artisan octane:start --server=frankenphp` | Octane on FrankenPHP (port 8000). `APP_URL` must be the public HTTPS origin (OAuth redirect and webhooks derive from it). Set `TRUSTED_PROXIES`.                                                               |
-| SSR                  | `php artisan inertia:start-ssr`                | Node 22 renders the first page load (port 13714). The web process reaches it through `INERTIA_SSR_URL`; failures fall back to client rendering.                                                                |
+| SSR                  | `php artisan inertia:start-ssr`                | Node 26 renders the first page load (port 13714). The web process reaches it through `INERTIA_SSR_URL`; failures fall back to client rendering.                                                                |
 | Queues               | `php artisan horizon`                          | Supervisor consumes `mail-inbound, mail-outbound, mail-sync, broadcasts, notifications, automations, default`. Timeout is 300s for initial syncs. A second supervisor takes `calls-media` (recording exports). |
 | Scheduler            | `php artisan schedule:run` every minute (cron) | Gmail watch renewal (hourly), Gmail reconcile (15 min), IMAP poll (1 min), snooze wake-ups (1 min), business-hours triggers (1 min), call sync (1 min).                                                        |
 | Realtime             | `php artisan reverb:start`                     | Put behind TLS (`REVERB_SCHEME=https`), expose the port to browsers.                                                                                                                                           |
@@ -150,8 +150,8 @@ in the web container's log. Keep the app on an unprivileged port (8000) and term
 
 Base images are build arguments so a hardened mirror can be swapped in without touching the
 Dockerfile. For Aikido Images set the repository variables `PHP_IMAGE` and `NODE_IMAGE` to the
-paths shown under AutoFix → Containers → Aikido Images (`docker.aikido.io/<token>/dunglas/frankenphp:1-php8.4-bookworm`
-and `docker.aikido.io/<token>/node:22-bookworm-slim`); the workflow falls back to the upstream
+paths shown under AutoFix → Containers → Aikido Images (`docker.aikido.io/<token>/dunglas/frankenphp:1-php8.5-bookworm`
+and `docker.aikido.io/<token>/node:26-bookworm-slim`); the workflow falls back to the upstream
 images when the variables are empty.
 
 ## Calls
