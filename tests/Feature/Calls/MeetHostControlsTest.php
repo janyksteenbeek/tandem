@@ -127,6 +127,33 @@ test('a host changes settings, sets a password and connected participants lose s
     Event::assertDispatched(CallUpdated::class, fn (CallUpdated $event) => $event->reason === 'settings');
 });
 
+test('switching off the waiting room lets in whoever is waiting and everyone after them', function () {
+    $this->actingAs($this->admin)
+        ->patchJson(route('meet.settings', $this->call->code), ['waiting_room' => false])
+        ->assertOk()
+        ->assertJsonPath('call.settings.waiting_room', false);
+
+    expect($this->guest->fresh()->status)->toBe(ParticipantStatus::Admitted)
+        ->and($this->guest->fresh()->admitted_at)->not->toBeNull();
+
+    Event::assertDispatched(CallParticipantUpdated::class, fn (CallParticipantUpdated $event) => $event->participant->is($this->guest));
+
+    auth()->logout();
+    $this->postJson(route('meet.join', $this->call->code), ['name' => 'Late Larry'])
+        ->assertOk()
+        ->assertJsonPath('status', 'admitted');
+});
+
+test('switching off the waiting room of a locked meeting keeps waiting guests out', function () {
+    $this->call->update(['settings' => ['locked' => true]]);
+
+    $this->actingAs($this->admin)
+        ->patchJson(route('meet.settings', $this->call->code), ['waiting_room' => false])
+        ->assertOk();
+
+    expect($this->guest->fresh()->status)->toBe(ParticipantStatus::Waiting);
+});
+
 test('settings reject values outside the allowed set', function () {
     $this->actingAs($this->admin)
         ->patchJson(route('meet.settings', $this->call->code), ['screen_share' => 'nobody', 'password' => 'abc'])

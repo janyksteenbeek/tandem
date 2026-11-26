@@ -8,6 +8,7 @@ import BrandMark from '@/components/BrandMark.vue';
 import ChatPanel from '@/components/meet/ChatPanel.vue';
 import ControlBar from '@/components/meet/ControlBar.vue';
 import InviteDialog from '@/components/meet/InviteDialog.vue';
+import MeetPip from '@/components/meet/MeetPip.vue';
 import MeetStage from '@/components/meet/MeetStage.vue';
 import ParticipantsPanel from '@/components/meet/ParticipantsPanel.vue';
 import QualityBars from '@/components/meet/QualityBars.vue';
@@ -26,6 +27,8 @@ import { useChat } from '@/composables/meet/useChat';
 import { useConnectionStats } from '@/composables/meet/useConnectionStats';
 import { useDevices } from '@/composables/meet/useDevices';
 import { useMeetPreferences } from '@/composables/meet/useMeetPreferences';
+import { provideParticipantVolumes } from '@/composables/meet/useParticipantVolumes';
+import { usePictureInPicture } from '@/composables/meet/usePictureInPicture';
 import type { SessionEnd } from '@/composables/meet/useRoomSession';
 import { useRoomSession } from '@/composables/meet/useRoomSession';
 import { useKeyboard } from '@/composables/useKeyboard';
@@ -33,6 +36,7 @@ import { reportError } from '@/lib/http';
 import { meetEndpoints } from '@/lib/meet/endpoints';
 import { formatDuration } from '@/lib/meet/format';
 import { orderParticipants } from '@/lib/meet/layout';
+import { pipParticipants, pipScreen, pipVideoElement } from '@/lib/meet/pip';
 import { resolveDevice } from '@/lib/meet/preferences';
 import {
     QUALITY_LABEL,
@@ -59,6 +63,7 @@ const emit = defineEmits<{ end: [end: SessionEnd] }>();
 
 const endpoints = meetEndpoints(props.code);
 const preferences = useMeetPreferences();
+const volumes = provideParticipantVolumes(props.callUuid);
 
 const panel = ref<'chat' | 'people' | null>(null);
 const chatAtBottom = ref(true);
@@ -284,9 +289,29 @@ const remoteAudio = computed(() =>
         participant.audioTracks.map((track) => ({
             key: `${participant.identity}:${track.sid ?? track.source}`,
             track,
+            // One level per person: their voice and the sound of a screen they share.
+            volume: volumes.volumeOf(participant.identity),
         })),
     ),
 );
+
+// --- Picture-in-picture ------------------------------------------------------------------
+
+const pipStageScreen = computed(() =>
+    pipScreen(session.screens.value, selectedScreenId.value),
+);
+const pipPeople = computed(() =>
+    pipParticipants(ordered.value, session.lastSpokeAt.value),
+);
+const pipHidden = computed(() =>
+    Math.max(0, session.remotes.value.length - pipPeople.value.length),
+);
+
+const pip = usePictureInPicture({
+    title: () => displayTitle.value,
+    video: () => pipVideoElement(pipStageScreen.value, pipPeople.value),
+    onUnavailable: (message) => toast.message(message),
+});
 
 // --- Recording ---------------------------------------------------------------------------
 
@@ -592,6 +617,15 @@ const shortcuts = computed(() => [
         handler: () => togglePanel('people'),
     },
     { keys: 'f', description: 'Full screen', handler: toggleFullscreen },
+    ...(pip.support.value
+        ? [
+              {
+                  keys: 'shift+p',
+                  description: 'Picture-in-picture',
+                  handler: () => void pip.toggle(),
+              },
+          ]
+        : []),
     {
         keys: 'i',
         description: 'Copy the meeting link',
@@ -620,7 +654,10 @@ useKeyboard(
 
 const shortcutList = computed(() =>
     shortcuts.value.map(({ keys, description }) => ({
-        keys: keys.replace('shift+/', '?').replace('shift+l', 'Shift L'),
+        keys: keys
+            .replace('shift+/', '?')
+            .replace('shift+l', 'Shift L')
+            .replace('shift+p', 'Shift P'),
         description,
     })),
 );
@@ -868,6 +905,8 @@ const displayTitle = computed(
             :preferred-audio-input="preferences.audioInputId"
             :preferred-video-input="preferences.videoInputId"
             :preferred-audio-output="preferences.audioOutputId"
+            :pip-supported="pip.support.value !== null"
+            :pip-active="pip.active.value"
             @toggle-chat="togglePanel('chat')"
             @toggle-people="togglePanel('people')"
             @settings="openSettings"
@@ -878,13 +917,35 @@ const displayTitle = computed(
             @record="startRecording"
             @stop-recording="stopRecording"
             @fullscreen="toggleFullscreen"
+            @pip="pip.toggle()"
         />
+
+        <!-- The meeting in a floating window, while this tab is in the background -->
+        <Teleport v-if="pip.target.value" :to="pip.target.value">
+            <MeetPip
+                :participants="pipPeople"
+                :hidden="pipHidden"
+                :screen="pipStageScreen"
+                :mic-enabled="session.micEnabled.value"
+                :mic-busy="session.micBusy.value"
+                :camera-enabled="session.cameraEnabled.value"
+                :audio-only="session.audioOnly.value"
+                @toggle-mic="
+                    session.setMicrophone(!session.micEnabled.value)
+                "
+                @toggle-camera="
+                    session.setCamera(!session.cameraEnabled.value)
+                "
+                @leave="leave"
+            />
+        </Teleport>
 
         <!-- Everyone else's sound -->
         <TrackAudio
             v-for="audio in remoteAudio"
             :key="audio.key"
             :track="audio.track"
+            :volume="audio.volume"
         />
 
         <SettingsDialog

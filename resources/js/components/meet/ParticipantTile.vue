@@ -3,13 +3,15 @@ import { MicOff, Pin, PinOff, SignalLow } from '@lucide/vue';
 import { computed } from 'vue';
 import QualityBars from '@/components/meet/QualityBars.vue';
 import TrackVideo from '@/components/meet/TrackVideo.vue';
+import VolumeControl from '@/components/meet/VolumeControl.vue';
 import UserAvatar from '@/components/shared/UserAvatar.vue';
+import { useParticipantVolumes } from '@/composables/meet/useParticipantVolumes';
 import type { RoomParticipant } from '@/lib/meet/types';
 import { cn } from '@/lib/utils';
 
 /**
  * One person: their camera, or their avatar when it is off. Shows who is speaking, who is
- * muted and whose connection is struggling.
+ * muted and whose connection is struggling, and lets the viewer set how loud they are.
  */
 const props = withDefaults(
     defineProps<{
@@ -39,6 +41,14 @@ const label = computed(() =>
 /** Only flag a connection on the tile when it is bad enough to explain choppy audio. */
 const troubled = computed(() =>
     ['poor', 'lost'].includes(props.participant.quality),
+);
+
+/** A level this listener changed stays visible, so a quiet person is never a mystery. */
+const { volumeOf } = useParticipantVolumes();
+const turnedDown = computed(
+    () =>
+        !props.participant.isLocal &&
+        volumeOf(props.participant.identity) < 1,
 );
 
 const avatarSize = {
@@ -153,29 +163,56 @@ const avatarSize = {
             <QualityBars :level="participant.quality" size="sm" />
         </div>
 
-        <!-- Pin -->
-        <button
-            v-if="pinnable"
-            type="button"
-            :aria-label="
-                pinned ? `Unpin ${participant.name}` : `Pin ${participant.name}`
-            "
-            :aria-pressed="pinned"
-            :class="
-                cn(
-                    'absolute top-2 left-2 flex size-7 items-center justify-center rounded-lg backdrop-blur-md transition-opacity outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring',
-                    showVideo
-                        ? 'bg-black/45 text-white hover:bg-black/60'
-                        : 'bg-background/70 hover:bg-background',
-                    pinned
-                        ? 'opacity-100'
-                        : 'opacity-0 group-hover/tile:opacity-100',
-                )
-            "
-            @click="emit('pin')"
+        <!-- Pin, and how loud this person is for you -->
+        <div
+            v-if="pinnable || !participant.isLocal"
+            class="pointer-events-none @container absolute inset-x-2 top-2 flex items-center gap-1.5"
         >
-            <PinOff v-if="pinned" class="size-3.5" />
-            <Pin v-else class="size-3.5" />
-        </button>
+            <button
+                v-if="pinnable"
+                type="button"
+                :aria-label="
+                    pinned
+                        ? `Unpin ${participant.name}`
+                        : `Pin ${participant.name}`
+                "
+                :aria-pressed="pinned"
+                :class="
+                    cn(
+                        'pointer-events-auto flex size-7 shrink-0 items-center justify-center rounded-lg backdrop-blur-md transition-opacity outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring',
+                        showVideo
+                            ? 'bg-black/45 text-white hover:bg-black/60'
+                            : 'bg-background/70 hover:bg-background',
+                        pinned
+                            ? 'opacity-100'
+                            : 'opacity-0 group-hover/tile:opacity-100',
+                    )
+                "
+                @click="emit('pin')"
+            >
+                <PinOff v-if="pinned" class="size-3.5" />
+                <Pin v-else class="size-3.5" />
+            </button>
+
+            <VolumeControl
+                v-if="!participant.isLocal"
+                :identity="participant.identity"
+                :name="participant.name"
+                variant="overlay"
+                :class="
+                    cn(
+                        'transition-opacity focus-within:opacity-100',
+                        showVideo
+                            ? 'bg-black/45 text-white'
+                            : 'bg-background/70',
+                        // Hidden means untouchable too: on a touch screen the first
+                        // tap on a tile reveals the control instead of silencing someone.
+                        turnedDown
+                            ? 'pointer-events-auto opacity-100'
+                            : 'pointer-events-none opacity-0 group-hover/tile:pointer-events-auto group-hover/tile:opacity-100',
+                    )
+                "
+            />
+        </div>
     </div>
 </template>

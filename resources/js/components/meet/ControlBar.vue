@@ -16,6 +16,7 @@ import {
     MonitorX,
     MoreVertical,
     PhoneOff,
+    PictureInPicture2,
     Settings,
     Sparkles,
     Square,
@@ -62,6 +63,9 @@ const props = defineProps<{
     preferredAudioInput: string | null;
     preferredVideoInput: string | null;
     preferredAudioOutput: string | null;
+    /** The browser can float the meeting in a picture-in-picture window. */
+    pipSupported: boolean;
+    pipActive: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -75,6 +79,7 @@ const emit = defineEmits<{
     record: [mode: RecordingMode];
     stopRecording: [];
     fullscreen: [];
+    pip: [];
 }>();
 
 const me = computed(() => props.state.me.value);
@@ -520,6 +525,19 @@ const chevronClass =
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuItem class="gap-2" @click="emit('fullscreen')">
                         <Maximize class="size-4" /> Full screen
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        v-if="pipSupported"
+                        class="gap-2"
+                        data-testid="toggle-pip"
+                        @click="emit('pip')"
+                    >
+                        <PictureInPicture2 class="size-4" />
+                        {{
+                            pipActive
+                                ? 'Close picture-in-picture'
+                                : 'Picture-in-picture'
+                        }}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem

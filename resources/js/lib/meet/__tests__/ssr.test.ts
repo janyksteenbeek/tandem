@@ -19,13 +19,17 @@ describe('meeting room modules on the server', () => {
             import('@/lib/meet/linkify'),
             import('@/lib/meet/format'),
             import('@/lib/meet/upload'),
+            import('@/lib/meet/volumes'),
+            import('@/lib/meet/pip'),
             import('@/composables/meet/useAudioLevel'),
             import('@/composables/meet/useDevices'),
             import('@/composables/meet/usePreview'),
             import('@/composables/meet/useMeetPreferences'),
+            import('@/composables/meet/useParticipantVolumes'),
+            import('@/composables/meet/usePictureInPicture'),
         ]);
 
-        expect(modules).toHaveLength(13);
+        expect(modules).toHaveLength(17);
     });
 
     it('reads preferences as defaults when there is no localStorage', async () => {
@@ -34,6 +38,23 @@ describe('meeting room modules on the server', () => {
 
         expect(loadPreferences()).toEqual(DEFAULT_PREFERENCES);
         expect(() => savePreferences(DEFAULT_PREFERENCES)).not.toThrow();
+    });
+
+    it('keeps everyone at normal volume when there is no sessionStorage', async () => {
+        const { loadVolumes, saveVolumes, canAdjustVolume } =
+            await import('@/lib/meet/volumes');
+
+        expect(loadVolumes('call')).toEqual({});
+        expect(() => saveVolumes('call', { p_a: 0.5 })).not.toThrow();
+        expect(canAdjustVolume()).toBe(true);
+    });
+
+    it('offers no picture-in-picture without a browser', async () => {
+        const { pipSupport, documentPictureInPicture } =
+            await import('@/lib/meet/pip');
+
+        expect(pipSupport()).toBeNull();
+        expect(documentPictureInPicture()).toBeNull();
     });
 
     it('explains a missing media API instead of throwing', async () => {

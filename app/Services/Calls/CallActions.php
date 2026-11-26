@@ -320,6 +320,10 @@ class CallActions
             $this->syncPublishPermissions($call);
         }
 
+        if ($before['waiting_room'] && ! $call->setting('waiting_room')) {
+            $this->admitWaiting($call, $by);
+        }
+
         CallUpdated::dispatch($call, 'settings');
 
         $this->audit->record('call.settings_updated', $call->organization, $by->user, $call, [
@@ -385,6 +389,21 @@ class CallActions
         }
 
         return $sources;
+    }
+
+    /**
+     * The waiting room was switched off: whoever is still in it walks in, the same as anyone
+     * arriving from now on. A locked meeting keeps them waiting, since nobody new may join it.
+     */
+    protected function admitWaiting(Call $call, CallParticipant $by): void
+    {
+        if ($call->setting('locked')) {
+            return;
+        }
+
+        $call->participants()->where('status', ParticipantStatus::Waiting->value)->get()->each(function (CallParticipant $participant) use ($call, $by) {
+            $this->admit($participant->setRelation('call', $call), $by);
+        });
     }
 
     /**

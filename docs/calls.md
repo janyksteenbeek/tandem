@@ -84,6 +84,20 @@ Audio is never reduced. Under congestion the SFU's allocator drops camera layers
 pauses camera streams; the room also offers an explicit "audio only" mode and suggests it after
 several seconds of poor connection quality.
 
+Each listener can turn any other participant down, or silence them, for themselves: on the
+person's tile or in the people panel. That is the volume of the audio element in that one
+browser (`TrackAudio.vue`, `useParticipantVolumes`); the SFU, the other participants and the
+recording never see it. One level covers a person's voice and the sound of a screen they share,
+and it is remembered for that call in that tab. iOS does not let a page set an element's volume,
+so there the control is mute only.
+
+The meeting can float in a picture-in-picture window (the menu, or Shift P) so it stays in view
+while its tab is in the background. In Chromium that is a document picture-in-picture window
+(`MeetPip.vue`, rendered into it with a `<Teleport>`): the shared screen or up to four people,
+with microphone, camera and leave buttons. It attaches its own video elements to the same
+tracks. Safari can only float a single video, so there the shared screen or the first camera
+floats on its own; Firefox offers neither to a page and the menu item is hidden.
+
 Rooms only allow Opus, VP8 and VP9 (`room.enabled_codecs`). That restriction is deliberate:
 every track then fits a WebM file exactly as it arrives.
 
@@ -445,6 +459,10 @@ Stated plainly, because none of this should be assumed to work until it has been
   unit in `docs/deployment.md` is an untested example.
 - **Only Chromium, only synthetic devices.** No real camera, microphone or speaker; no Safari
   or Firefox, in the room or in the player; no phone.
+- **Per-participant volume and picture-in-picture were never run.** Both were written without
+  a browser or the test suite at hand. For picture-in-picture in particular: that the video in
+  the floating window keeps flowing once the meeting's tab is hidden depends on the SDK's
+  adaptive stream recognising a document picture-in-picture window, which was not checked.
 - **Camera effects were never run on a real face, and do not build yet.** The face tracker's
   package (`@mediapipe/tasks-vision`) and its model file are not in the repository yet; until
   they are, the front end does not build. What was checked: the drawing, in headless Chromium

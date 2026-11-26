@@ -10,11 +10,15 @@ import {
     UserMinus,
     Video,
     VideoOff,
+    Volume1,
+    Volume2,
+    VolumeX,
     X,
 } from '@lucide/vue';
 import { computed } from 'vue';
 import QualityBars from '@/components/meet/QualityBars.vue';
 import SidePanel from '@/components/meet/SidePanel.vue';
+import VolumeControl from '@/components/meet/VolumeControl.vue';
 import UserAvatar from '@/components/shared/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,11 +27,18 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { useParticipantVolumes } from '@/composables/meet/useParticipantVolumes';
 import type { RoomParticipant } from '@/lib/meet/types';
 import type { CallMe, CallParticipant } from '@/types';
 
 /**
- * Who is here, who is waiting to be let in, and (for hosts) the controls over them.
+ * Who is here, who is waiting to be let in, how loud each of them is for this listener,
+ * and (for hosts) the controls over them.
  */
 const props = defineProps<{
     participants: RoomParticipant[];
@@ -53,6 +64,14 @@ const roleLabel = (participant: RoomParticipant) =>
         : participant.meta.guest
           ? 'Guest'
           : null;
+
+const { volumeOf } = useParticipantVolumes();
+
+const volumeIcon = (participant: RoomParticipant) => {
+    const volume = volumeOf(participant.identity);
+
+    return volume <= 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
+};
 </script>
 
 <template>
@@ -208,6 +227,39 @@ const roleLabel = (participant: RoomParticipant) =>
                             participant.micEnabled ? 'Microphone on' : 'Muted'
                         "
                     />
+
+                    <Popover v-if="!participant.isLocal">
+                        <PopoverTrigger as-child>
+                            <button
+                                type="button"
+                                :aria-label="`Set how loud ${participant.name} is for you`"
+                                :class="[
+                                    'flex size-7 items-center justify-center rounded-lg outline-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                                    volumeOf(participant.identity) <= 0
+                                        ? 'text-destructive'
+                                        : volumeOf(participant.identity) < 1
+                                          ? 'text-brand'
+                                          : 'text-muted-foreground hover:text-foreground',
+                                ]"
+                                data-testid="participant-volume-open"
+                            >
+                                <component
+                                    :is="volumeIcon(participant)"
+                                    class="size-4"
+                                />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent align="end" class="w-64 p-3">
+                            <p class="mb-2 text-xs text-muted-foreground">
+                                How loud {{ participant.name }} is for you.
+                                Nobody else hears a difference.
+                            </p>
+                            <VolumeControl
+                                :identity="participant.identity"
+                                :name="participant.name"
+                            />
+                        </PopoverContent>
+                    </Popover>
 
                     <DropdownMenu v-if="canManage && !participant.isLocal">
                         <DropdownMenuTrigger as-child>
