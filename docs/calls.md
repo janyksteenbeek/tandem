@@ -132,8 +132,9 @@ As published, the MediaPipe package reports usage and performance metrics to Goo
 (`odml.pa.googleapis.com`) from every browser that runs it, with no setting to switch that off.
 The build takes that address out (`withoutMediapipeMetrics` in `vite.config.ts`): the reporter's
 first attempt fails without a network request and it stops for good. The build fails if the
-address is no longer found, so an upgrade of the package cannot bring the reporting back
-unnoticed. Measured in headless Chromium over 75 seconds (the reporter fires every 60): two
+address is no longer found, and a test (`trackerPrivacy.test.ts`) fails if the package gains a
+second address, so an upgrade cannot bring the reporting back unnoticed. The development
+server serves the same changed file. Measured in headless Chromium over 75 seconds (the reporter fires every 60): two
 requests to Google without the change, none with it.
 
 An effect costs the sender one face-tracking pass per camera frame (on the graphics card where
