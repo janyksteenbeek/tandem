@@ -930,12 +930,8 @@ const displayTitle = computed(
                 :mic-busy="session.micBusy.value"
                 :camera-enabled="session.cameraEnabled.value"
                 :audio-only="session.audioOnly.value"
-                @toggle-mic="
-                    session.setMicrophone(!session.micEnabled.value)
-                "
-                @toggle-camera="
-                    session.setCamera(!session.cameraEnabled.value)
-                "
+                @toggle-mic="session.setMicrophone(!session.micEnabled.value)"
+                @toggle-camera="session.setCamera(!session.cameraEnabled.value)"
                 @leave="leave"
             />
         </Teleport>

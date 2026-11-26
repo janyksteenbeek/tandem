@@ -28,7 +28,10 @@ describe('pipParticipants', () => {
     });
 
     it('gives the places to whoever spoke last, in the order they already had', () => {
-        const people = [me, ...['a', 'b', 'c', 'd', 'e'].map((id) => person(id))];
+        const people = [
+            me,
+            ...['a', 'b', 'c', 'd', 'e'].map((id) => person(id)),
+        ];
         const shown = pipParticipants(people, { e: 300, c: 200, a: 100 }, 3);
 
         expect(shown.map((p) => p.identity)).toEqual(['a', 'c', 'e']);

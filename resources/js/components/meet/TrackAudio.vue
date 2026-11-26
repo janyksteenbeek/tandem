@@ -22,7 +22,9 @@ const audio = ref<HTMLAudioElement | null>(null);
  * set as `muted`, which works on iOS where a page cannot change an element's volume.
  */
 const applyVolume = () => {
-    (props.track as Partial<RemoteAudioTrack>).setVolume?.(props.volume);
+    (props.track as unknown as Partial<RemoteAudioTrack>).setVolume?.(
+        props.volume,
+    );
 
     if (audio.value) {
         audio.value.muted = props.volume <= 0;

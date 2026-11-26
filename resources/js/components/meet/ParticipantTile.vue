@@ -47,8 +47,7 @@ const troubled = computed(() =>
 const { volumeOf } = useParticipantVolumes();
 const turnedDown = computed(
     () =>
-        !props.participant.isLocal &&
-        volumeOf(props.participant.identity) < 1,
+        !props.participant.isLocal && volumeOf(props.participant.identity) < 1,
 );
 
 const avatarSize = {
@@ -166,7 +165,7 @@ const avatarSize = {
         <!-- Pin, and how loud this person is for you -->
         <div
             v-if="pinnable || !participant.isLocal"
-            class="pointer-events-none @container absolute inset-x-2 top-2 flex items-center gap-1.5"
+            class="@container pointer-events-none absolute inset-x-2 top-2 flex items-center gap-1.5"
         >
             <button
                 v-if="pinnable"
