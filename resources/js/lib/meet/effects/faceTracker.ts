@@ -19,8 +19,8 @@ export type FaceTracker = {
 export async function createFaceTracker(): Promise<FaceTracker> {
     const [vision, loader, binary, model] = await Promise.all([
         import('@mediapipe/tasks-vision'),
-        import('@mediapipe/tasks-vision/wasm/vision_wasm_internal.js?url'),
-        import('@mediapipe/tasks-vision/wasm/vision_wasm_internal.wasm?url'),
+        import('@mediapipe/tasks-vision/vision_wasm_internal.js?url'),
+        import('@mediapipe/tasks-vision/vision_wasm_internal.wasm?url'),
         import('./assets/face_landmarker.task?url'),
     ]);
 

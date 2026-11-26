@@ -9,11 +9,7 @@ import {
     steadyFrame,
 } from '@/lib/meet/effects/geometry';
 import { featuresFromLandmarks } from '@/lib/meet/effects/landmarks';
-import type {
-    FaceFeatures,
-    FaceLayout,
-    Point,
-} from '@/lib/meet/effects/types';
+import type { FaceFeatures, FaceLayout, Point } from '@/lib/meet/effects/types';
 
 /** An outline as a box around a centre: enough to stand in for an eye or a mouth. */
 const box = (cx: number, cy: number, halfW: number, halfH: number): Point[] => [
@@ -143,7 +139,10 @@ describe('facePlacement', () => {
             throw new Error('expected a face');
         }
 
-        return { frame, placement: facePlacement(frame, camera, picture, cover, layout) };
+        return {
+            frame,
+            placement: facePlacement(frame, camera, picture, cover, layout),
+        };
     };
     const onCanvas = (
         point: Point,
@@ -257,8 +256,14 @@ describe('cutouts', () => {
     it('lies along a tilted head', () => {
         const angle = Math.PI / 6;
         const rotate = (point: Point): Point => ({
-            x: 640 + (point.x - 640) * Math.cos(angle) - (point.y - 300) * Math.sin(angle),
-            y: 300 + (point.x - 640) * Math.sin(angle) + (point.y - 300) * Math.cos(angle),
+            x:
+                640 +
+                (point.x - 640) * Math.cos(angle) -
+                (point.y - 300) * Math.sin(angle),
+            y:
+                300 +
+                (point.x - 640) * Math.sin(angle) +
+                (point.y - 300) * Math.cos(angle),
         });
         const upright = face();
         const tilted: FaceFeatures = {

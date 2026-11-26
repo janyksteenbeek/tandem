@@ -111,10 +111,10 @@ An effect is made entirely in the sender's browser (`resources/js/lib/meet/effec
 
 1. A face tracker finds the face in each camera frame. It is MediaPipe's face landmarker
    (Apache-2.0) running as WebAssembly in the page. Its runtime comes from the
-   `@mediapipe/tasks-vision` package and its model (`assets/face_landmarker.task`, 3.7 MB) is a
-   file of this repository; both are built into the application's assets and served by Tandem.
-   No frame and no measurement is sent anywhere, and none of it is downloaded by someone who
-   never picks an effect.
+   `@mediapipe/tasks-vision` package (a 14.7 MB WebAssembly file, 4.2 MB gzipped) and its
+   model (`assets/face_landmarker.task`, 3.8 MB) is a file of this repository; both are built
+   into the application's assets and served by Tandem. No frame and no measurement is sent
+   anywhere, and none of it is downloaded by someone who never picks an effect.
 2. The eyes and the mouth are cut out of the camera frame with soft edges and drawn onto the
    picture: scaled so the face has the same size however far away someone sits, tilted with
    the head, and drifting a little with it (`geometry.ts`, `facePicture.ts`).
@@ -127,6 +127,14 @@ the camera track before the track is published, and until the tracker has loaded
 no face and when it fails to start, the output is the picture alone. A metronome in a worker
 keeps frames coming while the tab is in the background, where browsers stop a page's own
 timers.
+
+As published, the MediaPipe package reports usage and performance metrics to Google
+(`odml.pa.googleapis.com`) from every browser that runs it, with no setting to switch that off.
+The build takes that address out (`withoutMediapipeMetrics` in `vite.config.ts`): the reporter's
+first attempt fails without a network request and it stops for good. The build fails if the
+address is no longer found, so an upgrade of the package cannot bring the reporting back
+unnoticed. Measured in headless Chromium over 75 seconds (the reporter fires every 60): two
+requests to Google without the change, none with it.
 
 An effect costs the sender one face-tracking pass per camera frame (on the graphics card where
 there is one) and nothing on the server. Adding an effect is a picture, a thumbnail and a
@@ -463,12 +471,13 @@ Stated plainly, because none of this should be assumed to work until it has been
   a browser or the test suite at hand. For picture-in-picture in particular: that the video in
   the floating window keeps flowing once the meeting's tab is hidden depends on the SDK's
   adaptive stream recognising a document picture-in-picture window, which was not checked.
-- **Camera effects were never run on a real face, and do not build yet.** The face tracker's
-  package (`@mediapipe/tasks-vision`) and its model file are not in the repository yet; until
-  they are, the front end does not build. What was checked: the drawing, in headless Chromium
-  with a drawn face and made-up tracking points, and the geometry tests outside Vitest. Not
-  checked: the tracker itself, an effect in a meeting, that the SDK attaches it before the
-  camera is published, a background tab, Safari and Firefox.
+- **Camera effects were never run on a real face or in a meeting.** What was run is the built
+  pipeline in headless Chromium against a drawn face on a canvas standing in for the camera:
+  the tracker loaded from Tandem's own assets, found the face, the eyes and mouth landed on the
+  picture, the output ran at 30 frames per second, stopped while the camera track was stopped
+  and resumed on a new one. Not run: a person in front of a real camera, an effect published
+  into a room (that the SDK attaches it before publishing was read in its source, not
+  observed), a recording of one, a tab in the background, Safari, Firefox and phones.
 - **No lossy or constrained network.** Loss concealment, the audio-first degradation and the
   "audio only" suggestion were not exercised under real packet loss or bandwidth limits.
 - **No TURN.** Only direct connections were available; TCP fallback, the built-in relay and
