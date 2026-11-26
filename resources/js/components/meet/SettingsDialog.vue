@@ -6,11 +6,13 @@ import {
     Mic,
     MonitorUp,
     ShieldCheck,
+    Sparkles,
     Video,
     Volume2,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import DeviceSelect from '@/components/meet/DeviceSelect.vue';
+import EffectPicker from '@/components/meet/EffectPicker.vue';
 import MicLevelMeter from '@/components/meet/MicLevelMeter.vue';
 import QualityBars from '@/components/meet/QualityBars.vue';
 import { Button } from '@/components/ui/button';
@@ -41,7 +43,7 @@ import type { CallSettings } from '@/types';
 
 /**
  * Everything adjustable in a meeting, kept to what people actually need: devices, a simple
- * video quality choice, how screens are shared, a readable view of the connection, the
+ * video quality choice, camera effects, how screens are shared, a readable view of the connection, the
  * shortcuts, and (for hosts) the rules of the meeting.
  */
 const props = defineProps<{
@@ -73,6 +75,7 @@ const isHost = computed(() => me.value?.can.manage ?? false);
 const tabs = computed(() => [
     { id: 'audio', label: 'Audio', icon: AudioLines },
     { id: 'video', label: 'Video', icon: Video },
+    { id: 'effects', label: 'Effects', icon: Sparkles },
     { id: 'screen', label: 'Screen sharing', icon: MonitorUp },
     { id: 'connection', label: 'Connection', icon: Gauge },
     { id: 'shortcuts', label: 'Shortcuts', icon: Keyboard },
@@ -163,8 +166,8 @@ const route = computed(() => {
             <DialogHeader class="border-b px-5 py-4">
                 <DialogTitle>Settings</DialogTitle>
                 <DialogDescription class="sr-only">
-                    Devices, video quality, screen sharing, connection and
-                    shortcuts.
+                    Devices, video quality, effects, screen sharing, connection
+                    and shortcuts.
                 </DialogDescription>
             </DialogHeader>
 
@@ -362,6 +365,34 @@ const route = computed(() => {
                                 "
                             />
                         </label>
+                    </div>
+
+                    <!-- Effects -->
+                    <div
+                        v-else-if="tab === 'effects'"
+                        class="flex flex-col gap-5"
+                    >
+                        <fieldset class="grid gap-2">
+                            <legend class="mb-2 text-sm font-medium">
+                                Camera effect
+                            </legend>
+                            <EffectPicker
+                                :model-value="preferences.videoEffect"
+                                :disabled="session.cameraBusy.value"
+                                @update:model-value="
+                                    (effect) => session.setVideoEffect(effect)
+                                "
+                            />
+                        </fieldset>
+                        <p
+                            class="rounded-lg bg-muted/60 px-3 py-2 text-xs leading-relaxed text-muted-foreground"
+                        >
+                            Effects are made in your browser. Your face is
+                            followed on this device and only the finished
+                            picture is sent, to the meeting and to a recording.
+                            With your camera off, an effect starts the next time
+                            you switch it on.
+                        </p>
                     </div>
 
                     <!-- Screen sharing -->

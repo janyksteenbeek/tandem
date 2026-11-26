@@ -91,4 +91,16 @@ describe('parsePreferences', () => {
         });
         expect(parsed.displayName).toHaveLength(80);
     });
+
+    it('remembers a camera effect it knows and drops one it does not', () => {
+        expect(parsePreferences('{}').videoEffect).toBe('none');
+        expect(
+            parsePreferences(JSON.stringify({ videoEffect: 'egg' }))
+                .videoEffect,
+        ).toBe('egg');
+        expect(
+            parsePreferences(JSON.stringify({ videoEffect: 'bacon' }))
+                .videoEffect,
+        ).toBe('none');
+    });
 });

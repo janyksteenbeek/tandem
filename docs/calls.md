@@ -87,6 +87,37 @@ several seconds of poor connection quality.
 Rooms only allow Opus, VP8 and VP9 (`room.enabled_codecs`). That restriction is deliberate:
 every track then fits a WebM file exactly as it arrives.
 
+### Camera effects
+
+A participant can put an effect on their camera, before joining or from Settings → Effects. The
+first one is **Egg**: a plate of scrambled egg fills the picture and the person's own eyes and
+mouth sit on it like a face, moving as they do.
+
+An effect is made entirely in the sender's browser (`resources/js/lib/meet/effects`):
+
+1. A face tracker finds the face in each camera frame. It is MediaPipe's face landmarker
+   (Apache-2.0) running as WebAssembly in the page. Its runtime comes from the
+   `@mediapipe/tasks-vision` package and its model (`assets/face_landmarker.task`, 3.7 MB) is a
+   file of this repository; both are built into the application's assets and served by Tandem.
+   No frame and no measurement is sent anywhere, and none of it is downloaded by someone who
+   never picks an effect.
+2. The eyes and the mouth are cut out of the camera frame with soft edges and drawn onto the
+   picture: scaled so the face has the same size however far away someone sits, tilted with
+   the head, and drifting a little with it (`geometry.ts`, `facePicture.ts`).
+3. The canvas is captured as a video track and published in place of the camera
+   (`processor.ts`, through the SDK's track processor hook).
+
+So the SFU, the other participants and a recording only ever get the finished picture. The
+camera frame as it is never leaves the page while an effect is on: the effect is attached to
+the camera track before the track is published, and until the tracker has loaded, when it finds
+no face and when it fails to start, the output is the picture alone. A metronome in a worker
+keeps frames coming while the tab is in the background, where browsers stop a page's own
+timers.
+
+An effect costs the sender one face-tracking pass per camera frame (on the graphics card where
+there is one) and nothing on the server. Adding an effect is a picture, a thumbnail and a
+layout (where the eyes go and how far apart) in `catalog.ts`.
+
 ### TURN fallback
 
 Most participants connect directly (UDP 7882). The fallbacks, in the order ICE tries them:
@@ -396,7 +427,8 @@ bitrate is not a tuning knob here and is never lowered to save resources.
   pinned to the same test vector as the PHP side. CI runs them with `gofmt` and `go vet` in the
   `media` job of `.github/workflows/tests.yml`.
 - `resources/js/lib/{meet,calls}`: Vitest for layout, linkify, optimistic chat merge, device
-  fallback, and the player's timeline and drift maths.
+  fallback, the player's timeline and drift maths, and the geometry of camera effects (where
+  the eyes and mouth land, at which size, and how their cut-outs behave).
 - `tests/e2e/calls.spec.ts`: a real two-browser meeting (host and guest, fake camera and
   microphone) with chat, a server-side recording, and playback of the recorded tracks. It needs
   the full local stack including `tandem-media`.
@@ -413,6 +445,12 @@ Stated plainly, because none of this should be assumed to work until it has been
   unit in `docs/deployment.md` is an untested example.
 - **Only Chromium, only synthetic devices.** No real camera, microphone or speaker; no Safari
   or Firefox, in the room or in the player; no phone.
+- **Camera effects were never run on a real face, and do not build yet.** The face tracker's
+  package (`@mediapipe/tasks-vision`) and its model file are not in the repository yet; until
+  they are, the front end does not build. What was checked: the drawing, in headless Chromium
+  with a drawn face and made-up tracking points, and the geometry tests outside Vitest. Not
+  checked: the tracker itself, an effect in a meeting, that the SDK attaches it before the
+  camera is published, a background tab, Safari and Firefox.
 - **No lossy or constrained network.** Loss concealment, the audio-first degradation and the
   "audio only" suggestion were not exercised under real packet loss or bandwidth limits.
 - **No TURN.** Only direct connections were available; TCP fallback, the built-in relay and

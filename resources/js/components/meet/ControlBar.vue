@@ -17,6 +17,7 @@ import {
     MoreVertical,
     PhoneOff,
     Settings,
+    Sparkles,
     Square,
     Users,
     Video,
@@ -295,6 +296,13 @@ const chevronClass =
                             No camera found
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            class="gap-2"
+                            data-testid="open-effects"
+                            @click="emit('settings', 'effects')"
+                        >
+                            <Sparkles class="size-4" /> Effects
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                             class="gap-2"
                             @click="emit('settings', 'video')"

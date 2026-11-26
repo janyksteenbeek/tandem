@@ -2,6 +2,8 @@ import type {
     AudioCaptureOptions,
     RoomOptions,
     ScreenShareCaptureOptions,
+    Track,
+    TrackProcessor,
     TrackPublishOptions,
     VideoCaptureOptions,
     VideoEncoding,
@@ -98,8 +100,14 @@ export function cameraProfile(quality: VideoQualitySetting): CameraProfile {
     }
 }
 
+/**
+ * A camera effect is handed over with the capture options, so the SDK puts it on the track
+ * before the track is published: the camera picture as it is never goes out, not even for
+ * the first frames.
+ */
 export function videoCaptureOptions(
     preferences: Pick<DevicePreferences, 'videoInputId' | 'videoQuality'>,
+    effect?: TrackProcessor<Track.Kind.Video>,
 ): VideoCaptureOptions {
     const profile = cameraProfile(preferences.videoQuality);
 
@@ -110,6 +118,7 @@ export function videoCaptureOptions(
             height: profile.height,
             frameRate: profile.frameRate,
         },
+        ...(effect ? { processor: effect } : {}),
     };
 }
 

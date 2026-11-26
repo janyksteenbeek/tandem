@@ -19,6 +19,7 @@ import {
     watch,
 } from 'vue';
 import { api, HttpError } from '@/lib/http';
+import type { CameraEffectProcessor } from '@/lib/meet/effects/processor';
 import type { MeetEndpoints } from '@/lib/meet/endpoints';
 import {
     audioCaptureOptions,
@@ -42,6 +43,7 @@ import type {
     QualityLevel,
     RoomParticipant,
     ScreenShare,
+    VideoEffectId,
     VideoQualitySetting,
 } from '@/lib/meet/types';
 import type { JoinRefusal, MediaCredentials } from '@/types';
@@ -146,6 +148,8 @@ export function useRoomSession(options: Options) {
     let retryAttempt = 0;
     let establishing = false;
     let refreshFrame = 0;
+    /** The effect on the camera track that is published right now, if any. */
+    let cameraEffect: CameraEffectProcessor | null = null;
 
     /** What the person wants, as opposed to what is currently published. */
     const wanted = {
@@ -608,6 +612,9 @@ export function useRoomSession(options: Options) {
             current.removeAllListeners();
         }
 
+        void cameraEffect?.destroy();
+        cameraEffect = null;
+
         if (notifyServer) {
             void api.post(endpoints.leave()).catch(() => {});
         }
@@ -748,19 +755,72 @@ export function useRoomSession(options: Options) {
 
     // --- Camera --------------------------------------------------------------------------
 
+    const publishedCamera = (): LocalVideoTrack | null =>
+        (room?.localParticipant.getTrackPublication(
+            (lk as LiveKit).Track.Source.Camera,
+        )?.track as LocalVideoTrack | undefined) ?? null;
+
+    /**
+     * The effect someone picked, ready to be put on a camera track. The effect code (and the
+     * face tracker behind it) is only downloaded here, for someone who actually uses one.
+     */
+    const createCameraEffect = async (
+        effect: Exclude<VideoEffectId, 'none'>,
+    ): Promise<CameraEffectProcessor> => {
+        const { createEffectProcessor } =
+            await import('@/lib/meet/effects/processor');
+
+        return createEffectProcessor(effect, {
+            onError: () =>
+                options.onNotice(
+                    'warning',
+                    'Your face could not be added to the effect',
+                    'Others see the effect without your face. Switch it off in Settings to show your camera.',
+                ),
+        });
+    };
+
     const enableCamera = async (sdk: LiveKit): Promise<void> => {
         if (!room) {
             return;
         }
 
+        const effect = preferences.value.videoEffect;
+        let processor: CameraEffectProcessor | null = null;
+
+        // A camera that is only switched off keeps its track, and with it its effect. A
+        // new track gets the effect before it is published.
+        if (effect !== 'none' && !publishedCamera()) {
+            try {
+                processor = await createCameraEffect(effect);
+            } catch {
+                // Publishing the bare camera instead is not what was asked for.
+                wanted.camera = false;
+                options.onNotice(
+                    'error',
+                    'The camera effect could not be loaded',
+                    'Your camera stays off. Try again, or switch the effect off in Settings.',
+                );
+
+                return;
+            }
+        }
+
         try {
             await room.localParticipant.setCameraEnabled(
                 true,
-                videoCaptureOptions(preferences.value),
+                videoCaptureOptions(preferences.value, processor ?? undefined),
                 cameraPublishOptions(sdk, preferences.value.videoQuality),
             );
             cameraProblem.value = null;
+
+            if (processor) {
+                void cameraEffect?.destroy();
+                cameraEffect = processor;
+            }
         } catch (error) {
+            void processor?.destroy();
+
             if (!isDeviceError(error)) {
                 publishFailed('camera', error);
 
@@ -832,6 +892,54 @@ export function useRoomSession(options: Options) {
             }
 
             await enableCamera(lk);
+        } finally {
+            cameraBusy.value = false;
+            rebuild();
+        }
+    };
+
+    /**
+     * Change the camera effect. On a published camera the switch happens on the running
+     * track, so nothing is republished; with the camera off it applies the next time the
+     * camera is switched on.
+     */
+    const setVideoEffect = async (effect: VideoEffectId): Promise<void> => {
+        if (cameraBusy.value || preferences.value.videoEffect === effect) {
+            return;
+        }
+
+        preferences.value.videoEffect = effect;
+
+        const track = publishedCamera();
+
+        if (!track) {
+            return;
+        }
+
+        cameraBusy.value = true;
+
+        try {
+            if (effect === 'none') {
+                await track.stopProcessor();
+                cameraEffect = null;
+            } else {
+                const processor = await createCameraEffect(effect);
+
+                await track.setProcessor(processor);
+                cameraEffect = processor;
+            }
+        } catch {
+            // The SDK takes the previous effect off before it starts the next one, so
+            // after a failure the camera is going out as it is. Say so, and let the
+            // setting say so too.
+            preferences.value.videoEffect = 'none';
+            await track.stopProcessor().catch(() => {});
+            cameraEffect = null;
+            options.onNotice(
+                'error',
+                'The camera effect could not be started',
+                'Your camera is shown without an effect.',
+            );
         } finally {
             cameraBusy.value = false;
             rebuild();
@@ -1124,6 +1232,7 @@ export function useRoomSession(options: Options) {
         setScreenShare,
         setScreenShareMotion,
         setVideoQuality,
+        setVideoEffect,
         setNoiseSuppression,
         setAudioOnly,
         switchDevice,

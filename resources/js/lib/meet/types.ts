@@ -9,6 +9,9 @@ import type { CallMessage, CallParticipantRole } from '@/types';
 
 export type VideoQualitySetting = 'auto' | 'standard' | 'high';
 
+/** What is done to the camera picture before it is sent. See `@/lib/meet/effects`. */
+export type VideoEffectId = 'none' | 'egg';
+
 /** What the browser remembers about how someone likes to join. */
 export type DevicePreferences = {
     audioInputId: string | null;
@@ -18,6 +21,7 @@ export type DevicePreferences = {
     cameraEnabled: boolean;
     noiseSuppression: boolean;
     videoQuality: VideoQualitySetting;
+    videoEffect: VideoEffectId;
     /** Share screens tuned for motion (video, animation) instead of sharp text. */
     screenShareMotion: boolean;
     displayName: string;

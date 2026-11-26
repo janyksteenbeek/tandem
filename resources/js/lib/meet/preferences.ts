@@ -1,3 +1,4 @@
+import { isVideoEffect } from './effects/catalog';
 import type { DeviceOption, DevicePreferences } from './types';
 
 const STORAGE_KEY = 'tandem:meet:preferences';
@@ -10,6 +11,7 @@ export const DEFAULT_PREFERENCES: DevicePreferences = {
     cameraEnabled: true,
     noiseSuppression: true,
     videoQuality: 'auto',
+    videoEffect: 'none',
     screenShareMotion: false,
     displayName: '',
 };
@@ -57,6 +59,9 @@ export function parsePreferences(raw: string | null): DevicePreferences {
                 saved.videoQuality === 'high'
                     ? saved.videoQuality
                     : 'auto',
+            videoEffect: isVideoEffect(saved.videoEffect)
+                ? saved.videoEffect
+                : 'none',
             screenShareMotion: flag(saved.screenShareMotion, false),
             displayName: (text(saved.displayName) ?? '').slice(0, 80),
         };

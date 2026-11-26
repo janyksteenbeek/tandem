@@ -13,6 +13,7 @@ import {
 } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import DeviceSelect from '@/components/meet/DeviceSelect.vue';
+import EffectPicker from '@/components/meet/EffectPicker.vue';
 import MicLevelMeter from '@/components/meet/MicLevelMeter.vue';
 import TrackVideo from '@/components/meet/TrackVideo.vue';
 import UserAvatar from '@/components/shared/UserAvatar.vue';
@@ -285,8 +286,8 @@ const toggleClass = (on: boolean) =>
                 class="relative aspect-video overflow-hidden rounded-3xl bg-[oklch(0.2_0.012_275)] shadow-float ring-1 ring-black/5 dark:ring-white/10"
             >
                 <TrackVideo
-                    v-if="preview.videoTrack.value"
-                    :track="preview.videoTrack.value"
+                    v-if="preview.shownVideoTrack.value"
+                    :track="preview.shownVideoTrack.value"
                     mirror
                     label="Your camera"
                     class="rounded-3xl"
@@ -324,10 +325,19 @@ const toggleClass = (on: boolean) =>
                             <RotateCw /> Try again
                         </Button>
                     </template>
-                    <template v-else-if="preview.starting.value">
+                    <template
+                        v-else-if="
+                            preview.starting.value ||
+                            preview.effectStarting.value
+                        "
+                    >
                         <Spinner class="size-6 text-white/70" />
                         <p class="text-sm text-white/70">
-                            Starting your camera…
+                            {{
+                                preview.effectStarting.value
+                                    ? 'Getting your effect ready…'
+                                    : 'Starting your camera…'
+                            }}
                         </p>
                     </template>
                     <template v-else>
@@ -489,6 +499,27 @@ const toggleClass = (on: boolean) =>
                         (id) => (preferences.audioOutputId = id)
                     "
                 />
+            </div>
+
+            <!-- Effects -->
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <span class="text-[13px] font-medium text-muted-foreground"
+                    >Effects</span
+                >
+                <EffectPicker
+                    size="sm"
+                    :model-value="preferences.videoEffect"
+                    @update:model-value="
+                        (effect) => (preferences.videoEffect = effect)
+                    "
+                />
+                <p
+                    v-if="preview.effectProblem.value"
+                    role="alert"
+                    class="basis-full text-[13px] leading-relaxed text-destructive"
+                >
+                    {{ preview.effectProblem.value }}
+                </p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2 text-[13px]">

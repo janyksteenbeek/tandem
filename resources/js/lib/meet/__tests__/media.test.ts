@@ -8,6 +8,7 @@ import {
     screenShareCaptureOptions,
     screenShareEncoding,
     screenSharePublishOptions,
+    videoCaptureOptions,
     VOICE_BITRATE,
 } from '@/lib/meet/media';
 
@@ -55,6 +56,28 @@ describe('cameraProfile', () => {
         for (const quality of ['auto', 'standard', 'high'] as const) {
             expect(cameraProfile(quality).layers.length).toBe(2);
         }
+    });
+});
+
+describe('videoCaptureOptions', () => {
+    const preferences = { videoInputId: 'cam', videoQuality: 'auto' } as const;
+
+    it('opens the chosen camera at the profile of the quality setting', () => {
+        expect(videoCaptureOptions(preferences)).toEqual({
+            deviceId: 'cam',
+            resolution: { width: 1280, height: 720, frameRate: 30 },
+        });
+    });
+
+    it('carries a camera effect, so it is on the track before anything is sent', () => {
+        const effect = {
+            name: 'effect',
+            init: () => Promise.resolve(),
+            restart: () => Promise.resolve(),
+            destroy: () => Promise.resolve(),
+        };
+
+        expect(videoCaptureOptions(preferences, effect).processor).toBe(effect);
     });
 });
 
